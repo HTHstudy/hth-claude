@@ -13,7 +13,6 @@ Claude Code 플러그인으로 구성된 팀 내부 마켓플레이스입니다.
 npm install -g @anthropic-ai/claude-code
 ```
 
-
 ## 마켓플레이스 등록
 
 ```
@@ -33,7 +32,7 @@ npm install -g @anthropic-ai/claude-code
 ## 플러그인 설치
 
 ```bash
-claude plugin install frontend@hth-plugins
+/plugin install frontend@hth-plugins
 ```
 
 ## 플러그인 상세
