@@ -1,25 +1,16 @@
 {
-  "name": "claude-code-marketplace",
-  "version": "1.0.0",
-  "description": "팀 내부 Claude Code 마켓플레이스 - 스킬, MCP 서버, 훅, 슬래시 커맨드 공유",
-  "registry": {
-    "url": "",
-    "type": "git"
+  "name": "hth-plugins",
+  "description": "팀 내부 Claude Code 플러그인 마켓플레이스 - 스킬, MCP 서버, 훅, 슬래시 커맨드 공유",
+  "owner": {
+    "name": "HTHstudy",
+    "email": "taehyen11@gmail.com"
   },
-  "categories": [
-    "skills",
-    "mcp-servers",
-    "hooks",
-    "slash-commands",
-    "claude-md-templates"
-  ],
   "plugins": [
     {
       "name": "frontend",
+      "description": "프론트엔드 플러그인 - 레이어드 아키텍처 규칙 및 자동 적용",
       "version": "1.0.0",
-      "description": "프론트엔드 레이어드 아키텍처 규칙 및 자동 적용",
-      "path": "plugins/frontend",
-      "author": "하태현"
+      "source": "./plugins/frontend"
     }
   ]
 }
