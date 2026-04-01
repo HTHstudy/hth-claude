@@ -1,0 +1,9 @@
+{
+  "name": "frontend",
+  "description": "프론트엔드 플러그인 - 레이어드 아키텍처 규칙 및 아키텍처 적용",
+  "version": "1.0.0",
+  "author": {
+    "name": "하태현",
+    "email": "taehyen11@gmail.com"
+  }
+}
