@@ -1,10 +1,11 @@
 {
   "name": "frontend",
-  "description": "프론트엔드 플러그인 - 레이어드 아키텍처 규칙 및 아키텍처 적용",
+  "description": "프론트엔드 플러그인 - 레이어드 아키텍처 규칙 및 자동 적용, 프로젝트 초기화/전환 커맨드",
   "version": "1.0.0",
   "author": {
     "name": "하태현",
     "email": "taehyen11@gmail.com"
   },
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "commands": "./commands/"
 }
