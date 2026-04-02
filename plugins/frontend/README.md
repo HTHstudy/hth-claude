@@ -30,12 +30,12 @@
 
 | 커맨드 | 설명 |
 |--------|------|
-| `/frontend:init` | 새 프로젝트 생성 |
+| `/frontend:fe-init` | 새 프로젝트 생성 |
 | `/frontend:apply-architecture` | 기존 프로젝트에 아키텍처 적용 |
 
 ---
 
-## `/frontend:init`
+## `/frontend:fe-init`
 
 레이어드 아키텍처가 적용된 새 프론트엔드 프로젝트를 생성합니다.
 

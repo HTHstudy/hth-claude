@@ -51,7 +51,7 @@ curl -fsSL https://claude.ai/install.sh | bash
 레이어드 아키텍처 규칙을 자동 적용하고, 표준 프로젝트를 초기 세팅합니다.
 
 - **Skills**: architecture (자동 적용 — 레이어 구조, import 방향, 네이밍 컨벤션)
-- **Commands**: `/frontend:init` (프로젝트 생성), `/frontend:apply-architecture` (기존 프로젝트 전환)
+- **Commands**: `/frontend:fe-init` (프로젝트 생성), `/frontend:apply-architecture` (기존 프로젝트 전환)
 - **Architecture**: `app → pages → (widgets → features → entities →) shared`
 - **Resources**: 레이어별 상세 규칙, shared/api 3계층 패턴, query/mutation factory 패턴
 - **Docs**: [한국어](plugins/frontend/docs/ko/README.md) · [English](plugins/frontend/docs/en/README.md)
@@ -76,7 +76,7 @@ hth-claude/
 │       │       ├── layers/             # 레이어별 상세 규칙
 │       │       └── rules/              # Slice 공통 규칙
 │       ├── commands/                   # 사용자 호출 커맨드
-│       │   ├── init.md                 # 새 프로젝트 생성
+│       │   ├── fe-init.md              # 새 프로젝트 생성
 │       │   └── apply-architecture.md   # 기존 프로젝트 전환
 │       └── docs/                       # 한국어/영어 문서
 └── README.md
