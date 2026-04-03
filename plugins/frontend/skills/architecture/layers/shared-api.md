@@ -2,7 +2,8 @@
 
 > `shared/api`의 내부 구조와 컨벤션 규약이다.
 
-문서에서 `[domain]`은 실제 폴더명으로 치환하는 placeholder이다. 예: `product`, `auth`, `payment`
+문서에서 `[domain]`은 실제 폴더명으로 치환하는 placeholder이다.
+**도메인은 baseURL 단위로 구분한다.** 같은 서버(같은 baseURL)의 리소스는 하나의 도메인에 속한다. 예: `internal`(API route), `auth`(인증 서버), `main`(메인 백엔드)
 
 ---
 
@@ -25,15 +26,16 @@ shared/api/
 │  ├─ errors.ts
 │  └─ types.ts
 │
-├─ product/                    # 도메인 예시
+├─ main/                       # 메인 BE (baseURL: 'https://api.example.com')
 │  ├─ index.ts
 │  ├─ model.ts
-│  ├─ product-http-client.ts
+│  ├─ main-http-client.ts
 │  └─ endpoints/
 │     ├─ get-product-list.ts
-│     └─ create-product.ts
+│     ├─ create-product.ts
+│     └─ get-order.ts
 │
-└─ auth/                       # 다른 도메인도 동일 패턴
+└─ auth/                       # 인증 서버 (baseURL: 'https://auth.example.com')
    ├─ index.ts
    ├─ auth-http-client.ts
    └─ endpoints/
@@ -250,6 +252,7 @@ import { productHttpClient } from '@shared/api/product/product-http-client';
 
 - 파일명은 `[domain]-http-client.ts` 형태를 사용한다.
 - `base-http-client.ts`를 확장하여 도메인별 설정을 적용한다.
+- **도메인별 http-client는 baseURL 단위로 구분한다.** 같은 서버의 도메인은 같은 baseURL을 사용하고, 다른 서버(외부 BE, API route 등)는 다른 baseURL을 설정한다.
 
 ---
 
