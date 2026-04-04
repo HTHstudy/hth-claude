@@ -1,6 +1,6 @@
 # Frontend Plugin
 
-> 프론트엔드 코드 작성 시 일관된 레이어드 아키텍처를 자동 적용하는 Claude Code 플러그인
+> 프론트엔드 코드 작성 시 일관된 레이어드 아키텍처를 자동 적용하는 Claude Code 플러그인. React(Vite)와 Next.js(App Router / Pages Router)를 지원합니다.
 
 ## 설치
 
@@ -12,26 +12,29 @@
 
 ## 제공 기능
 
-### 자동 적용 스킬
+### 스킬
 
-| 스킬 | 설명 |
-|------|------|
-| `architecture` | 프론트엔드 코드 작성·리뷰·리팩토링 시 레이어 아키텍처 규칙을 자동 적용 |
+| 스킬 | 유형 | 설명 |
+|------|------|------|
+| `architecture` | 자동 적용 | 프론트엔드 코드 작성·리뷰·리팩토링 시 레이어 아키텍처 규칙을 자동 적용. Next.js 프로젝트 감지 시 추가 규칙 자동 로드 |
+| `fe-init` | 사용자 호출 | 레이어드 아키텍처 기반 새 프로젝트 생성 |
+| `apply-architecture` | 사용자 호출 | 기존 프로젝트를 레이어드 아키텍처로 단계별 전환 |
 
-별도 호출 없이, 프론트엔드 코드 작업 시 Claude가 아래 규칙을 자동으로 따릅니다:
+`architecture` 스킬은 별도 호출 없이 프론트엔드 코드 작업 시 Claude가 자동으로 적용합니다:
 
 - 레이어 구조: `app → pages → (widgets → features → entities →) shared`
 - import 방향 규칙 (역방향 금지)
 - Slice 분해·추출 원칙
 - 네이밍 컨벤션 (kebab-case, Named Export)
 - ESLint 엔트리포인트 강제
+- Next.js 프로젝트 감지 시 라우팅 폴더/FSD 레이어 분리 규칙 자동 적용
 
-### 커맨드
+### 사용자 호출 스킬
 
-| 커맨드 | 설명 |
-|--------|------|
-| `/frontend:fe-init` | 새 프로젝트 생성 |
-| `/frontend:apply-architecture` | 기존 프로젝트에 아키텍처 적용 |
+| 스킬 | 호출 방법 | 설명 |
+|------|-----------|------|
+| `fe-init` | `/frontend:fe-init` | 새 프로젝트 생성 |
+| `apply-architecture` | `/frontend:apply-architecture` | 기존 프로젝트에 아키텍처 적용 |
 
 ---
 
@@ -39,7 +42,7 @@
 
 레이어드 아키텍처가 적용된 새 프론트엔드 프로젝트를 생성합니다.
 
-**기술 스택**
+**기술 스택 (Vite 템플릿 기준)**
 
 | 분류 | 기술 |
 |------|------|
@@ -56,6 +59,7 @@
 ## `/frontend:apply-architecture`
 
 기존 프로젝트의 구조를 분석하고, 레이어드 아키텍처로 단계별 전환합니다.
+React(Vite)와 Next.js(App Router / Pages Router) 프로젝트 모두 지원하며, 프레임워크를 자동 감지하여 적절한 구조를 적용합니다.
 각 Phase 완료 후 빌드 가능한 상태를 유지하며, 사용자 확인을 받고 다음 Phase로 진행합니다.
 
 | Phase | 내용 | 조건 |

@@ -1,6 +1,7 @@
 ---
 name: apply-architecture
 description: 기존 프론트엔드 프로젝트에 레이어드 아키텍처를 적용한다. 폴더 재구조화, API 패턴, query/mutation 팩토리까지 단계별로 진행.
+disable-model-invocation: true
 ---
 
 # 기존 프로젝트에 레이어드 아키텍처 적용

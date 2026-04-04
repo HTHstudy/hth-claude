@@ -1,6 +1,7 @@
 ---
 name: fe-init
 description: 레이어드 아키텍처가 적용된 새 프론트엔드 프로젝트를 생성한다. Vite + React + TypeScript 기반.
+disable-model-invocation: true
 ---
 
 # 프론트엔드 프로젝트 생성

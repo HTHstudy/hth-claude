@@ -48,12 +48,14 @@ curl -fsSL https://claude.ai/install.sh | bash
 
 ### 1. frontend (프론트엔드 아키텍처)
 
-레이어드 아키텍처 규칙을 자동 적용하고, 표준 프로젝트를 초기 세팅합니다.
+레이어드 아키텍처 규칙을 자동 적용하고, 표준 프로젝트를 초기 세팅합니다. React(Vite)와 Next.js(App Router / Pages Router) 모두 지원합니다.
 
-- **Skills**: architecture (자동 적용 — 레이어 구조, import 방향, 네이밍 컨벤션)
-- **Commands**: `/frontend:fe-init` (프로젝트 생성), `/frontend:apply-architecture` (기존 프로젝트 전환)
+- **Skills**:
+  - `architecture` — 프론트엔드 코드 작성·리뷰·리팩토링 시 레이어 아키텍처 규칙 자동 적용 (Next.js 감지 시 추가 규칙 자동 로드)
+  - `fe-init` — 레이어드 아키텍처 기반 새 프로젝트 생성 (`/frontend:fe-init`)
+  - `apply-architecture` — 기존 프로젝트를 레이어드 아키텍처로 단계별 전환 (`/frontend:apply-architecture`)
 - **Architecture**: `app → pages → (widgets → features → entities →) shared`
-- **Resources**: 레이어별 상세 규칙, shared/api 3계층 패턴, query/mutation factory 패턴
+- **Resources**: 레이어별 상세 규칙, shared/api 3계층 패턴, query/mutation factory 패턴, Next.js FSD 적용 가이드
 - **Docs**: [한국어](plugins/frontend/docs/ko/README.md) · [English](plugins/frontend/docs/en/README.md)
 
 ## 업데이트
@@ -71,13 +73,16 @@ hth-claude/
 │   └── frontend/                       # 프론트엔드 플러그인
 │       ├── .claude-plugin/plugin.json  # 플러그인 매니페스트
 │       ├── skills/
-│       │   └── architecture/           # 자동 적용 스킬
-│       │       ├── SKILL.md
-│       │       ├── layers/             # 레이어별 상세 규칙
-│       │       └── rules/              # Slice 공통 규칙
-│       ├── commands/                   # 사용자 호출 커맨드
-│       │   ├── fe-init.md              # 새 프로젝트 생성
-│       │   └── apply-architecture.md   # 기존 프로젝트 전환
+│       │   ├── architecture/           # 자동 적용 스킬
+│       │   │   ├── SKILL.md
+│       │   │   ├── implements/         # 프레임워크별 적용 가이드
+│       │   │   │   └── nextjs.md       # Next.js App Router / Pages Router
+│       │   │   ├── layers/             # 레이어별 상세 규칙
+│       │   │   └── rules/              # Slice 공통 규칙
+│       │   ├── fe-init/                # 새 프로젝트 생성 스킬
+│       │   │   └── SKILL.md
+│       │   └── apply-architecture/     # 기존 프로젝트 전환 스킬
+│       │       └── SKILL.md
 │       └── docs/                       # 한국어/영어 문서
 └── README.md
 ```
