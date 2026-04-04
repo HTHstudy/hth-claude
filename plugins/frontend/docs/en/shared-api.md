@@ -85,6 +85,13 @@ export { PRODUCT_STATUS } from './model';
 
 ### 4. Enforce with ESLint
 
+```
+✅ @shared/api/product                       (index.ts entrypoint)
+❌ @shared/api/product/endpoints/...         (direct internal access)
+❌ @shared/api/product/model                 (direct internal access)
+❌ @shared/api/product/product-http-client   (direct internal access)
+```
+
 ```js
 "no-restricted-imports": ["error", {
   patterns: [

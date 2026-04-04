@@ -75,8 +75,9 @@ hth-claude/
 │       ├── skills/
 │       │   ├── architecture/           # 자동 적용 스킬
 │       │   │   ├── SKILL.md
-│       │   │   ├── implements/         # 프레임워크별 적용 가이드
-│       │   │   │   └── nextjs.md       # Next.js App Router / Pages Router
+│       │   │   ├── integrations/       # 프레임워크별 적용 가이드
+│       │   │   │   ├── nextjs.md       # Next.js App Router / Pages Router
+│       │   │   │   └── nextjs-rsc-tanstack-query.md
 │       │   │   ├── layers/             # 레이어별 상세 규칙
 │       │   │   └── rules/              # Slice 공통 규칙
 │       │   ├── fe-init/                # 새 프로젝트 생성 스킬

@@ -77,7 +77,7 @@ src/
 
 #### Next.js 프로젝트 (App Router)
 
-[nextjs.md](../architecture/implements/nextjs.md)의 구조를 따른다. 핵심 원칙:
+[nextjs.md](../architecture/integrations/nextjs.md)의 구조를 따른다. 핵심 원칙:
 
 ```
 ├─ app/                # Next.js App Router (루트) — re-export 전용
@@ -102,9 +102,11 @@ src/
 
 #### Next.js 프로젝트 (Pages Router)
 
-[nextjs.md](../architecture/implements/nextjs.md)의 구조를 따른다. 핵심 원칙:
+[nextjs.md](../architecture/integrations/nextjs.md)의 구조를 따른다. 핵심 원칙:
 
 ```
+├─ app/                # 빈 폴더 (App Router 감지 방지)
+│  └─ README.md
 ├─ pages/              # Next.js Pages Router (루트) — re-export 전용
 │  ├─ _app.tsx         # src/app의 custom-app을 re-export
 │  └─ [route]/
@@ -117,6 +119,7 @@ src/
       └─ routes/
 ```
 
+- 루트에 빈 `app/` 폴더 + README.md를 생성한다.
 - 루트 `pages/`의 파일은 re-export만 수행한다.
 - `_app.tsx`의 실제 구현은 `src/app/custom-app.tsx`에 둔다.
 
@@ -316,6 +319,6 @@ useQuery(productQueries.list(params))
 - 각 Phase 시작 전에 반드시 사용자 확인을 받는다.
 - 파일 이동 시 `git mv`를 사용하여 히스토리를 보존한다.
 - 선택 레이어(widgets, features, entities)를 강제하지 않는다.
-- Next.js 프로젝트는 반드시 [nextjs.md](../architecture/implements/nextjs.md)를 참조하여 루트 라우팅 폴더와 `src/` FSD 레이어를 분리한다.
+- Next.js 프로젝트는 반드시 [nextjs.md](../architecture/integrations/nextjs.md)를 참조하여 루트 라우팅 폴더와 `src/` FSD 레이어를 분리한다.
 - 전환 과정에서 네이밍 컨벤션(kebab-case 파일명, Named Export)을 적용한다.
 - 각 Phase 완료 후 빌드가 정상인지 반드시 확인한다.

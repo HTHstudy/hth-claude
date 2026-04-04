@@ -18,17 +18,17 @@ query-factory and mutation-factory follow the same file layout.
 
 ```
 shared/[query-factory | mutation-factory]/
-├─ index.ts                         # Public interface
 ├─ default-[query|mutation]-keys.ts # Per-domain root keys
 ├─ product-[queries|mutations].ts   # Per-domain factory
 └─ auth-[queries|mutations].ts
 ```
 
+Barrel (`index.ts`) is not used. Import the file you need directly.
+
 **Role of each file:**
 
 - **`default-*-keys.ts`** — Manages root key values for each domain in one place. Prevents key collisions between domains and provides a single overview of all existing domains.
 - **`[domain]-*.ts`** — Separates each domain into its own file, keeping all keys and options for that domain together. Changing product doesn't affect auth.
-- **`index.ts`** — The only entry point for external imports. Internal file structure changes don't affect consumers.
 
 ---
 
@@ -87,7 +87,7 @@ detail(id)   → ['product', 'detail', id]      # Individual query
 ### Usage
 
 ```ts
-import { productQueries } from '@shared/query-factory';
+import { productQueries } from '@shared/query-factory/product-queries';
 
 // Query
 const { data } = useQuery(productQueries.list({ page: 1, size: 20 }));
@@ -168,8 +168,28 @@ export function useCreateAndPayOrder() {
 
 ---
 
+## Do / Don't
+
+### Do
+
+- Use `as const` on all key arrays.
+- Call APIs through the `[DOMAIN]_API` object.
+- Return `queryOptions()` / `mutationOptions()`.
+- Separate factory files by domain.
+- Generate queryKey / mutationKey only through factories.
+- Compose complex transaction logic in custom hooks.
+
+### Don't
+
+- Don't call `useQuery` / `useMutation` inside a factory. Factories return option objects only.
+- Don't transform response data in factories.
+- Don't write queryKey / mutationKey as raw strings outside the factory.
+- Don't put complex transaction flows in factories.
+- Don't put business logic in factories.
+
+---
+
 ## Adding a New Domain
 
 1. Add key to `default-query-keys.ts` / `default-mutation-keys.ts`
 2. Create `[domain]-queries.ts` / `[domain]-mutations.ts`
-3. Add export to `index.ts`

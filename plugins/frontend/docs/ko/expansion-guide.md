@@ -139,6 +139,7 @@ widget 자체를 이동하거나 widget 간 의존을 만들지 않습니다.
 
 모든 확장 레이어에 동일하게 적용되는 규칙:
 
+- **Slice 네이밍**: kebab-case 사용. 도메인 명사로 작명한다 (`product`, `add-to-cart`, `product-list-section`).
 - **Slice 내부 분해**: page와 같은 규칙. 미리 정해진 폴더 구조 없이 필요에 따라 분해.
 - **공개 인터페이스**: 외부는 `@[layer]/[slice]` entrypoint만 통해 접근. 내부 파일 직접 import 금지.
 - **같은 레이어 cross-import 금지**: cross-import가 필요한 순간이 이동할 시점.

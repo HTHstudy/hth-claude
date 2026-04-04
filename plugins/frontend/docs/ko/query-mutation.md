@@ -18,23 +18,31 @@ query-factory와 mutation-factory는 동일한 파일 구성을 따릅니다.
 
 ```
 shared/[query-factory | mutation-factory]/
-├─ index.ts                         # 공개 인터페이스
 ├─ default-[query|mutation]-keys.ts # 도메인별 기본 키
 ├─ product-[queries|mutations].ts   # 도메인별 팩토리
 └─ auth-[queries|mutations].ts
 ```
 
+barrel(`index.ts`)은 사용하지 않습니다. 외부에서 필요한 파일을 직접 import합니다.
+
 **각 파일의 역할:**
 
 - **`default-*-keys.ts`** — 도메인별 키의 루트 값을 한 곳에서 관리합니다. 도메인 간 키가 겹치는 것을 방지하고, 어떤 도메인이 존재하는지 한눈에 파악할 수 있습니다.
 - **`[domain]-*.ts`** — 도메인별로 파일을 분리하여, 해당 도메인의 모든 키와 옵션을 한 곳에서 관리합니다. product를 수정할 때 auth에 영향을 주지 않습니다.
-- **`index.ts`** — 외부에서 import하는 유일한 진입점입니다. 내부 파일 구조가 바뀌어도 외부 코드에 영향이 없습니다.
 
 ---
 
 ## Query Factory
 
 ### 기본 쿼리 키와 도메인별 팩토리
+
+```ts
+// default-query-keys.ts
+export const DEFAULT_QUERY_KEYS = {
+  product: 'product',
+  auth: 'auth',
+} as const;
+```
 
 ```ts
 // product-queries.ts
@@ -79,7 +87,7 @@ detail(id)   → ['product', 'detail', id]      # 개별 쿼리
 ### 사용
 
 ```ts
-import { productQueries } from '@shared/query-factory';
+import { productQueries } from '@shared/query-factory/product-queries';
 
 // 쿼리 사용
 const { data } = useQuery(productQueries.list({ page: 1, size: 20 }));
@@ -92,16 +100,6 @@ queryClient.invalidateQueries({ queryKey: productQueries.listKeys() });
 ---
 
 ## Mutation Factory
-
-### 구조
-
-```
-shared/mutation-factory/
-├─ index.ts
-├─ default-mutation-keys.ts
-├─ product-mutations.ts
-└─ auth-mutations.ts
-```
 
 ### 도메인별 팩토리
 
@@ -170,8 +168,28 @@ export function useCreateAndPayOrder() {
 
 ---
 
+## Do / Don't
+
+### Do
+
+- 모든 키 배열에 `as const`를 붙인다.
+- `[DOMAIN]_API`를 통해 API를 호출한다.
+- `queryOptions()` / `mutationOptions()`를 반환한다.
+- 도메인별로 팩토리 파일을 분리한다.
+- queryKey / mutationKey를 팩토리를 통해서만 생성한다.
+- 복합 트랜잭션 로직은 커스텀 훅에서 조합한다.
+
+### Don't
+
+- 팩토리에서 `useQuery` / `useMutation`을 호출하지 않는다. 팩토리는 옵션 객체만 반환한다.
+- 팩토리에서 응답 데이터를 변환하지 않는다.
+- queryKey / mutationKey를 팩토리 밖에서 문자열로 직접 작성하지 않는다.
+- 복합 트랜잭션 흐름을 팩토리에 넣지 않는다.
+- 비즈니스 로직을 팩토리에 두지 않는다.
+
+---
+
 ## 새 도메인 추가 순서
 
 1. `default-query-keys.ts` / `default-mutation-keys.ts`에 키 추가
 2. `[domain]-queries.ts` / `[domain]-mutations.ts` 생성
-3. `index.ts`에 export 추가

@@ -18,7 +18,8 @@ description: 프론트엔드 아키텍처 규칙. React, Next.js 프로젝트에
 이 스킬이 적용되면 아래 행동을 따른다.
 
 ### Next.js 프로젝트 감지 시 필수 행동
-Next.js 프로젝트(`package.json`에 `next` 의존성 존재)를 감지하면 [nextjs.md](implements/nextjs.md)를 **반드시 읽고** 해당 규칙을 적용한다. 이 단계를 건너뛰지 않는다.
+Next.js 프로젝트(`package.json`에 `next` 의존성 존재)를 감지하면 [nextjs.md](integrations/nextjs.md)를 **반드시 읽고** 해당 규칙을 적용한다. 이 단계를 건너뛰지 않는다.
+추가로 App Router + TanStack Query를 함께 사용하는 프로젝트를 감지하면 [nextjs-rsc-tanstack-query.md](integrations/nextjs-rsc-tanstack-query.md)도 **반드시 읽고** 적용한다.
 
 ### 코드 작성 시
 - 모든 코드를 이 규칙에 맞춰 생성한다.
@@ -31,7 +32,7 @@ Next.js 프로젝트(`package.json`에 `next` 의존성 존재)를 감지하면 
 
 ### 구조 적용 시 (새 프로젝트 또는 기존 프로젝트)
 프로젝트 src/ 구조를 분석하고 아래 체크리스트를 **모두** 완료한다.
-**Next.js 프로젝트인 경우** [nextjs.md](implements/nextjs.md)를 반드시 읽고 적용한다.
+**Next.js 프로젝트인 경우** [nextjs.md](integrations/nextjs.md)를 반드시 읽고 적용한다.
 
 **필수 구조:**
 - [ ] `src/app/` 생성 — App.tsx, providers.tsx, router.tsx, global.css
@@ -62,7 +63,8 @@ Next.js 프로젝트(`package.json`에 `next` 의존성 존재)를 감지하면 
 - shared 레이어 상세 → [shared.md](layers/shared.md)
 - 선택 레이어(entities/features/widgets) 상세 → [optional-layers.md](layers/optional-layers.md)
 - Slice 공통 규칙(인터페이스/분해/추출) → [rules.md](rules/rules.md)
-- Next.js 프로젝트 적용 가이드 → [nextjs.md](implements/nextjs.md)
+- Next.js 프로젝트 적용 가이드 → [nextjs.md](integrations/nextjs.md)
+- RSC + TanStack Query 패턴 → [nextjs-rsc-tanstack-query.md](integrations/nextjs-rsc-tanstack-query.md)
 
 ---
 

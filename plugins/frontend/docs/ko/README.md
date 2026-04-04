@@ -26,6 +26,8 @@ app → pages → widgets → features → entities → shared
 | [레이어 가이드](layers.md) | 각 레이어의 역할, 관계, 언제 도입하는가 |
 | [Shared API](shared-api.md) | API 레이어 구조, 도메인별 패턴, 데이터 변환 |
 | [Query & Mutation Factory](query-mutation.md) | TanStack Query 팩토리 패턴 |
+| [Next.js 적용](nextjs.md) | Next.js 프로젝트에서의 구조 분리와 라우팅 매핑 |
+| [RSC + TanStack Query](nextjs-rsc-tanstack-query.md) | Server Components 환경에서의 데이터 페칭 패턴 |
 | [확장 가이드](expansion-guide.md) | widgets, features, entities 도입 시점과 방법 |
 
 ---

@@ -139,6 +139,7 @@ Don't move the widget or create dependencies between widgets.
 
 Rules that apply equally to all expansion layers:
 
+- **Slice naming**: Use kebab-case. Name after domain nouns (`product`, `add-to-cart`, `product-list-section`).
 - **Slice decomposition**: Same rules as pages. No predefined folder structure — decompose as needed.
 - **Public interface**: External access only through `@[layer]/[slice]` entrypoint. Direct import of internal files is forbidden.
 - **Same-layer cross-import ban**: When cross-import is needed, that's the signal to move to a wider scope.

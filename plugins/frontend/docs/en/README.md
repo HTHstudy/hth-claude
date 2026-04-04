@@ -26,6 +26,8 @@ app → pages → widgets → features → entities → shared
 | [Layer Guide](layers.md) | Role and relationship of each layer, when to introduce |
 | [Shared API](shared-api.md) | API layer structure, domain patterns, data transformation |
 | [Query & Mutation Factory](query-mutation.md) | TanStack Query factory patterns |
+| [Next.js Guide](nextjs.md) | Structure separation and routing mapping for Next.js |
+| [RSC + TanStack Query](nextjs-rsc-tanstack-query.md) | Data fetching patterns with Server Components |
 | [Expansion Guide](expansion-guide.md) | When and how to introduce widgets, features, entities |
 
 ---

@@ -144,6 +144,8 @@ src/pages/
 ### 폴더 구조
 
 ```txt
+├── app/                        ← 빈 폴더 (App Router 감지 방지용)
+│   └── README.md
 ├── pages/                      ← Next.js Pages Router (루트)
 │   ├── _app.tsx
 │   ├── api/
@@ -197,6 +199,18 @@ export function CustomApp({ Component, pageProps }: AppProps) {
 
 // pages/_app.tsx
 export { CustomApp as default } from '@app/custom-app';
+```
+
+### 빈 app 폴더
+
+루트에 빈 `app/` 폴더를 반드시 생성한다. Next.js가 `src/app/`을 App Router 디렉토리로 감지하여 "`pages` and `app` directories should be under the same folder" 빌드 에러를 일으키는 것을 방지한다.
+`app/README.md`에 이 폴더의 용도를 기재한다.
+
+```markdown
+<!-- app/README.md -->
+이 폴더는 비어 있어야 합니다.
+Next.js가 src/app/을 App Router로 감지하여 빌드 에러를 일으키는 것을 방지하기 위해 존재합니다.
+FSD app 레이어는 src/app/에 위치합니다.
 ```
 
 ---
@@ -264,6 +278,7 @@ src/shared/api  →  fetch('/api/...')  ✅  (shared/api endpoint에서 HTTP 호
 | `instrumentation.ts` | 프로젝트 루트 | Next.js 요구사항 |
 | `next.config.js` | 프로젝트 루트 | — |
 | 빈 `pages/` 폴더 | 프로젝트 루트 | App Router 사용 시 필수 |
+| 빈 `app/` 폴더 | 프로젝트 루트 | Pages Router 사용 시 필수 |
 
 ---
 
@@ -280,6 +295,7 @@ SKILL.md의 기본 체크리스트 대신 아래를 따른다:
 - [ ] `src/shared/routes/paths.ts` 생성 — 경로 상수
 - [ ] `src/shared/config/env.ts` 생성 — 환경변수 관리
 - [ ] App Router 사용 시: 루트에 빈 `pages/` 폴더 + README.md 생성
+- [ ] Pages Router 사용 시: 루트에 빈 `app/` 폴더 + README.md 생성
 
 **필수 설정:**
 - [ ] tsconfig path alias — 레이어별 alias만 허용(`@app/*`, `@pages/*`, `@shared/*` 등, `src/` 기준). 전체 소스를 잡는 포괄적 alias(`@/*` 등)는 사용하지 않는다. Next.js 기본 `@/*` alias가 있으면 제거한다.

@@ -56,7 +56,7 @@ Start with the simplest form. A single file, or a folder with `index.tsx`.
 
 As complexity grows, break it into large components, then decompose further as needed. Depth itself is not a problem. Judge decomposition by the number of independent responsibilities.
 
-Private folders like `_ui/`, `_hooks/`, `_lib/` are not created upfront. Only group extracted files when several actually accumulate.
+Private folders like `_ui/`, `_hooks/`, `_context/`, `_lib/` are not created upfront. Only group extracted files when several actually accumulate.
 
 ### Nested routes
 

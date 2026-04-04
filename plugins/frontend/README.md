@@ -8,6 +8,15 @@
 /plugin install frontend@hth-plugins
 ```
 
+## 시작하기
+
+설치 후 아래 스킬 중 하나를 먼저 실행하세요. `architecture` 스킬이 자동 로드되어 이후 모든 프론트엔드 코드 작성에 아키텍처 규칙이 적용됩니다.
+
+| 상황 | 실행 |
+|------|------|
+| 새 프로젝트 시작 | `/frontend:fe-init` |
+| 기존 프로젝트에 적용 | `/frontend:apply-architecture` |
+
 ---
 
 ## 제공 기능

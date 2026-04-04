@@ -85,6 +85,13 @@ export { PRODUCT_STATUS } from './model';
 
 ### 4. ESLint로 내부 접근 차단
 
+```
+✅ @shared/api/product                       (index.ts entrypoint)
+❌ @shared/api/product/endpoints/...         (내부 파일 직접 접근)
+❌ @shared/api/product/model                 (내부 파일 직접 접근)
+❌ @shared/api/product/product-http-client   (내부 파일 직접 접근)
+```
+
 ```js
 "no-restricted-imports": ["error", {
   patterns: [
