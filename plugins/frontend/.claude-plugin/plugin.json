@@ -6,6 +6,5 @@
     "name": "하태현",
     "email": "taehyen11@gmail.com"
   },
-  "skills": "./skills/",
-  "commands": "./commands/"
+  "skills": "./skills/"
 }
