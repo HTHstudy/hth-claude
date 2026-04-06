@@ -21,7 +21,7 @@ re-export되는 FSD page는 Server Component일 수도, Client Component일 수�
 // src/app/providers.tsx
 'use client';
 
-import { isServer, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { environmentManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 function makeQueryClient() {
   return new QueryClient({
@@ -34,7 +34,7 @@ function makeQueryClient() {
 let browserQueryClient: QueryClient | undefined;
 
 function getQueryClient() {
-  if (isServer) return makeQueryClient();
+  if (environmentManager.isServer()) return makeQueryClient();
   if (!browserQueryClient) browserQueryClient = makeQueryClient();
   return browserQueryClient;
 }

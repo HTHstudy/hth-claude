@@ -37,7 +37,7 @@ page 일부만 클라이언트 기능이 필요하면 해당 컴포넌트에만 
 // src/app/providers.tsx
 'use client';
 
-import { isServer, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { environmentManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 function makeQueryClient() {
   return new QueryClient({
@@ -50,7 +50,7 @@ function makeQueryClient() {
 let browserQueryClient: QueryClient | undefined;
 
 function getQueryClient() {
-  if (isServer) return makeQueryClient();
+  if (environmentManager.isServer()) return makeQueryClient();
   if (!browserQueryClient) browserQueryClient = makeQueryClient();
   return browserQueryClient;
 }

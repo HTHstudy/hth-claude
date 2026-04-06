@@ -104,7 +104,7 @@ src/
 도구 설정:
 - `tsconfig.json` (또는 `tsconfig.app.json`)에 경로 별칭 추가 (`src/` 기준)
 - ESLint `no-restricted-imports` 추가
-- Vite 사용 시 `vite-tsconfig-paths` 플러그인 추가
+- Vite 사용 시 `resolve.tsconfigPaths: true` 설정
 - Next.js 사용 시 `next.config.js` 설정 확인
 
 ### 5단계: 빌드 검증

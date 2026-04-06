@@ -43,7 +43,7 @@ cd [project-name]
 
 ```bash
 yarn add react-router@^[조회버전] @tanstack/react-query@^[조회버전] axios@^[조회버전]
-yarn add -D @tailwindcss/vite@^[조회버전] tailwindcss@^[조회버전] vite-tsconfig-paths@^[조회버전] prettier@^[조회버전] eslint-config-prettier@^[조회버전]
+yarn add -D @tailwindcss/vite@^[조회버전] tailwindcss@^[조회버전] prettier@^[조회버전] eslint-config-prettier@^[조회버전]
 ```
 
 ### 3단계: 아키텍처 구조로 재구성
@@ -72,17 +72,16 @@ src/
 ```
 
 - Vite 기본 파일 제거: `App.css`, `index.css`, `App.tsx` (아키텍처 구조로 대체)
-- `vite.config.ts` 수정: Tailwind 플러그인 및 `vite-tsconfig-paths` 플러그인 추가
+- `vite.config.ts` 수정: Tailwind 플러그인 추가 및 `resolve.tsconfigPaths: true` 설정
 - `global.css` 수정: `@import 'tailwindcss'`
 
 ### 4단계: 설정
 
-**경로 별칭** — `tsconfig.app.json`의 `compilerOptions`에 `baseUrl`과 `paths`만 추가한다. 기존 옵션은 수정하지 않고 `ignoreDeprecations` 같은 옵션을 임의로 추가하지 않는다:
+**경로 별칭** — `tsconfig.app.json`의 `compilerOptions`에 `paths`만 추가한다. `baseUrl`은 TypeScript 7.0에서 제거 예정이므로 사용하지 않는다. 기존 옵션은 수정하지 않는다:
 
 ```json
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
       "@app/*": ["./src/app/*"],
       "@pages/*": ["./src/pages/*"],

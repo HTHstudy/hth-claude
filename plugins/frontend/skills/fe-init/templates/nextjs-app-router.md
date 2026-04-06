@@ -130,7 +130,7 @@ export { HomePage as default } from '@pages/home';
 ```tsx
 'use client';
 
-import { isServer, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { environmentManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 function makeQueryClient() {
   return new QueryClient({
@@ -143,7 +143,7 @@ function makeQueryClient() {
 let browserQueryClient: QueryClient | undefined;
 
 function getQueryClient() {
-  if (isServer) return makeQueryClient();
+  if (environmentManager.isServer()) return makeQueryClient();
   if (!browserQueryClient) browserQueryClient = makeQueryClient();
   return browserQueryClient;
 }
@@ -180,12 +180,11 @@ FSD pages 레이어는 src/pages/에 위치합니다.
 
 ### 5단계: 설정
 
-**경로 별칭** — `tsconfig.json`에서 `create-next-app`의 기본 `@/*` alias를 제거하고 레이어별 alias로 교체한다. 기존 옵션은 수정하지 않고 `ignoreDeprecations` 같은 옵션을 임의로 추가하지 않는다:
+**경로 별칭** — `tsconfig.json`에서 `create-next-app`의 기본 `@/*` alias를 제거하고 레이어별 alias로 교체한다. `baseUrl`은 TypeScript 7.0에서 제거 예정이므로 사용하지 않는다. 기존 옵션은 수정하지 않는다:
 
 ```json
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
       "@app/*": ["./src/app/*"],
       "@pages/*": ["./src/pages/*"],
