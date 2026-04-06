@@ -45,7 +45,7 @@ Next.js 프로젝트(`package.json`에 `next` 의존성 존재)를 감지하면 
 **필수 설정:**
 - [ ] tsconfig path alias — 레이어별 alias만 허용(`@app/*`, `@pages/*`, `@shared/*`, `@widgets/*`, `@features/*`, `@entities/*`). 전체 소스를 잡는 포괄적 alias(`@/*` 등)는 사용하지 않는다.
 - [ ] ESLint `no-restricted-imports` — `@pages/*/*`, `@shared/api/*/*` 등 Slice 내부 직접 접근 차단
-- [ ] vite.config.ts — `tsconfigPaths` 활성화
+- [ ] vite.config.ts — `resolve.tsconfigPaths: true` 설정
 - [ ] `.prettierrc` 설정
 
 **기존 코드 재배치:**
