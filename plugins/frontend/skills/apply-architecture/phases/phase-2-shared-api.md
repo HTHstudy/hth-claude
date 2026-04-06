@@ -53,7 +53,7 @@ shared/api/[domain]/
 
 ```bash
 git add -A
-git commit -m "refactor: apply shared/api 3-layer structure"
+git commit -m "refactor: shared/api 3계층 구조 적용"
 ```
 
 **사용자에게 Phase 2 완료를 알리고, Phase 3 진행 여부를 확인한다.**

@@ -1,17 +1,12 @@
 # Phase 1: 구조 전환
 
-### 1단계: 현재 구조 분석
+### 1단계: Phase 0 평가 확인
 
-프로젝트 루트부터 전체 구조를 읽고 파악한다:
-- 프레임워크 확인 (`package.json`, 설정 파일 기반 — React, Next.js, Remix 등)
-- 소스 코드 루트 확인 (`src/`, `app/`, 프로젝트 루트 등 프레임워크마다 다름)
-- 현재 폴더 구조와 파일 위치
-- 기존 경로 별칭과 설정 파일 (`tsconfig.json`, `vite.config.ts` 등)
-- 패키지 매니저 (yarn, npm, pnpm — lock 파일로 판단)
-- 기존 API 호출 코드 위치와 패턴
-- 기존 상태 관리 방식 (TanStack Query 사용 여부 등)
+`.architecture-migration/assessment.md`를 읽고 프로젝트 정보를 확인한다:
+- 프레임워크, 빌드 도구, 소스 루트, 패키지 매니저
+- 복잡도 등급과 적용 대상 Phase
 
-변경 전에 현재 구조를 사용자에게 보고한다.
+현재 폴더 구조와 파일 위치를 파악하고, 변경 전 현재 구조를 사용자에게 보고한다.
 
 ### 2단계: 전환 계획 수립
 
@@ -109,7 +104,7 @@ src/
 도구 설정:
 - `tsconfig.json` (또는 `tsconfig.app.json`)에 경로 별칭 추가 (`src/` 기준)
 - ESLint `no-restricted-imports` 추가
-- Vite 사용 시 `tsconfigPaths` 활성화
+- Vite 사용 시 `vite-tsconfig-paths` 플러그인 추가
 - Next.js 사용 시 `next.config.js` 설정 확인
 
 ### 5단계: 빌드 검증
@@ -124,7 +119,7 @@ src/
 
 ```bash
 git add -A
-git commit -m "refactor: restructure folders to layered architecture"
+git commit -m "refactor: 레이어드 아키텍처 폴더 구조 전환"
 ```
 
 **사용자에게 Phase 1 완료를 알리고, Phase 2 진행 여부를 확인한다.**

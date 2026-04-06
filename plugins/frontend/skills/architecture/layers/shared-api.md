@@ -77,7 +77,7 @@ shared/api/
 `model.ts`는 백엔드 계약만 정의한다. 프론트엔드 표현 관심사는 API를 소비하는 상위 레이어에 둔다.
 endpoint 전용 요청/응답 타입은 `model.ts`가 아닌 해당 `endpoints/*.ts`에 둔다.
 
-둘 이상의 endpoint 또는 외부 consumer가 공유하는 도메인 개념이 없으면 `model.ts`를 생성하지 않는다.
+둘 이상의 endpoint 또는 외부 consumer가 공유하는 도메인 타입이 없으면 `model.ts`를 생성하지 않는다.
 
 ```ts
 // model.ts
@@ -103,6 +103,7 @@ export type ProductItem = {
 
 **허용되는 변환:**
 - Axios 응답 객체에서 `response.data`를 꺼내 반환하는 것
+- 백엔드 공통 응답 래퍼(예: `{ data: T, success: boolean }`)에서 실제 데이터(`T`)까지 꺼내 반환하는 것. 단, 공통 응답 타입이 `base/types.ts`에 정의되어 있어야 한다.
 
 **금지되는 변환:**
 - 필드명 변경 (snake_case → camelCase 포함)
@@ -261,7 +262,7 @@ import { productHttpClient } from '@shared/api/product/product-http-client';
 1. `shared/api/[domain]/` 폴더를 생성한다.
 2. `[domain]-http-client.ts` — `base-http-client.ts`를 확장한 HTTP 클라이언트를 작성한다.
 3. `endpoints/` — 엔드포인트별 파일을 작성한다. 함수와 req/res 타입을 한 파일에 둔다.
-4. `model.ts` — 둘 이상의 endpoint 또는 외부 consumer가 공유하는 도메인 개념이 있을 때만 생성한다.
+4. `model.ts` — 둘 이상의 endpoint 또는 외부 consumer가 공유하는 도메인 타입이 있을 때만 생성한다.
 5. `index.ts` — `[DOMAIN]_API` 객체를 export하고, 외부 필요 타입만 re-export한다.
 6. ESLint `no-restricted-imports`에 해당 도메인 패턴을 추가한다.
 
@@ -333,4 +334,4 @@ export type { [DomainEntity] } from './model';
 - `index.ts`에서 API 함수를 개별 named export로 내보내지 않는다.
 - `index.ts`에서 `export *`를 사용하지 않는다.
 - endpoint 전용 req/res 타입을 `model.ts`에 두지 않는다. 해당 `endpoints/*.ts`에 둔다.
-- 둘 이상의 endpoint 또는 외부 consumer가 공유하는 도메인 개념이 없는데 `model.ts`를 생성하지 않는다.
+- 둘 이상의 endpoint 또는 외부 consumer가 공유하는 도메인 타입이 없는데 `model.ts`를 생성하지 않는다.

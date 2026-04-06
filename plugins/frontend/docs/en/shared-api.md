@@ -33,7 +33,7 @@ shared/api/
 
 ### 1. Endpoints don't transform
 
-Endpoint files contain the API function and its request/response types together. The only allowed transformation is unwrapping `response.data`.
+Endpoint files contain the API function and its request/response types together. The allowed transformations are unwrapping `response.data` and extracting the actual data from a common backend response wrapper (e.g., `{ data: T }`). The common response type must be defined in `base/types.ts`.
 
 Field renaming, data sorting, default injection, and type conversion are all forbidden. Response types are defined exactly as the backend returns them.
 
@@ -43,7 +43,7 @@ When data transformation is needed, **the API consumer handles it**.
 
 Only domain entities and state types shared by 2+ endpoints go here. Frontend display concerns (label mapping, transformation, derived rules) belong in the upper layer consuming the API.
 
-If there is no shared domain concept, don't create model.ts.
+If there is no shared domain type, don't create model.ts.
 
 ```ts
 // model.ts — backend contract types only

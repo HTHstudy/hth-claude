@@ -19,3 +19,8 @@
 **다음 작업 제안:**
 - 즉시 처리하면 좋을 후속 작업 목록
 - 코드가 더 쌓인 후 검토할 사항
+
+### 정리
+
+- `.architecture-migration/` 디렉토리를 삭제한다 (Phase 0에서 생성한 평가 보고서)
+- `.gitignore`에 추가했던 `.architecture-migration/` 항목을 제거한다

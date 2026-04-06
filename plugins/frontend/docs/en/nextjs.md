@@ -49,15 +49,47 @@ Root routing files contain no logic. They serve as thin wrappers that re-export 
 
 Root `app/` `page.tsx` files only re-export FSD pages.
 
+**Default: re-export** — when only rendering:
+
 ```ts
 // app/page.tsx
 export { HomePage as default } from '@pages/home';
 
 // app/products/page.tsx
 export { ProductsPage as default } from '@pages/products';
+```
 
+**import + export default** — when Next.js page-level features are needed:
+
+Use this pattern when you need dynamic route params, `generateMetadata`, `generateStaticParams`, `searchParams`, or server-side data loading.
+
+```ts
 // app/products/[id]/page.tsx
-export { ProductDetailPage as default } from '@pages/product-detail';
+import { ProductDetailPage } from '@pages/product-detail';
+
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <ProductDetailPage id={id} />;
+}
+```
+
+When `generateMetadata` needs an API call, importing `@shared/api` directly in root `app/` files is allowed. This is because Next.js forces `generateMetadata` to be exported only from `page.tsx`.
+
+```ts
+// app/products/[id]/page.tsx
+import { ProductDetailPage } from '@pages/product-detail';
+import { PRODUCT_API } from '@shared/api/product';
+
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <ProductDetailPage id={id} />;
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const product = await PRODUCT_API.getProduct({ id });
+  return { title: product.name, description: product.description };
+}
 ```
 
 ### layout.tsx

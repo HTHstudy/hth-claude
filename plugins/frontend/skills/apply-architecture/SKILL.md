@@ -19,10 +19,37 @@ disable-model-invocation: true
 ## 실행 전 상태 확인
 
 커맨드 실행 시 프로젝트의 현재 상태를 먼저 분석하여, 이미 적용된 항목을 판별한다:
-- `app/`, `pages/`, `shared/` 구조가 존재하는가 → Phase 1 완료 여부
-- `shared/api/base/`와 도메인별 3계층 구조가 존재하는가 → Phase 2 완료 여부
-- `shared/query-factory/`, `shared/mutation-factory/`가 존재하는가 → Phase 3 완료 여부
-- path alias, ESLint 규칙이 설정되어 있는가
+
+### 1. 비정상 종료 감지
+
+`git status`로 커밋되지 않은 변경사항이 있는지 확인한다.
+
+변경사항이 있으면 이전 세션에서 Phase 진행 중 종료된 것이다:
+1. 사용자에게 상황을 보고한다: "이전 세션에서 Phase 진행 중 종료된 것으로 보입니다."
+2. 변경사항을 버리고 해당 Phase를 재시작할지 확인한다
+3. 사용자가 동의하면 `git checkout .`으로 미완성 변경사항을 정리한다
+4. 이전 Phase까지의 커밋은 보존된다
+
+### 2. 완료된 Phase 판별
+
+두 가지 기준으로 판별한다:
+
+**기준 A — 커밋 메시지** (`git log --oneline`):
+- `refactor: 레이어드 아키텍처 폴더 구조 전환` → Phase 1 완료
+- `refactor: shared/api 3계층 구조 적용` → Phase 2 완료
+- `refactor: query/mutation 팩토리 패턴 적용` → Phase 3 완료
+- `refactor: 코드 정리 및 shared 모듈 세분화` → Phase 4 완료
+
+**기준 B — 프로젝트 구조** (수동 작업 감지용):
+- `.architecture-migration/assessment.md` 존재 → Phase 0 완료
+- `app/`, `pages/`, `shared/` 구조 존재 → Phase 1 완료 가능성
+- `shared/api/base/` + 도메인별 3계층 구조 존재 → Phase 2 완료 가능성
+- `shared/query-factory/`, `shared/mutation-factory/` 존재 → Phase 3 완료 가능성
+
+**판별 로직:**
+- 커밋 있음 → 해당 Phase 완료 확정
+- 커밋 없음 + 구조 있음 → 사용자에게 확인 ("Phase N이 수동으로 진행된 것으로 보입니다. 완료된 것으로 간주할까요?")
+- 둘 다 없음 → 미완료
 
 분석 결과를 사용자에게 보고하고, 미완료 Phase부터 진행한다.
 
@@ -84,13 +111,12 @@ Phase 상세 문서는 **해당 Phase에 진입할 때만** 읽는다. 모든 Ph
 
 | Phase | 커밋 메시지 |
 |-------|-------------|
-| Phase 0 | `refactor: assess project for architecture migration` |
-| Phase 1 | `refactor: restructure folders to layered architecture` |
-| Phase 2 | `refactor: apply shared/api 3-layer structure` |
-| Phase 3 | `refactor: apply query/mutation factory pattern` |
-| Phase 4 | `refactor: cleanup and segment shared modules` |
+| Phase 1 | `refactor: 레이어드 아키텍처 폴더 구조 전환` |
+| Phase 2 | `refactor: shared/api 3계층 구조 적용` |
+| Phase 3 | `refactor: query/mutation 팩토리 패턴 적용` |
+| Phase 4 | `refactor: 코드 정리 및 shared 모듈 세분화` |
 
-Phase 5는 보고서만 생성하므로 커밋 불필요.
+Phase 0은 분석만 수행하므로 커밋 불필요. Phase 5는 보고서만 생성하므로 커밋 불필요.
 
 **커밋 절차:**
 1. 빌드가 정상인지 확인한다

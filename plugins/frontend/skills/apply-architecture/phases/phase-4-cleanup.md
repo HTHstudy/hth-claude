@@ -34,7 +34,7 @@
 
 ```bash
 git add -A
-git commit -m "refactor: cleanup and segment shared modules"
+git commit -m "refactor: 코드 정리 및 shared 모듈 세분화"
 ```
 
 **사용자에게 Phase 4 완료를 알리고, Phase 5 진행 여부를 확인한다.**

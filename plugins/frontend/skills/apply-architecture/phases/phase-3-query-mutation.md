@@ -49,7 +49,7 @@ useQuery(productQueries.list(params))
 
 ```bash
 git add -A
-git commit -m "refactor: apply query/mutation factory pattern"
+git commit -m "refactor: query/mutation 팩토리 패턴 적용"
 ```
 
 사용자에게 Phase 3 완료를 알리고, Phase 4 진행 여부를 확인한다.

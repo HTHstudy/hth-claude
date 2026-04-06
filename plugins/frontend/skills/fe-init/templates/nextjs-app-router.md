@@ -33,11 +33,12 @@
 버전 관리 정책에 따라 `next` 패키지의 안정 버전을 조회한 뒤 실행한다.
 
 ```bash
-npx create-next-app@[조회버전] [project-name] --typescript --tailwind --eslint --app --src-dir --use-yarn
+npx create-next-app@[조회버전] [project-name] --typescript --tailwind --eslint --app --use-yarn
 cd [project-name]
 ```
 
-> `--src-dir` 플래그로 `src/` 디렉토리를 활성화한다. `--import-alias`는 지정하지 않는다 — 5단계에서 레이어별 alias로 교체한다.
+> `--src-dir`는 사용하지 않는다. 루트 `app/`이 Next.js 라우팅 디렉토리가 되고, `src/`는 FSD 레이어 전용으로 수동 생성한다.
+> `--import-alias`는 지정하지 않는다 — 5단계에서 레이어별 alias로 교체한다.
 
 ### 2단계: 추가 의존성 설치
 
@@ -52,40 +53,51 @@ yarn add -D prettier@^[조회버전] eslint-config-prettier@^[조회버전]
 
 Next.js의 기본 구조를 FSD 레이어드 아키텍처로 전환한다. 상세 규칙: [nextjs.md](../../architecture/integrations/nextjs.md)
 
+> **핵심 원칙:** 루트 `app/`은 Next.js 라우팅 전용(re-export만), `src/`는 FSD 레이어 전용. 이 두 영역은 반드시 분리한다.
+
+**최종 구조:**
+
 ```
+[project-name]/
 ├─ app/                        # Next.js App Router (루트) — re-export 전용
 │  ├─ layout.tsx               # src/app의 providers, global.css를 조립
-│  ├─ page.tsx                 # src/pages의 home을 re-export
-│  └─ globals.css              # 삭제 → src/app/global.css로 이동
+│  └─ page.tsx                 # src/pages/home을 re-export
 ├─ pages/                      # 빈 폴더 (Pages Router 폴백 방지)
 │  └─ README.md
-└─ src/
-   ├─ app/                     # FSD app 레이어
-   │  ├─ providers.tsx         # QueryClientProvider (client component)
-   │  └─ global.css            # Tailwind: @import 'tailwindcss'
-   ├─ pages/                   # FSD pages 레이어
-   │  └─ home.tsx              # 홈 페이지
-   └─ shared/
-      ├─ api/
-      │  └─ base/
-      │     └─ base-http-client.ts
-      ├─ config/
-      │  └─ env.ts
-      └─ routes/
-         └─ paths.ts
+├─ src/                        # FSD 레이어 (수동 생성)
+│  ├─ app/                     # FSD app 레이어
+│  │  ├─ providers.tsx         # QueryClientProvider (client component)
+│  │  └─ global.css            # Tailwind: @import 'tailwindcss'
+│  ├─ pages/                   # FSD pages 레이어
+│  │  └─ home.tsx              # 홈 페이지
+│  └─ shared/
+│     ├─ api/
+│     │  └─ base/
+│     │     └─ base-http-client.ts
+│     ├─ config/
+│     │  └─ env.ts
+│     └─ routes/
+│        └─ paths.ts
+└─ ...설정 파일들
 ```
 
-**주요 변경:**
-- `create-next-app`이 생성한 `src/app/` 내용물을 정리:
-  - `globals.css` → `src/app/global.css`로 이동 (Tailwind import만 유지)
-  - `page.tsx`, `page.module.css` → 삭제 (FSD pages로 대체)
-  - `layout.tsx` → 루트 `app/layout.tsx`로 이동 (re-export 패턴 적용)
-- `src/pages/`, `src/shared/` 생성
-- 루트에 빈 `pages/` 폴더 + README.md 생성
+**구체적 작업:**
+
+1. `create-next-app`이 루트 `app/`에 생성한 파일들을 정리:
+   - `app/globals.css` → 삭제 (아래에서 `src/app/global.css`로 대체)
+   - `app/page.tsx` → re-export 패턴으로 교체
+   - `app/page.module.css` → 삭제
+   - `app/layout.tsx` → re-export 패턴으로 교체
+   - `app/favicon.ico` → `public/`에 그대로 유지
+2. `src/` 디렉토리 수동 생성 후 FSD 레이어 배치:
+   - `src/app/` — providers.tsx, global.css
+   - `src/pages/` — home.tsx
+   - `src/shared/` — api, config, routes
+3. 루트에 빈 `pages/` 폴더 + README.md 생성
 
 ### 4단계: 핵심 파일 작성
 
-**루트 `app/layout.tsx`** — providers와 global style 조립:
+**루트 `app/layout.tsx`** — providers와 global style 조립 (re-export 역할):
 
 ```tsx
 import '@app/global.css';
@@ -144,6 +156,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
 }
 ```
 
+**`src/app/global.css`** — Tailwind:
+
+```css
+@import 'tailwindcss';
+```
+
 **`src/pages/home.tsx`** — 홈 페이지:
 
 ```tsx
@@ -162,7 +180,7 @@ FSD pages 레이어는 src/pages/에 위치합니다.
 
 ### 5단계: 설정
 
-**경로 별칭** — `tsconfig.json`에서 `create-next-app`의 기본 `@/*` alias를 제거하고 레이어별 alias로 교체:
+**경로 별칭** — `tsconfig.json`에서 `create-next-app`의 기본 `@/*` alias를 제거하고 레이어별 alias로 교체한다. 기존 옵션은 수정하지 않고 `ignoreDeprecations` 같은 옵션을 임의로 추가하지 않는다:
 
 ```json
 {
@@ -182,15 +200,38 @@ FSD pages 레이어는 src/pages/에 위치합니다.
 
 > `@/*` 같은 포괄적 alias는 제거한다. 레이어별 alias만 허용.
 
-**ESLint** — `no-restricted-imports` 규칙 추가 (상세 템플릿은 [rules.md](../../architecture/rules/rules.md) 참조):
+**ESLint** — `no-restricted-imports` 규칙을 아래와 같이 **정확히** 추가한다:
 
 ```js
+// 1. 전체 파일 대상 — 레이어 내부 모듈 직접 접근 차단
 'no-restricted-imports': ['error', {
   patterns: [
     { group: ['@shared/api/*/*'], message: '@shared/api/[domain] 엔트리포인트를 사용하세요.' },
     { group: ['@pages/*/*'], message: '@pages/[page] 엔트리포인트를 사용하세요.' },
+    { group: ['@widgets/*/*'], message: '@widgets/[widget] 엔트리포인트를 사용하세요.' },
+    { group: ['@features/*/*'], message: '@features/[feature] 엔트리포인트를 사용하세요.' },
+    { group: ['@entities/*/*'], message: '@entities/[entity] 엔트리포인트를 사용하세요.' },
   ],
 }]
+```
+
+추가로, `app/api/` 파일에 대해 FSD 레이어 import를 차단하는 규칙을 **별도 override**로 추가한다:
+
+```js
+// 2. app/api/** 대상 — API route는 FSD 레이어를 import할 수 없다
+{
+  files: ['app/api/**/*'],
+  rules: {
+    'no-restricted-imports': ['error', {
+      patterns: [
+        {
+          group: ['@app/*', '@pages/*', '@shared/*', '@widgets/*', '@features/*', '@entities/*'],
+          message: 'API route는 FSD 레이어를 import할 수 없습니다. 자체적으로 로직을 완결하세요.',
+        },
+      ],
+    }],
+  },
+}
 ```
 
 **Prettier** — `.prettierrc` 생성:
@@ -215,6 +256,14 @@ ESLint 설정에 `eslint-config-prettier`를 추가하여 충돌을 방지한다
 ```
 # API base URL
 # NEXT_PUBLIC_API_URL=http://localhost:3000/api
+```
+
+**`src/shared/config/env.ts`** — 환경변수 접근을 중앙화:
+
+```ts
+export const ENV = {
+  API_URL: process.env.NEXT_PUBLIC_API_URL as string,
+} as const;
 ```
 
 ### 6단계: 완료

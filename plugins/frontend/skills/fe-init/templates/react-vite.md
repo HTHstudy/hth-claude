@@ -43,7 +43,7 @@ cd [project-name]
 
 ```bash
 yarn add react-router@^[조회버전] @tanstack/react-query@^[조회버전] axios@^[조회버전]
-yarn add -D @tailwindcss/vite@^[조회버전] tailwindcss@^[조회버전] prettier@^[조회버전] eslint-config-prettier@^[조회버전]
+yarn add -D @tailwindcss/vite@^[조회버전] tailwindcss@^[조회버전] vite-tsconfig-paths@^[조회버전] prettier@^[조회버전] eslint-config-prettier@^[조회버전]
 ```
 
 ### 3단계: 아키텍처 구조로 재구성
@@ -72,12 +72,12 @@ src/
 ```
 
 - Vite 기본 파일 제거: `App.css`, `index.css`, `App.tsx` (아키텍처 구조로 대체)
-- `vite.config.ts` 수정: Tailwind 플러그인 추가, `resolve.tsconfigPaths` 활성화
+- `vite.config.ts` 수정: Tailwind 플러그인 및 `vite-tsconfig-paths` 플러그인 추가
 - `global.css` 수정: `@import 'tailwindcss'`
 
 ### 4단계: 설정
 
-**경로 별칭** — `tsconfig.app.json`에 추가:
+**경로 별칭** — `tsconfig.app.json`의 `compilerOptions`에 `baseUrl`과 `paths`만 추가한다. 기존 옵션은 수정하지 않고 `ignoreDeprecations` 같은 옵션을 임의로 추가하지 않는다:
 
 ```json
 {
@@ -95,13 +95,16 @@ src/
 }
 ```
 
-**ESLint** — `no-restricted-imports` 규칙 추가 (상세 템플릿은 [rules.md](../../architecture/rules/rules.md) 참조):
+**ESLint** — `no-restricted-imports` 규칙을 아래와 같이 **정확히** 추가한다:
 
 ```js
 'no-restricted-imports': ['error', {
   patterns: [
     { group: ['@shared/api/*/*'], message: '@shared/api/[domain] 엔트리포인트를 사용하세요.' },
     { group: ['@pages/*/*'], message: '@pages/[page] 엔트리포인트를 사용하세요.' },
+    { group: ['@widgets/*/*'], message: '@widgets/[widget] 엔트리포인트를 사용하세요.' },
+    { group: ['@features/*/*'], message: '@features/[feature] 엔트리포인트를 사용하세요.' },
+    { group: ['@entities/*/*'], message: '@entities/[entity] 엔트리포인트를 사용하세요.' },
   ],
 }]
 ```
@@ -128,6 +131,14 @@ ESLint 설정에 `eslint-config-prettier`를 추가하여 충돌을 방지한다
 ```
 # API base URL
 # VITE_API_URL=http://localhost:5174/api
+```
+
+**`shared/config/env.ts`** — 환경변수 접근을 중앙화:
+
+```ts
+export const ENV = {
+  API_URL: import.meta.env.VITE_API_URL as string,
+} as const;
 ```
 
 ### 5단계: 완료

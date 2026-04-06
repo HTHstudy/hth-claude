@@ -1,4 +1,4 @@
-# 선택 레이어: Entities / Features / Widgets
+# 선택 레이어: Widgets / Features / Entities
 
 > 3개 레이어의 공통 패턴과 각 레이어별 고유 규칙이다.
 
@@ -28,27 +28,21 @@
 
 ---
 
-## Entities
+## Widgets
 
-**목적:** 프론트엔드 도메인 표현 — 도메인 특화 UI, 표시 로직(label/color 매핑), 검증.
+**목적:** 독립적 복합 UI 블록 — 하위 레이어를 조합하여 완성된 UI 제공.
 
-**import 가능:** `shared`만. 상위 레이어 금지.
+**import 가능:** `features`, `entities`, `shared`. 상위 레이어 금지.
 
-**Slice 이름:** 도메인 명사 — `product`, `user`, `order`
+**Slice 이름:** UI 블록 역할 — `header`, `sidebar`, `product-list-section`
 
 **도입 시점:**
-- 도메인 UI(`ProductCard`, `UserAvatar`)가 2개 이상 page에서 반복
-- `shared/ui`에 도메인 특화 컴포넌트를 두고 싶을 때 → entities가 올바른 위치
+- 동일한 복합 UI 블록이 2개 이상 page에서 반복
+- page가 widget 배치만으로 구성될 수 있을 정도로 자족적일 때
 
 **주의:**
-- API 정의는 `shared/api`에 둔다. entities는 API를 소유하지 않는다.
-- 원격 데이터 조회를 직접 하지 않는다. props로 주입받는다.
-- entity 간 조합이 필요하면 사용하는 쪽(page, feature, widget)에서 조합한다.
-
-| 관심사 | shared/api | entities |
-|--------|-----------|----------|
-| API 응답 타입 / 호출 함수 / query·mutation | O | X |
-| 도메인 UI / 표시 로직 / 검증 | X | O |
+- 단일 컴포넌트를 감싸기만 하는 불필요한 widget을 만들지 않는다.
+- widget 간 연동이 필요하면 page가 상태를 소유하고 props로 내려준다.
 
 ---
 
@@ -71,18 +65,24 @@
 
 ---
 
-## Widgets
+## Entities
 
-**목적:** 독립적 복합 UI 블록 — 하위 레이어를 조합하여 완성된 UI 제공.
+**목적:** 프론트엔드 도메인 표현 — 도메인 특화 UI, 표시 로직(label/color 매핑), 검증.
 
-**import 가능:** `features`, `entities`, `shared`. 상위 레이어 금지.
+**import 가능:** `shared`만. 상위 레이어 금지.
 
-**Slice 이름:** UI 블록 역할 — `header`, `sidebar`, `product-list-section`
+**Slice 이름:** 도메인 명사 — `product`, `user`, `order`
 
 **도입 시점:**
-- 동일한 복합 UI 블록이 2개 이상 page에서 반복
-- page가 widget 배치만으로 구성될 수 있을 정도로 자족적일 때
+- 도메인 UI(`ProductCard`, `UserAvatar`)가 2개 이상 page에서 반복
+- `shared/ui`에 도메인 특화 컴포넌트를 두고 싶을 때 → entities가 올바른 위치
 
 **주의:**
-- 단일 컴포넌트를 감싸기만 하는 불필요한 widget을 만들지 않는다.
-- widget 간 연동이 필요하면 page가 상태를 소유하고 props로 내려준다.
+- API 정의는 `shared/api`에 둔다. entities는 API를 소유하지 않는다.
+- 원격 데이터 조회를 직접 하지 않는다. props로 주입받는다.
+- entity 간 조합이 필요하면 사용하는 쪽(page, feature, widget)에서 조합한다.
+
+| 관심사 | shared/api | entities |
+|--------|-----------|----------|
+| API 응답 타입 / 호출 함수 / query·mutation | O | X |
+| 도메인 UI / 표시 로직 / 검증 | X | O |

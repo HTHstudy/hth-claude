@@ -49,15 +49,47 @@ Next.js는 `app/` 또는 `pages/` 폴더로 파일 기반 라우팅을 정의합
 
 루트 `app/`의 `page.tsx`는 FSD page를 re-export만 합니다.
 
+**기본: re-export** — 단순 렌더링만 하는 경우:
+
 ```ts
 // app/page.tsx
 export { HomePage as default } from '@pages/home';
 
 // app/products/page.tsx
 export { ProductsPage as default } from '@pages/products';
+```
 
+**import + export default** — Next.js page 레벨 기능이 필요한 경우:
+
+동적 라우트 params, `generateMetadata`, `generateStaticParams`, `searchParams`, 서버 사이드 데이터 로딩 등이 필요하면 import 후 export default 패턴을 사용합니다.
+
+```ts
 // app/products/[id]/page.tsx
-export { ProductDetailPage as default } from '@pages/product-detail';
+import { ProductDetailPage } from '@pages/product-detail';
+
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <ProductDetailPage id={id} />;
+}
+```
+
+`generateMetadata`에서 API 호출이 필요한 경우, 루트 `app/` 파일에서 `@shared/api`를 직접 import하는 것을 허용합니다. Next.js가 `page.tsx`에서만 `generateMetadata`를 export할 수 있도록 강제하기 때문입니다.
+
+```ts
+// app/products/[id]/page.tsx
+import { ProductDetailPage } from '@pages/product-detail';
+import { PRODUCT_API } from '@shared/api/product';
+
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <ProductDetailPage id={id} />;
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const product = await PRODUCT_API.getProduct({ id });
+  return { title: product.name, description: product.description };
+}
 ```
 
 ### layout.tsx
