@@ -101,3 +101,97 @@ Slice 내부 구조는 해당 Slice 전용이다. 그대로 다른 레이어로 
 ### 다른 레이어로 이동
 2개 이상의 Slice에서 실제 사용 + Slice 문맥 없이 독립 동작 → 이동 검토.
 하나라도 불충족이면 로컬에 남긴다. 가장 가까운 공통 범위 추출이 기본, 다른 레이어 이동은 최종 단계.
+
+---
+
+## 4. ESLint 설정 템플릿
+
+프로젝트에 아키텍처를 적용할 때 아래 ESLint 설정을 함께 추가한다.
+프로젝트의 ESLint 버전에 맞는 형식을 사용한다.
+
+### Flat Config (eslint.config.js) — ESLint 9+
+
+```js
+// eslint.config.js
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+
+export default tseslint.config(
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    rules: {
+      // 레이어 내부 모듈 직접 접근 차단
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: ['@shared/api/*/*'],
+            message: 'API 내부 모듈은 직접 import 할 수 없습니다. @shared/api/[domain] entrypoint를 통해 접근하세요.',
+          },
+          {
+            group: ['@pages/*/*'],
+            message: 'pages 내부 모듈은 직접 import 할 수 없습니다. @pages/[page] entrypoint를 통해 접근하세요.',
+          },
+          {
+            group: ['@widgets/*/*'],
+            message: 'widgets 내부 모듈은 직접 import 할 수 없습니다. @widgets/[widget] entrypoint를 통해 접근하세요.',
+          },
+          {
+            group: ['@features/*/*'],
+            message: 'features 내부 모듈은 직접 import 할 수 없습니다. @features/[feature] entrypoint를 통해 접근하세요.',
+          },
+          {
+            group: ['@entities/*/*'],
+            message: 'entities 내부 모듈은 직접 import 할 수 없습니다. @entities/[entity] entrypoint를 통해 접근하세요.',
+          },
+        ],
+      }],
+    },
+  },
+);
+```
+
+### Legacy Config (.eslintrc.js) — ESLint 8
+
+```js
+// .eslintrc.js
+module.exports = {
+  rules: {
+    // 레이어 내부 모듈 직접 접근 차단
+    'no-restricted-imports': ['error', {
+      patterns: [
+        {
+          group: ['@shared/api/*/*'],
+          message: 'API 내부 모듈은 직접 import 할 수 없습니다. @shared/api/[domain] entrypoint를 통해 접근하세요.',
+        },
+        {
+          group: ['@pages/*/*'],
+          message: 'pages 내부 모듈은 직접 import 할 수 없습니다. @pages/[page] entrypoint를 통해 접근하세요.',
+        },
+        {
+          group: ['@widgets/*/*'],
+          message: 'widgets 내부 모듈은 직접 import 할 수 없습니다. @widgets/[widget] entrypoint를 통해 접근하세요.',
+        },
+        {
+          group: ['@features/*/*'],
+          message: 'features 내부 모듈은 직접 import 할 수 없습니다. @features/[feature] entrypoint를 통해 접근하세요.',
+        },
+        {
+          group: ['@entities/*/*'],
+          message: 'entities 내부 모듈은 직접 import 할 수 없습니다. @entities/[entity] entrypoint를 통해 접근하세요.',
+        },
+      ],
+    }],
+  },
+};
+```
+
+### Next.js 프로젝트 추가 규칙
+
+Next.js 프로젝트에서는 API route ↔ FSD 레이어 간 import도 차단해야 한다. 상세 설정은 [nextjs.md](../integrations/nextjs.md)의 "SKILL.md 규칙과의 차이" 섹션을 참조한다.
+
+### 적용 시점
+
+- **새 프로젝트 (fe-init):** 프로젝트 생성 시 자동으로 포함
+- **기존 프로젝트 (apply-architecture):** Phase 1의 4단계(import 수정 및 도구 설정)에서 추가
+- **선택 레이어 도입 시:** 해당 레이어의 패턴을 규칙에 추가 (widgets, features, entities는 도입 시에만)

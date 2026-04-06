@@ -1,0 +1,46 @@
+# Phase 3: query/mutation 팩토리 적용
+
+> TanStack Query를 사용하는 프로젝트에서만 진행한다. 사용하지 않으면 건너뛴다.
+
+상세 규칙: [shared-query-factory.md](../../architecture/layers/shared-query-factory.md), [shared-mutation-factory.md](../../architecture/layers/shared-mutation-factory.md)
+
+### 10단계: 기존 쿼리/뮤테이션 분석
+
+현재 TanStack Query 사용 패턴을 파악한다:
+- `useQuery`, `useMutation` 호출 위치
+- queryKey 관리 방식
+- 기존 커스텀 훅 구조
+
+분석 결과를 사용자에게 보고하고 **확인받은 후** 진행한다.
+
+### 11단계: query-factory 구성
+
+`shared/query-factory/`를 생성한다:
+- `default-query-keys.ts` — 도메인별 기본 쿼리 키 정의
+- `[domain]-queries.ts` — 도메인별 쿼리 팩토리 (`queryOptions()` 반환)
+
+키 계층: `allKeys()` → `listKeys()` / `detailKeys()` → 개별 쿼리
+
+barrel(`index.ts`)은 사용하지 않는다.
+
+### 12단계: mutation-factory 구성
+
+`shared/mutation-factory/`를 생성한다:
+- `default-mutation-keys.ts` — 도메인별 기본 mutation 키 정의
+- `[domain]-mutations.ts` — 도메인별 mutation 팩토리 (`mutationOptions()` 반환)
+
+복합 트랜잭션은 팩토리에 넣지 않는다. 커스텀 훅에서 조합한다.
+
+### 13단계: 기존 호출부 전환
+
+기존 `useQuery`, `useMutation` 호출을 팩토리 사용으로 변경한다:
+
+```ts
+// 변경 전
+useQuery({ queryKey: ['product', 'list', params], queryFn: () => fetchProducts(params) })
+
+// 변경 후
+useQuery(productQueries.list(params))
+```
+
+빌드 검증 후 최종 구조를 사용자에게 보고한다.

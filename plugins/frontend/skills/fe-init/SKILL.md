@@ -1,7 +1,6 @@
 ---
 name: fe-init
-description: 레이어드 아키텍처가 적용된 새 프론트엔드 프로젝트를 생성한다. Vite + React + TypeScript 기반.
-disable-model-invocation: true
+description: 레이어드 아키텍처가 적용된 새 프론트엔드 프로젝트를 생성한다. React(Vite) 또는 Next.js App Router 선택 가능.
 ---
 
 # 프론트엔드 프로젝트 생성
@@ -14,135 +13,48 @@ disable-model-invocation: true
 
 ---
 
-## 기술 스택
-
-| 항목 | 기술 |
-|------|------|
-| 빌드 도구 | Vite |
-| UI 라이브러리 | React |
-| 언어 | TypeScript |
-| 스타일링 | Tailwind CSS |
-| 라우팅 | React Router |
-| 서버 상태 관리 | TanStack Query |
-| HTTP 클라이언트 | Axios |
-| 패키지 매니저 | Yarn |
-| 포매터 | Prettier |
-
 ## 실행 단계
 
-### 1단계: 프로젝트 이름 확인
+### 1단계: 프로젝트 정보 확인
 
-사용자에게 프로젝트 이름을 물어본다.
+AskUserQuestion 도구를 사용하여 아래 두 질문을 **한 번에** 수행한다:
 
-### 2단계: 기본 프로젝트 생성
+1. **프로젝트 이름**
+   - question: "프로젝트 이름을 입력해주세요. (Other를 선택하여 직접 입력)"
+   - header: "Name"
+   - options:
+     - label: "my-app", description: "기본 프로젝트 이름"
+     - label: "frontend", description: "기본 프로젝트 이름"
+2. **프레임워크 선택**
+   - question: "어떤 프레임워크를 사용할까요?"
+   - header: "Framework"
+   - options:
+     - label: "React (Vite + React Router)", description: "Vite, React, React Router, TypeScript, Tailwind"
+     - label: "Next.js App Router", description: "Next.js, App Router, TypeScript, Tailwind"
 
-```bash
-yarn create vite [project-name] --template react-ts
-cd [project-name]
-```
+사용자 응답을 받은 뒤:
 
-### 3단계: 추가 의존성 설치
+- 프로젝트 이름과 동일한 디렉토리가 현재 경로에 이미 존재하는지 확인한다.
+- 존재하면 사용자에게 다른 이름을 요청한다.
+- 프레임워크 매핑: `React (Vite + React Router)` → `react-vite`, `Next.js App Router` → `nextjs-app-router`
 
-```bash
-yarn add react-router @tanstack/react-query axios
-yarn add -D @tailwindcss/vite tailwindcss prettier eslint-config-prettier
-```
+### 2단계: 템플릿 실행
 
-### 4단계: 아키텍처 구조로 재구성
+선택된 프레임워크의 템플릿 문서를 읽고, 해당 문서의 단계를 따라 진행한다.
 
-`src/`를 재구성하고 기본 파일을 제거한다:
+| 선택 | 템플릿                                                 |
+| ---- | ------------------------------------------------------ |
+| 1    | [react-vite.md](templates/react-vite.md)               |
+| 2    | [nextjs-app-router.md](templates/nextjs-app-router.md) |
 
-```
-src/
-├─ main.tsx
-├─ app/
-│  ├─ App.tsx             # 루트: Providers + Router
-│  ├─ providers.tsx       # QueryClientProvider
-│  ├─ router.tsx          # BrowserRouter + Routes
-│  └─ global.css          # Tailwind: @import 'tailwindcss'
-├─ pages/
-│  └─ home/
-│     └─ index.tsx        # 홈 페이지
-└─ shared/
-   ├─ api/
-   │  └─ base/
-   │     └─ base-http-client.ts
-   ├─ config/
-   │  └─ env.ts
-   └─ routes/
-      └─ paths.ts
-```
+---
 
-- Vite 기본 파일 제거: `App.css`, `index.css`, `App.tsx` (아키텍처 구조로 대체)
-- `vite.config.ts` 수정: Tailwind 플러그인 추가, `resolve.tsconfigPaths` 활성화
-- `global.css` 수정: `@import 'tailwindcss'`
-
-### 5단계: 설정
-
-**경로 별칭** — `tsconfig.app.json`에 추가:
-
-```json
-{
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@app/*": ["./src/app/*"],
-      "@pages/*": ["./src/pages/*"],
-      "@shared/*": ["./src/shared/*"],
-      "@widgets/*": ["./src/widgets/*"],
-      "@features/*": ["./src/features/*"],
-      "@entities/*": ["./src/entities/*"]
-    }
-  }
-}
-```
-
-**ESLint** — `no-restricted-imports` 규칙 추가:
-
-```js
-'no-restricted-imports': ['error', {
-  patterns: [
-    { group: ['@shared/api/*/*'], message: '@shared/api/[domain] 엔트리포인트를 사용하세요.' },
-    { group: ['@pages/*/*'], message: '@pages/[page] 엔트리포인트를 사용하세요.' },
-  ],
-}]
-```
-
-**Prettier** — `.prettierrc` 생성:
-
-```json
-{
-  "singleQuote": true,
-  "trailingComma": "all",
-  "tabWidth": 2,
-  "semi": true,
-  "printWidth": 120,
-  "useTabs": false,
-  "arrowParens": "always",
-  "endOfLine": "lf"
-}
-```
-
-ESLint 설정에 `eslint-config-prettier`를 추가하여 충돌을 방지한다.
-
-**환경변수** — `.env` 생성:
-
-```
-# API base URL
-# VITE_API_URL=http://localhost:5174/api
-```
-
-### 6단계: 완료
-
-사용자에게 안내:
-- `yarn dev`로 개발 서버를 시작할 수 있다
-
-### 주의사항
+## 공통 주의사항
 
 - `widgets/`, `features/`, `entities/` 디렉토리를 생성하지 않는다. 필요할 때만 도입하는 선택 레이어다.
-- Vite 템플릿의 기본 파일(기본 CSS, 플레이스홀더 콘텐츠 등)을 제거한다.
+- 프레임워크 템플릿의 기본 파일(기본 CSS, 플레이스홀더 콘텐츠 등)을 제거한다.
 
-### 팁
+## 팁
 
 API 응답이 통일된 형식(예: 모든 API가 `{ data: T }`를 반환)을 따른다면, `shared/api/base/types.ts`에 공통 응답 타입을 정의한다:
 
