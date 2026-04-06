@@ -1,5 +1,19 @@
 # React (Vite) 프로젝트 템플릿
 
+## 버전 관리 정책
+
+공급망 공격(Supply Chain Attack) 방지를 위해 의존성 설치 시 버전을 명시적으로 지정한다.
+
+**설치 전 버전 조회 절차:**
+1. 아래 명령으로 각 패키지의 최신 stable 버전과 릴리스 날짜를 확인한다:
+   ```bash
+   npm view [패키지명] time --json | jq 'to_entries | map(select(.key | test("^[0-9]"))) | sort_by(.value) | last'
+   ```
+2. 릴리스일이 **2주 이상** 경과한 버전 중 가장 최신 버전을 선택한다
+3. 2주 이내 릴리스만 있으면 그 직전 버전을 사용한다
+4. `@latest`를 사용하지 않는다
+5. 선택한 버전을 `yarn add 패키지명@^X.Y.Z` 형태로 설치한다
+
 ## 기술 스택
 
 | 항목 | 기술 |
@@ -25,9 +39,11 @@ cd [project-name]
 
 ### 2단계: 추가 의존성 설치
 
+버전 관리 정책에 따라 각 패키지의 안정 버전을 조회한 뒤 설치한다.
+
 ```bash
-yarn add react-router @tanstack/react-query axios
-yarn add -D @tailwindcss/vite tailwindcss prettier eslint-config-prettier
+yarn add react-router@^[조회버전] @tanstack/react-query@^[조회버전] axios@^[조회버전]
+yarn add -D @tailwindcss/vite@^[조회버전] tailwindcss@^[조회버전] prettier@^[조회버전] eslint-config-prettier@^[조회버전]
 ```
 
 ### 3단계: 아키텍처 구조로 재구성

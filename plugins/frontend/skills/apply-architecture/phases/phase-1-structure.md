@@ -118,4 +118,13 @@ src/
 - 남아 있는 깨진 import 확인
 - 최종 구조를 사용자에게 보고
 
+### 빌드 검증 후 커밋
+
+빌드가 정상이면 중간 커밋을 생성한다:
+
+```bash
+git add -A
+git commit -m "refactor: restructure folders to layered architecture"
+```
+
 **사용자에게 Phase 1 완료를 알리고, Phase 2 진행 여부를 확인한다.**

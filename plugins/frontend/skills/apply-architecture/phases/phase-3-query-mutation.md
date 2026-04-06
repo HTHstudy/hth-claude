@@ -43,4 +43,13 @@ useQuery({ queryKey: ['product', 'list', params], queryFn: () => fetchProducts(p
 useQuery(productQueries.list(params))
 ```
 
-빌드 검증 후 최종 구조를 사용자에게 보고한다.
+### 빌드 검증 후 커밋
+
+빌드가 정상이면 중간 커밋을 생성한다:
+
+```bash
+git add -A
+git commit -m "refactor: apply query/mutation factory pattern"
+```
+
+사용자에게 Phase 3 완료를 알리고, Phase 4 진행 여부를 확인한다.

@@ -47,6 +47,13 @@ shared/api/[domain]/
 
 기존 코드에서 API를 직접 호출하던 부분을 `[DOMAIN]_API` 사용으로 변경한다.
 
-빌드 검증 후 사용자에게 보고한다.
+### 빌드 검증 후 커밋
+
+빌드가 정상이면 중간 커밋을 생성한다:
+
+```bash
+git add -A
+git commit -m "refactor: apply shared/api 3-layer structure"
+```
 
 **사용자에게 Phase 2 완료를 알리고, Phase 3 진행 여부를 확인한다.**

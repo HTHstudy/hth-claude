@@ -28,4 +28,13 @@
 
 제안만 하고, 도입 여부는 사용자가 결정한다. 사용자가 원하면 해당 레이어를 생성하고 코드를 이동한다.
 
-빌드 검증 후 **Phase 5로 진행한다.**
+### 빌드 검증 후 커밋
+
+빌드가 정상이면 중간 커밋을 생성한다:
+
+```bash
+git add -A
+git commit -m "refactor: cleanup and segment shared modules"
+```
+
+**사용자에게 Phase 4 완료를 알리고, Phase 5 진행 여부를 확인한다.**
