@@ -7,10 +7,18 @@
 - `shared/hooks/` — page 문맥 없이 독립적으로 성립하는 훅
 - `shared/lib/` — 범용 유틸리티 함수
 
-각 파일을 분류할 때 아래 기준으로 판단한다:
-- business-agnostic인가? → shared
-- 도메인 특화인가? → entities (또는 page에 유지)
-- 특정 Slice 상태에 결합되어 있는가? → 해당 page에 유지
+#### 사용처 분석
+
+shared의 각 모듈(ui, hooks, lib)에 대해 **실제 import 사용처를 검색**한다. 프로젝트 전체에서 해당 모듈을 import하는 파일 목록을 수집하고, 아래 기준으로 분류한다:
+
+| 사용처 | 판단 | 이동 대상 |
+|--------|------|-----------|
+| 단일 Slice에서만 사용 | 해당 Slice 전용 | Slice 내부 private 폴더 (`_ui/`, `_hooks/` 등) |
+| 단일 레이어에서만 사용 | 해당 레이어 전용 | 해당 레이어 내부 private 폴더 (`_ui/`, `_hooks/` 등) |
+| 여러 레이어에서 사용 + business-agnostic | 공유 가능 | shared 유지 |
+| 여러 레이어에서 사용 + domain-specific | 공유하되 레이어 검토 | shared 유지, 향후 entities/ 도입 시 이동 후보로 기록 |
+
+이동 계획을 사용자에게 표로 제시하고, 확인을 받은 후 이동한다.
 
 ### 15단계: page 내부 분해
 
