@@ -7,7 +7,10 @@
 **적용 완료 항목:**
 - 변경된 폴더 구조 (before → after 트리)
 - 이동된 파일 수와 주요 변경 사항
-- 적용된 설정 (path alias, ESLint, 등)
+- 적용된 설정:
+  - path alias (실제 설정된 별칭 목록을 명시한다)
+  - ESLint `no-restricted-imports` (적용된 패턴 목록을 명시한다)
+  - 빌드 도구 설정 (Vite/Next.js)
 - 적용된 패턴 (API 3계층, query/mutation 팩토리 등)
 
 **미적용 또는 수동 확인이 필요한 항목:**
