@@ -20,6 +20,26 @@
 | API 호출 코드 | axios / fetch / 자체 HTTP 클라이언트 사용 현황 |
 | TanStack Query 사용 | `useQuery` / `useMutation` 호출 수 |
 
+### 프로젝트 구조 스냅샷
+
+위 항목 분석과 함께, Phase 1에서 파일을 다시 탐색하지 않도록 아래 정보를 셸 명령으로 수집한다:
+
+```bash
+# 1. 폴더 구조 캡처
+tree [소스루트] -I 'node_modules|.next|dist|build|.git' --dirsfirst
+
+# 2. 소스 파일 목록
+find [소스루트] -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) \
+  ! -path "*/node_modules/*" ! -path "*/__tests__/*" ! -path "*.test.*" ! -path "*.spec.*" ! -path "*.stories.*" \
+  | sort
+
+# 3. import 맵 (파일별 import 문)
+grep -rn "^import " [소스루트] --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" \
+  | grep -v node_modules | grep -v __tests__
+```
+
+이 결과를 assessment.md에 포함한다. Phase 1은 이 스냅샷만으로 전환 계획을 수립할 수 있다.
+
 ## 0-2. 복잡도 분류
 
 컴포넌트 수 기준으로 분류한다:
@@ -62,6 +82,15 @@
 | API 호출 방식 | [결과 — 없으면 "없음"] |
 | TanStack Query | [사용 / 미사용] |
 | 차단 요소 | [없음 / 목록] |
+
+### 파일 구조
+[tree 출력 결과]
+
+### 소스 파일 목록
+[소스 파일 경로 목록]
+
+### import 맵
+[파일별 import 문 목록]
 
 ### 권장 전환 범위
 [전체 Phase 진행 / Phase 1만 우선 진행 / 진행 불가 — 사유]

@@ -10,7 +10,14 @@ disable-model-invocation: true
 
 ## 사전 요구사항
 
-이 스킬 실행 전 `/frontend:architecture` 스킬을 반드시 로드한다.
+`/frontend:architecture` 스킬은 **Phase별로 필요한 시점에** 로드한다. 전체를 미리 로드하지 않는다.
+
+| Phase | 로드 대상 |
+|-------|-----------|
+| Phase 0-1 | 로드 불필요. phase-1-structure.md에 필요한 구조/네이밍/import 규칙이 포함되어 있다. ESLint 설정 시 [eslint-config.md](../architecture/rules/eslint-config.md)만 참조. Next.js 프로젝트면 [nextjs.md](../architecture/integrations/nextjs.md)도 참조. |
+| Phase 2 | [shared-api.md](../architecture/layers/shared-api.md) 참조 |
+| Phase 3 | [shared-query-factory.md](../architecture/layers/shared-query-factory.md), [shared-mutation-factory.md](../architecture/layers/shared-mutation-factory.md) 참조 |
+| Phase 4-5 | `/frontend:architecture` SKILL.md 전체 로드 (선택 레이어 판단에 필요) |
 
 ---
 

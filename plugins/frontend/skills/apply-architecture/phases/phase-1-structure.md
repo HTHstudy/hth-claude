@@ -5,18 +5,30 @@
 `.architecture-migration/assessment.md`를 읽고 프로젝트 정보를 확인한다:
 - 프레임워크, 빌드 도구, 소스 루트, 패키지 매니저
 - 복잡도 등급과 적용 대상 Phase
+- **파일 구조, 소스 파일 목록, import 맵** (Phase 0에서 수집한 스냅샷)
 
-현재 폴더 구조와 파일 위치를 파악하고, 변경 전 현재 구조를 사용자에게 보고한다.
+assessment.md의 스냅샷만으로 전환 계획을 수립한다. 소스 파일을 개별적으로 다시 읽지 않는다. 변경 전 현재 구조를 사용자에게 보고한다.
 
 ### 2단계: 전환 계획 수립
 
-분석을 바탕으로 전환 계획을 작성한다:
+assessment.md의 스냅샷을 바탕으로 전환 계획을 작성한다:
 - `app/`으로 이동할 파일 (라우팅, Provider, 전역 스타일)
 - `pages/`로 이동할 파일 (route 기준 화면 모듈)
 - `shared/`로 이동할 파일 (유틸리티, 훅, 설정, API 클라이언트)
 - 현재 위치에 그대로 둘 파일 (이미 올바른 위치)
 
-계획을 사용자에게 제시하고 **확인을 받은 후** 진행한다.
+#### 매핑 테이블 작성
+
+매핑 테이블을 `.architecture-migration/mapping.tsv`에 TSV 형식으로 저장한다. 이 파일은 3단계(git mv)와 4단계(import 수정)에서 셸 스크립트의 입력으로 사용한다.
+
+```
+# 현재경로\t대상경로
+src/components/Header.tsx	src/app/header.tsx
+src/views/Home.tsx	src/pages/home/index.tsx
+src/utils/format.ts	src/shared/lib/format.ts
+```
+
+계획(매핑 테이블)을 사용자에게 제시하고 **확인을 받은 후** 진행한다.
 
 ### 3단계: 기본 구조 생성 및 파일 이동
 
@@ -92,23 +104,39 @@ src/
 
 - `widgets/`, `features/`, `entities/`는 생성하지 않는다 — 필요할 때만 도입.
 
+#### 파일 vs 폴더 판단 기준
+
+page(및 모든 컴포넌트)를 폴더로 만들지, 단일 파일로 둘지는 **하위 종속 컴포넌트 유무**로 결정한다:
+
+| 조건 | 형태 | 예시 |
+|------|------|------|
+| 종속 컴포넌트·훅·스타일이 없음 | **단일 파일** | `pages/about-brandstory.tsx` |
+| 종속 컴포넌트·훅·스타일이 2개 이상 | **폴더 + index.tsx** | `pages/about-brandstory/index.tsx` + 하위 파일들 |
+
+- 종속 파일이 **1개뿐**이면 해당 로직을 index.tsx에 합쳐서 단일 파일로 유지한다.
+- index.tsx가 단순 re-export만 하는 래퍼가 되어서는 안 된다. index.tsx는 실제 구현 파일이다.
+- 파일 크기가 아니라 **종속 컴포넌트 유무**가 기준이다.
+
 #### 일괄 처리 전략
 
-파일 이동은 개별 `git mv`를 반복하지 않고, 매핑 테이블 → 셸 스크립트로 일괄 처리한다:
-
-1. **매핑 테이블 작성**: 이동 전에 모든 파일의 `현재 경로 → 대상 경로` 매핑을 먼저 정리한다
-2. **셸 스크립트로 일괄 실행**: 매핑 테이블을 기반으로 `git mv`를 일괄 실행한다
+파일 이동은 2단계에서 저장한 `.architecture-migration/mapping.tsv`를 셸 스크립트의 입력으로 사용하여 일괄 처리한다:
 
 ```bash
-# 예시: 대상 디렉토리 생성 후 일괄 이동
-mkdir -p src/app src/pages src/shared
+# 1. 대상 디렉토리 일괄 생성
+awk -F'\t' '{print $2}' .architecture-migration/mapping.tsv | xargs -I{} dirname {} | sort -u | xargs mkdir -p
 
-git mv src/components/Header.tsx src/app/header.tsx
-git mv src/views/Home.tsx src/pages/home/index.tsx
-# ... 매핑 테이블의 모든 항목
+# 2. 대소문자만 변경하는 항목 분리 (macOS 대응)
+# 대소문자 변경이 필요한 파일: 임시 경로 경유 2단계 rename
+# 그 외: 직접 git mv
+
+# 3. git mv 일괄 실행
+while IFS=$'\t' read -r from to; do
+  [[ "$from" == \#* ]] && continue  # 주석 스킵
+  git mv "$from" "$to"
+done < .architecture-migration/mapping.tsv
 ```
 
-3. **macOS 대소문자 비구분 파일시스템 대응**: 파일명의 대소문자만 변경하는 경우(예: PascalCase → kebab-case) 직접 `git mv`가 실패한다. 반드시 임시 경로를 경유하는 2단계 rename을 사용한다:
+**macOS 대소문자 비구분 파일시스템 대응**: 파일명의 대소문자만 변경하는 경우(예: PascalCase → kebab-case) 직접 `git mv`가 실패한다. 반드시 임시 경로를 경유하는 2단계 rename을 사용한다:
 
 ```bash
 # 틀림: macOS에서 실패
@@ -128,13 +156,31 @@ git mv src/tmp-my-component.tsx src/my-component.tsx
 - 파일 이동으로 인한 깨진 import 수정
 - 타입 import는 반드시 `import type` 사용
 
-#### 일괄 치환 전략
+#### sed 기반 일괄 치환
 
-import 수정도 개별 파일이 아닌, 3단계에서 작성한 매핑 테이블을 기반으로 프로젝트 전체를 일괄 치환한다:
+`.architecture-migration/mapping.tsv`와 assessment.md의 import 맵을 기반으로, **파일을 개별적으로 Read/Edit하지 않고** sed 스크립트로 일괄 치환한다:
 
-1. **매핑 테이블 → import 치환 규칙**: 파일 이동 매핑에서 import 경로 변경 규칙을 도출한다
-2. **프로젝트 전체 대상 일괄 수정**: Agent에 위임할 경우, 전체 매핑을 한 번에 전달하여 누락을 방지한다
-3. **누락 검증**: 치환 후 `grep -r "이전경로"` 등으로 남아 있는 이전 import가 없는지 확인한다
+```bash
+# 1. 매핑 테이블에서 import 치환 규칙 생성
+#    매핑: src/components/Header.tsx → src/app/header.tsx
+#    치환: from './components/Header' → from '@app/header'
+#    매핑: src/utils/format.ts → src/shared/lib/format.ts
+#    치환: from '../utils/format' → from '@shared/lib/format'
+
+# 2. sed 스크립트로 프로젝트 전체 일괄 치환
+find [소스루트] -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) \
+  ! -path "*/node_modules/*" | xargs sed -i '' \
+  -e "s|from ['\"]\.\.*/components/Header['\"]|from '@app/header'|g" \
+  -e "s|from ['\"]\.\.*/utils/format['\"]|from '@shared/lib/format'|g"
+  # ... 매핑 테이블의 모든 항목에 대해 규칙 생성
+
+# 3. 잔여 import 검증 — 이전 경로가 남아 있는지 확인
+grep -rn "from ['\"]\.\./" [소스루트] --include="*.ts" --include="*.tsx" | head -20
+```
+
+**핵심:** 50개 파일을 하나씩 Read → Edit하는 대신, sed 한 번으로 전체 치환. 라운드트립을 최소화한다.
+
+sed로 처리하기 어려운 복잡한 케이스(동적 import, 조건부 경로 등)만 개별 파일을 읽어서 수정한다.
 
 도구 설정:
 - `tsconfig.json` (또는 `tsconfig.app.json`)에 경로 별칭 추가 (`src/` 기준)
