@@ -192,7 +192,7 @@ app → pages → (widgets → features → entities →) shared
 | 컴포넌트 | 하위 종속 없으면 파일, 있으면 폴더 + `index.tsx` | `button.tsx` vs `modal/index.tsx` |
 | export | Named Export 기본. Default Export는 프레임워크 요구 시만 | `export function Button()` |
 | import | 타입은 반드시 `type` import | `import type { Foo }` |
-| `index.tsx` | 실제 구현 파일 | — |
+| `index.tsx` | 종속 컴포넌트를 조합하는 실제 구현 파일. 단순 re-export 래퍼가 아니다 | — |
 | `index.ts` | export 정리용 엔트리만 | — |
 | private 폴더 | `_` prefix. 처음부터 만들지 않고 필요 시만 | `_ui/`, `_hooks/` |
 
