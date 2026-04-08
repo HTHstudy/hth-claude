@@ -189,6 +189,19 @@ git mv src/tmp-my-component.tsx src/my-component.tsx
 
 대소문자 변경이 필요한 파일이 여러 개이면, 모든 파일을 한 번에 임시 경로로 이동한 뒤 다시 한 번에 최종 경로로 이동한다.
 
+#### 빈 디렉토리 정리
+
+`git mv`는 파일만 이동하고 빈 디렉토리를 남긴다. 파일 이동 완료 후 반드시 빈 디렉토리를 정리한다:
+
+```bash
+# mapping.tsv의 이동 전 경로에서 빈 디렉토리 수집 및 삭제
+awk -F'\t' '{print $1}' .architecture-migration/mapping.tsv | xargs -I{} dirname {} | sort -u -r | while read -r dir; do
+  [ -d "$dir" ] && find "$dir" -type d -empty -delete
+done
+```
+
+정리 후 `src/` 아래에 FSD 레이어(`app/`, `pages/`, `shared/`)만 남아있는지 확인한다. 이전 구조의 디렉토리(`components/`, `hooks/`, `lib/`, `stores/`, `styles/`, `types/` 등)가 빈 폴더로 남아있으면 안 된다.
+
 ### 4단계: import 수정 및 도구 설정
 
 모든 import 경로를 새 구조에 맞게 수정한다:
