@@ -90,9 +90,36 @@ src/
 
 #### 공통
 
-가능한 경우 `git mv`를 사용하여 git 히스토리를 보존한다.
-
 - `widgets/`, `features/`, `entities/`는 생성하지 않는다 — 필요할 때만 도입.
+
+#### 일괄 처리 전략
+
+파일 이동은 개별 `git mv`를 반복하지 않고, 매핑 테이블 → 셸 스크립트로 일괄 처리한다:
+
+1. **매핑 테이블 작성**: 이동 전에 모든 파일의 `현재 경로 → 대상 경로` 매핑을 먼저 정리한다
+2. **셸 스크립트로 일괄 실행**: 매핑 테이블을 기반으로 `git mv`를 일괄 실행한다
+
+```bash
+# 예시: 대상 디렉토리 생성 후 일괄 이동
+mkdir -p src/app src/pages src/shared
+
+git mv src/components/Header.tsx src/app/header.tsx
+git mv src/views/Home.tsx src/pages/home/index.tsx
+# ... 매핑 테이블의 모든 항목
+```
+
+3. **macOS 대소문자 비구분 파일시스템 대응**: 파일명의 대소문자만 변경하는 경우(예: PascalCase → kebab-case) 직접 `git mv`가 실패한다. 반드시 임시 경로를 경유하는 2단계 rename을 사용한다:
+
+```bash
+# 틀림: macOS에서 실패
+git mv src/MyComponent.tsx src/my-component.tsx
+
+# 올바름: 임시 경로 경유
+git mv src/MyComponent.tsx src/tmp-my-component.tsx
+git mv src/tmp-my-component.tsx src/my-component.tsx
+```
+
+대소문자 변경이 필요한 파일이 여러 개이면, 모든 파일을 한 번에 임시 경로로 이동한 뒤 다시 한 번에 최종 경로로 이동한다.
 
 ### 4단계: import 수정 및 도구 설정
 
@@ -100,6 +127,14 @@ src/
 - 상대 경로를 경로 별칭으로 교체 (`@app/`, `@pages/`, `@shared/`)
 - 파일 이동으로 인한 깨진 import 수정
 - 타입 import는 반드시 `import type` 사용
+
+#### 일괄 치환 전략
+
+import 수정도 개별 파일이 아닌, 3단계에서 작성한 매핑 테이블을 기반으로 프로젝트 전체를 일괄 치환한다:
+
+1. **매핑 테이블 → import 치환 규칙**: 파일 이동 매핑에서 import 경로 변경 규칙을 도출한다
+2. **프로젝트 전체 대상 일괄 수정**: Agent에 위임할 경우, 전체 매핑을 한 번에 전달하여 누락을 방지한다
+3. **누락 검증**: 치환 후 `grep -r "이전경로"` 등으로 남아 있는 이전 import가 없는지 확인한다
 
 도구 설정:
 - `tsconfig.json` (또는 `tsconfig.app.json`)에 경로 별칭 추가 (`src/` 기준)
@@ -120,7 +155,26 @@ src/
 4. **Next.js 프로젝트:** [nextjs.md](../../architecture/integrations/nextjs.md)의 API route ↔ FSD 레이어 차단 규칙도 함께 추가한다
 5. **검증:** `yarn lint` (또는 프로젝트의 lint 명령)을 실행하여 규칙이 정상 동작하는지 확인한다
 
-### 5단계: 빌드 검증
+### 5단계: 사전 점검 및 빌드 검증
+
+빌드 실행 전에 known breaking pattern을 미리 점검하여 "빌드 → 실패 → 수정 → 재빌드" 반복을 최소화한다:
+
+#### 사전 점검 (빌드 전)
+
+프레임워크별로 자주 발생하는 문제를 미리 grep해서 일괄 수정한다:
+
+- **Next.js App Router**: `searchParams`, `params`가 Promise로 바뀐 버전에서 null 체크/await 누락
+- **SCSS/CSS Module import**: 파일명 대소문자 변경 후 import 경로 불일치
+- **절대경로 잔여**: 이전 경로 별칭이나 상대경로가 남아있는지 확인
+- **타입 import**: `import { Type }` → `import type { Type }` 변환 누락
+
+```bash
+# 예시: 이전 경로가 남아있는지 확인
+grep -r "from ['\"]\.\./" src/ --include="*.ts" --include="*.tsx" | head -20
+grep -r "@old-alias/" src/ --include="*.ts" --include="*.tsx" | head -20
+```
+
+#### 빌드 검증
 
 - 프로젝트를 실행하여 빌드 및 동작에 오류가 없는지 확인
 - 남아 있는 깨진 import 확인

@@ -43,6 +43,14 @@ useQuery({ queryKey: ['product', 'list', params], queryFn: () => fetchProducts(p
 useQuery(productQueries.list(params))
 ```
 
+#### 일괄 치환 전략
+
+개별 파일을 하나씩 수정하지 않고, 매핑 테이블 기반으로 일괄 치환한다:
+
+1. **매핑 테이블 작성**: 모든 기존 `useQuery`/`useMutation` 호출의 `기존 패턴 → 팩토리 호출` 매핑을 먼저 정리한다
+2. **프로젝트 전체 대상 일괄 수정**: Agent에 위임할 경우, 전체 매핑을 한 번에 전달하여 누락을 방지한다
+3. **누락 검증**: 치환 후 팩토리를 거치지 않는 직접 `useQuery`/`useMutation` 호출이 남아있지 않은지 grep으로 확인한다
+
 ### 빌드 검증 후 커밋
 
 빌드가 정상이면 중간 커밋을 생성한다:
