@@ -59,14 +59,10 @@ useQuery(productQueries.list(params))
 - **import 경로 정합성**: 팩토리 파일 import가 정상인지
 - **queryKey 하드코딩 잔여**: 팩토리 키를 사용하지 않는 하드코딩 queryKey가 남아있지 않은지
 
-```bash
-# 팩토리를 거치지 않는 직접 호출 잔여
-grep -rn "useQuery({" src/ --include="*.ts" --include="*.tsx" | grep -v "node_modules" | head -20
-grep -rn "useMutation({" src/ --include="*.ts" --include="*.tsx" | grep -v "node_modules" | head -20
-
-# queryKey 하드코딩 잔여
-grep -rn "queryKey:" src/ --include="*.ts" --include="*.tsx" | grep -v "node_modules" | head -20
-```
+Grep 도구로 아래 패턴을 점검한다:
+- 직접 useQuery 호출 잔여: pattern `useQuery\(\{`, glob `*.{ts,tsx}`, head_limit 20
+- 직접 useMutation 호출 잔여: pattern `useMutation\(\{`, glob `*.{ts,tsx}`, head_limit 20
+- queryKey 하드코딩 잔여: pattern `queryKey:`, glob `*.{ts,tsx}`, head_limit 20
 
 ### 빌드 검증 후 커밋
 

@@ -63,15 +63,10 @@ shared/api/[domain]/
 - **DOMAIN_API import 누락**: 새 API 객체를 사용하는 파일에 import 문이 정상인지
 - **타입 import**: API 타입을 `import type`으로 가져오는지
 
-```bash
-# 기존 API 함수/경로 잔여 확인 (매핑 테이블의 기존 경로 기준)
-grep -rn "from ['\"].*기존API경로" src/ --include="*.ts" --include="*.tsx" | head -20
-
-# DOMAIN_API import 정합성
-grep -rn "DOMAIN_API\." src/ --include="*.ts" --include="*.tsx" -l | while read f; do
-  grep -L "import.*DOMAIN_API" "$f"
-done
-```
+Grep 도구로 아래 패턴을 점검한다:
+- 기존 API 함수/경로 잔여: pattern `from ['\"].*기존API경로`, glob `*.{ts,tsx}`, head_limit 20
+- DOMAIN_API 사용 파일 목록: pattern `DOMAIN_API\.`, glob `*.{ts,tsx}`, output_mode: files_with_matches
+- 위 파일 목록에서 import 누락 확인: pattern `import.*DOMAIN_API`, glob `*.{ts,tsx}`, 대상 파일별 검증
 
 ### 빌드 검증 후 커밋
 

@@ -22,25 +22,17 @@
 
 ### 프로젝트 구조 스냅샷
 
-위 항목 분석과 함께, Phase 1에서 파일을 다시 탐색하지 않도록 아래 정보를 셸 명령으로 수집한다:
+위 항목 분석과 함께, Phase 1에서 파일을 다시 탐색하지 않도록 아래 정보를 Claude Code 내장 도구로 수집한다:
 
-```bash
-# 1. 폴더 구조 캡처
-tree [소스루트] -I 'node_modules|.next|dist|build|.git' --dirsfirst
+1. **폴더 구조 캡처** — Glob 도구로 `[소스루트]/**/*` 패턴 사용. node_modules, .next, dist, build, .git 경로는 자동 제외됨
+2. **소스 파일 목록** — Glob 도구로 `[소스루트]/**/*.{ts,tsx,js,jsx}` 패턴 사용. 결과에서 `__tests__`, `.test.`, `.spec.`, `.stories.` 경로 제외
+3. **import 맵 (파일별 import 문)** — Grep 도구 사용:
+   - pattern: `^import `
+   - glob: `*.{ts,tsx,js,jsx}`
+   - path: [소스루트]
+   - output_mode: content
 
-# 2. 소스 파일 목록
-find [소스루트] -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) \
-  ! -path "*/node_modules/*" ! -path "*/__tests__/*" ! -path "*.test.*" ! -path "*.spec.*" ! -path "*.stories.*" \
-  | sort
-
-# 3. import 맵 (파일별 import 문)
-grep -rn "^import " [소스루트] --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" \
-  | grep -v node_modules | grep -v __tests__
-
-# import 맵이 200줄을 초과하면 assessment.md에는 처음 200줄만 저장하고,
-# 전체 맵은 .architecture-migration/import-map.txt에 별도 저장한다.
-# Phase 1에서는 import-map.txt를 필요한 패턴별로 grep하여 참조한다.
-```
+import 맵이 200줄을 초과하면 assessment.md에는 처음 200줄만 저장하고, 전체 맵은 `.architecture-migration/import-map.txt`에 별도 저장한다. Phase 1에서는 import-map.txt를 Grep 도구로 필요한 패턴별로 검색하여 참조한다.
 
 이 결과를 assessment.md에 포함한다. Phase 1은 이 스냅샷만으로 전환 계획을 수립할 수 있다.
 
@@ -88,7 +80,7 @@ grep -rn "^import " [소스루트] --include="*.ts" --include="*.tsx" --include=
 | 차단 요소 | [없음 / 목록] |
 
 ### 파일 구조
-[tree 출력 결과]
+[폴더 구조 출력 결과]
 
 ### 소스 파일 목록
 [소스 파일 경로 목록]
