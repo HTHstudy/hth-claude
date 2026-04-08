@@ -1,0 +1,299 @@
+# ESLint 설정 템플릿
+
+프로젝트에 아키텍처를 적용할 때 아래 ESLint 설정을 함께 추가한다.
+프로젝트의 ESLint 버전에 맞는 형식을 사용한다.
+
+## 적용하는 규칙
+
+| 규칙 | 설명 | 차단 예시 |
+|------|------|-----------|
+| Slice 내부 접근 차단 | `@[layer]/*/*` 패턴 차단 | `import { x } from '@pages/home/utils'` |
+| 레이어 방향 강제 | 하위 → 상위 레이어 import 차단 | shared에서 `import { x } from '@pages/home'` |
+| 같은 레이어 cross-import 차단 | sibling Slice 간 import 차단 | pages/home에서 `import { x } from '@pages/products'` |
+| 상대경로 레이어 횡단 차단 | 다른 레이어 접근 시 alias 강제 | `import { x } from '../../shared/lib/utils'` |
+
+> **주의:** ESLint `no-restricted-imports`는 파일별 override 시 기본 규칙을 덮어쓴다(merge가 아닌 replace). 따라서 각 레이어별 설정에 공통 패턴(`basePatterns`)을 반복 포함해야 한다. 아래 템플릿은 헬퍼 함수로 이를 처리한다.
+
+## Flat Config (eslint.config.js) — ESLint 9+
+
+```js
+// eslint.config.js
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+
+// ── 공통 패턴 ──────────────────────────────────────────
+
+/** Slice 내부 직접 접근 차단 */
+const sliceInternalPatterns = [
+  { group: ['@shared/api/*/*'], message: '@shared/api/[domain] entrypoint를 통해 접근하세요.' },
+  { group: ['@pages/*/*'], message: '@pages/[page] entrypoint를 통해 접근하세요.' },
+  { group: ['@widgets/*/*'], message: '@widgets/[widget] entrypoint를 통해 접근하세요.' },
+  { group: ['@features/*/*'], message: '@features/[feature] entrypoint를 통해 접근하세요.' },
+  { group: ['@entities/*/*'], message: '@entities/[entity] entrypoint를 통해 접근하세요.' },
+];
+
+/** 상대경로로 다른 레이어 접근 차단 */
+const noRelativeCrossLayerPattern = {
+  group: [
+    '../**/app/**', '../**/pages/**', '../**/shared/**',
+    '../**/widgets/**', '../**/features/**', '../**/entities/**',
+  ],
+  message: '다른 레이어는 path alias를 사용하세요. 상대경로는 레이어 내부에서만 허용됩니다.',
+};
+
+const basePatterns = [...sliceInternalPatterns, noRelativeCrossLayerPattern];
+
+/** 역방향 import 차단 패턴 생성 */
+function blockLayers(...layers) {
+  return [{
+    group: layers.flatMap((l) => [`@${l}`, `@${l}/*`]),
+    message: `이 레이어에서 ${layers.join(', ')} 레이어를 import할 수 없습니다.`,
+  }];
+}
+
+/** 같은 레이어 cross-import 차단 패턴 생성 */
+function blockSiblings(layer) {
+  return [{
+    group: [`@${layer}`, `@${layer}/*`],
+    message: '같은 레이어의 다른 Slice를 import할 수 없습니다.',
+  }];
+}
+
+// ── ESLint 설정 ──────────────────────────────────────────
+
+export default tseslint.config(
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+
+  // 기본 규칙 (특정 레이어에 속하지 않는 파일)
+  {
+    rules: {
+      'no-restricted-imports': ['error', { patterns: basePatterns }],
+    },
+  },
+
+  // ── 레이어별 import 방향 규칙 ────────────────────────
+
+  // shared: 모든 상위 레이어 import 금지
+  {
+    files: ['src/shared/**/*.{ts,tsx,js,jsx}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          ...basePatterns,
+          ...blockLayers('app', 'pages', 'widgets', 'features', 'entities'),
+        ],
+      }],
+    },
+  },
+
+  // entities: shared만 import 가능
+  {
+    files: ['src/entities/**/*.{ts,tsx,js,jsx}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          ...basePatterns,
+          ...blockLayers('app', 'pages', 'widgets', 'features'),
+          ...blockSiblings('entities'),
+        ],
+      }],
+    },
+  },
+
+  // features: entities, shared만 import 가능
+  {
+    files: ['src/features/**/*.{ts,tsx,js,jsx}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          ...basePatterns,
+          ...blockLayers('app', 'pages', 'widgets'),
+          ...blockSiblings('features'),
+        ],
+      }],
+    },
+  },
+
+  // widgets: features, entities, shared만 import 가능
+  {
+    files: ['src/widgets/**/*.{ts,tsx,js,jsx}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          ...basePatterns,
+          ...blockLayers('app', 'pages'),
+          ...blockSiblings('widgets'),
+        ],
+      }],
+    },
+  },
+
+  // pages: app import 금지 + cross-page 금지
+  {
+    files: ['src/pages/**/*.{ts,tsx,js,jsx}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          ...basePatterns,
+          ...blockLayers('app'),
+          ...blockSiblings('pages'),
+        ],
+      }],
+    },
+  },
+);
+```
+
+## Legacy Config (.eslintrc.js) — ESLint 8
+
+```js
+// .eslintrc.js
+
+/** Slice 내부 직접 접근 차단 */
+const sliceInternalPatterns = [
+  { group: ['@shared/api/*/*'], message: '@shared/api/[domain] entrypoint를 통해 접근하세요.' },
+  { group: ['@pages/*/*'], message: '@pages/[page] entrypoint를 통해 접근하세요.' },
+  { group: ['@widgets/*/*'], message: '@widgets/[widget] entrypoint를 통해 접근하세요.' },
+  { group: ['@features/*/*'], message: '@features/[feature] entrypoint를 통해 접근하세요.' },
+  { group: ['@entities/*/*'], message: '@entities/[entity] entrypoint를 통해 접근하세요.' },
+];
+
+/** 상대경로로 다른 레이어 접근 차단 */
+const noRelativeCrossLayerPattern = {
+  group: [
+    '../**/app/**', '../**/pages/**', '../**/shared/**',
+    '../**/widgets/**', '../**/features/**', '../**/entities/**',
+  ],
+  message: '다른 레이어는 path alias를 사용하세요. 상대경로는 레이어 내부에서만 허용됩니다.',
+};
+
+const basePatterns = [...sliceInternalPatterns, noRelativeCrossLayerPattern];
+
+/** 역방향 import 차단 패턴 생성 */
+function blockLayers(...layers) {
+  return [{
+    group: layers.flatMap((l) => [`@${l}`, `@${l}/*`]),
+    message: `이 레이어에서 ${layers.join(', ')} 레이어를 import할 수 없습니다.`,
+  }];
+}
+
+/** 같은 레이어 cross-import 차단 패턴 생성 */
+function blockSiblings(layer) {
+  return [{
+    group: [`@${layer}`, `@${layer}/*`],
+    message: '같은 레이어의 다른 Slice를 import할 수 없습니다.',
+  }];
+}
+
+module.exports = {
+  rules: {
+    // 기본 규칙 (특정 레이어에 속하지 않는 파일)
+    'no-restricted-imports': ['error', { patterns: basePatterns }],
+  },
+  overrides: [
+    // ── 레이어별 import 방향 규칙 ──────────────────
+
+    // shared: 모든 상위 레이어 import 금지
+    {
+      files: ['src/shared/**/*.{ts,tsx,js,jsx}'],
+      rules: {
+        'no-restricted-imports': ['error', {
+          patterns: [
+            ...basePatterns,
+            ...blockLayers('app', 'pages', 'widgets', 'features', 'entities'),
+          ],
+        }],
+      },
+    },
+
+    // entities: shared만 import 가능
+    {
+      files: ['src/entities/**/*.{ts,tsx,js,jsx}'],
+      rules: {
+        'no-restricted-imports': ['error', {
+          patterns: [
+            ...basePatterns,
+            ...blockLayers('app', 'pages', 'widgets', 'features'),
+            ...blockSiblings('entities'),
+          ],
+        }],
+      },
+    },
+
+    // features: entities, shared만 import 가능
+    {
+      files: ['src/features/**/*.{ts,tsx,js,jsx}'],
+      rules: {
+        'no-restricted-imports': ['error', {
+          patterns: [
+            ...basePatterns,
+            ...blockLayers('app', 'pages', 'widgets'),
+            ...blockSiblings('features'),
+          ],
+        }],
+      },
+    },
+
+    // widgets: features, entities, shared만 import 가능
+    {
+      files: ['src/widgets/**/*.{ts,tsx,js,jsx}'],
+      rules: {
+        'no-restricted-imports': ['error', {
+          patterns: [
+            ...basePatterns,
+            ...blockLayers('app', 'pages'),
+            ...blockSiblings('widgets'),
+          ],
+        }],
+      },
+    },
+
+    // pages: app import 금지 + cross-page 금지
+    {
+      files: ['src/pages/**/*.{ts,tsx,js,jsx}'],
+      rules: {
+        'no-restricted-imports': ['error', {
+          patterns: [
+            ...basePatterns,
+            ...blockLayers('app'),
+            ...blockSiblings('pages'),
+          ],
+        }],
+      },
+    },
+  ],
+};
+```
+
+## Next.js 프로젝트 추가 규칙
+
+Next.js 프로젝트에서는 API route ↔ FSD 레이어 간 import도 차단해야 한다. 위 템플릿의 레이어별 설정에 아래 override를 추가한다. 상세 배경은 [nextjs.md](../integrations/nextjs.md)의 "SKILL.md 규칙과의 차이" 섹션을 참조.
+
+```js
+// API route 파일에서 FSD 레이어 import 차단
+{
+  files: ['app/api/**/*.{ts,tsx,js,jsx}'],
+  rules: {
+    'no-restricted-imports': ['error', {
+      patterns: [
+        {
+          group: [
+            '@app', '@app/*', '@pages', '@pages/*', '@shared', '@shared/*',
+            '@widgets', '@widgets/*', '@features', '@features/*', '@entities', '@entities/*',
+          ],
+          message: 'API route는 FSD 레이어를 import할 수 없습니다. 자체적으로 로직을 완결하세요.',
+        },
+      ],
+    }],
+  },
+},
+```
+
+> FSD 레이어 → API route 방향은 별도 차단 불필요. API route는 `src/` 밖(루트 `app/api/`)에 있어 path alias로 접근할 수 없고, 상대경로도 depth가 깊어 실질적으로 발생하지 않는다.
+
+## 적용 시점
+
+- **새 프로젝트 (fe-init):** 프로젝트 생성 시 자동으로 포함
+- **기존 프로젝트 (apply-architecture):** Phase 1의 4단계(import 수정 및 도구 설정)에서 추가
+- 모든 레이어(선택 레이어 포함)의 규칙을 처음부터 포함한다. 해당 레이어 폴더가 없어도 규칙이 있으면 해가 없고, 나중에 도입 시 누락을 방지한다.

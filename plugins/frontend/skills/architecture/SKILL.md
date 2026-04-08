@@ -49,7 +49,7 @@ Next.js 프로젝트(`package.json`에 `next` 의존성 존재)를 감지하면 
 
 **필수 설정:**
 - [ ] tsconfig path alias — 레이어별 alias만 허용(`@app/*`, `@pages/*`, `@shared/*`, `@widgets/*`, `@features/*`, `@entities/*`). 전체 소스를 잡는 포괄적 alias(`@/*` 등)는 사용하지 않는다.
-- [ ] ESLint `no-restricted-imports` — `@pages/*/*`, `@shared/api/*/*` 등 Slice 내부 직접 접근 차단
+- [ ] ESLint `no-restricted-imports` — Slice 내부 접근 차단, 레이어 방향 강제, cross-import 차단, 상대경로 레이어 횡단 차단. 상세 템플릿은 [eslint-config.md](rules/eslint-config.md) 참조
 - [ ] vite.config.ts — `resolve.tsconfigPaths: true` 설정
 - [ ] `.prettierrc` 설정
 
@@ -68,6 +68,7 @@ Next.js 프로젝트(`package.json`에 `next` 의존성 존재)를 감지하면 
 - shared 레이어 상세 → [shared.md](layers/shared.md)
 - 선택 레이어(entities/features/widgets) 상세 → [optional-layers.md](layers/optional-layers.md)
 - Slice 공통 규칙(인터페이스/분해/추출) → [rules.md](rules/rules.md)
+- ESLint 설정 템플릿 → [eslint-config.md](rules/eslint-config.md)
 - Next.js 프로젝트 적용 가이드 → [nextjs.md](integrations/nextjs.md)
 - RSC + TanStack Query 패턴 → [nextjs-rsc-tanstack-query.md](integrations/nextjs-rsc-tanstack-query.md)
 
@@ -179,6 +180,7 @@ app → pages → (widgets → features → entities →) shared
 - `pages`는 `shared`를 import 가능. 확장 시 `widgets`, `features`, `entities`도 가능.
 - **page 간 cross-import 금지.** 같은 레이어 sibling 간 cross-import 금지.
 - `shared`는 다른 레이어를 import하지 않는다.
+- **다른 레이어 접근 시 반드시 path alias를 사용한다.** 상대경로(`../`)는 같은 레이어 내부에서만 허용.
 
 ---
 

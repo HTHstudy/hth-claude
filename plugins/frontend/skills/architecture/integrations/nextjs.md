@@ -331,34 +331,7 @@ SKILL.md의 기본 체크리스트 대신 아래를 따른다:
 
 **필수 설정:**
 - [ ] tsconfig path alias — 레이어별 alias만 허용(`@app/*`, `@pages/*`, `@shared/*` 등, `src/` 기준). 전체 소스를 잡는 포괄적 alias(`@/*` 등)는 사용하지 않는다. Next.js 기본 `@/*` alias가 있으면 제거한다.
-- [ ] ESLint `no-restricted-imports` — 기존 Slice 내부 접근 차단 + API route ↔ FSD 레이어 import 차단:
-
-```js
-// API route ↔ FSD 레이어 양방향 import 차단 (기존 Slice 규칙에 추가)
-"no-restricted-imports": ["error", {
-  patterns: [
-    // 기존 Slice 내부 접근 차단 (rules.md 참조)
-    { group: ["@pages/*/*"], message: "entrypoint를 통해 접근하세요." },
-    { group: ["@widgets/*/*"], message: "entrypoint를 통해 접근하세요." },
-    { group: ["@features/*/*"], message: "entrypoint를 통해 접근하세요." },
-    { group: ["@entities/*/*"], message: "entrypoint를 통해 접근하세요." },
-  ],
-}],
-// overrides로 API route 파일에서 FSD 레이어 import 차단
-overrides: [
-  {
-    files: ["app/api/**/*"],
-    rules: {
-      "no-restricted-imports": ["error", {
-        patterns: [
-          { group: ["@app/*", "@pages/*", "@shared/*", "@widgets/*", "@features/*", "@entities/*"],
-            message: "API route는 FSD 레이어를 import할 수 없습니다. 자체적으로 로직을 완결하세요." },
-        ],
-      }],
-    },
-  },
-]
-```
+- [ ] ESLint `no-restricted-imports` — [eslint-config.md](../rules/eslint-config.md)의 기본 템플릿 + "Next.js 프로젝트 추가 규칙" 섹션의 API route 차단 설정을 함께 적용한다
 
 - [ ] `next.config.js` 설정
 

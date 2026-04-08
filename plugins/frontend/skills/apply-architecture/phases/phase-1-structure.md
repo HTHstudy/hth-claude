@@ -108,13 +108,15 @@ src/
 
 #### ESLint `no-restricted-imports` 설정
 
-[rules.md](../../architecture/rules/rules.md)의 "ESLint 설정 템플릿" 섹션을 읽고, 프로젝트에 맞게 적용한다:
+[eslint-config.md](../../architecture/rules/eslint-config.md)를 읽고, 프로젝트에 맞게 적용한다:
 
 1. **ESLint 버전 감지:** `eslint.config.js` 존재 → Flat Config (9+), `.eslintrc.*` 존재 → Legacy Config (8)
-2. **적용할 패턴 결정:** Phase 1에서 실제 생성한 레이어만 포함한다
-   - 항상 포함: `@shared/api/*/*`, `@pages/*/*`
-   - 선택 레이어가 존재할 때만 포함: `@widgets/*/*`, `@features/*/*`, `@entities/*/*`
-3. **ESLint config 파일에 규칙 추가:** rules.md의 해당 버전 템플릿을 적용한다
+2. **적용할 패턴 결정:** Phase 1에서 실제 생성한 레이어만 포함한다. rules.md 템플릿의 4가지 규칙을 모두 적용한다:
+   - Slice 내부 접근 차단 (`@[layer]/*/*`)
+   - 레이어 방향 강제 (하위 → 상위 차단, 레이어별 override)
+   - 같은 레이어 cross-import 차단
+   - 상대경로 레이어 횡단 차단
+3. **ESLint config 파일에 규칙 추가:** eslint-config.md의 해당 버전 템플릿을 적용한다
 4. **Next.js 프로젝트:** [nextjs.md](../../architecture/integrations/nextjs.md)의 API route ↔ FSD 레이어 차단 규칙도 함께 추가한다
 5. **검증:** `yarn lint` (또는 프로젝트의 lint 명령)을 실행하여 규칙이 정상 동작하는지 확인한다
 
