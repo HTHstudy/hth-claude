@@ -59,7 +59,7 @@
 | 컴포넌트 수 | [N]개 |
 | 라우트 수 | [N]개 |
 | 복잡도 등급 | [Small / Medium / Large] |
-| API 호출 방식 | [결과] |
+| API 호출 방식 | [결과 — 없으면 "없음"] |
 | TanStack Query | [사용 / 미사용] |
 | 차단 요소 | [없음 / 목록] |
 
@@ -67,12 +67,24 @@
 [전체 Phase 진행 / Phase 1만 우선 진행 / 진행 불가 — 사유]
 
 ### 적용 대상 Phase
-- [ ] Phase 1: 구조 전환
-- [ ] Phase 2: shared/api 3계층 (API 코드 존재 시)
-- [ ] Phase 3: query/mutation 팩토리 (TanStack Query 사용 시)
-- [ ] Phase 4: 코드 정리 및 세분화
-- [ ] Phase 5: 최종 보고
+- [x] Phase 1: 구조 전환
+- [ ] Phase 2: shared/api 3계층
+- [ ] Phase 3: query/mutation 팩토리
+- [x] Phase 4: 코드 정리 및 세분화
+- [x] Phase 5: 최종 보고
 ```
+
+**적용 대상 Phase 판단 기준:**
+
+0-1 스캔 결과를 바탕으로 체크 여부를 결정한다. 템플릿을 그대로 복사하지 않는다.
+
+| Phase | 체크 조건 |
+|-------|-----------|
+| Phase 1 | 항상 체크 |
+| Phase 2 | API 호출 코드가 존재할 때만 체크 (axios, fetch, HTTP 클라이언트 사용이 확인된 경우) |
+| Phase 3 | TanStack Query를 사용할 때만 체크 (`useQuery`/`useMutation` 호출이 확인된 경우) |
+| Phase 4 | 항상 체크 |
+| Phase 5 | 항상 체크 |
 
 저장 후 `.gitignore`에 `.architecture-migration/`을 추가한다.
 
