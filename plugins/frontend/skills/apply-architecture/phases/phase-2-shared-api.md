@@ -55,6 +55,24 @@ shared/api/[domain]/
 2. **프로젝트 전체 대상 일괄 수정**: Agent에 위임할 경우, 전체 매핑을 한 번에 전달하여 누락을 방지한다
 3. **누락 검증**: 치환 후 기존 API 함수명이나 import 경로가 남아있지 않은지 grep으로 확인한다
 
+### 사전 점검 (빌드 전)
+
+빌드 실행 전에 아래 항목을 grep으로 점검하고 일괄 수정한다:
+
+- **기존 API import 잔여**: Phase 2에서 제거/이동한 기존 API 함수명이나 import 경로가 남아있지 않은지
+- **DOMAIN_API import 누락**: 새 API 객체를 사용하는 파일에 import 문이 정상인지
+- **타입 import**: API 타입을 `import type`으로 가져오는지
+
+```bash
+# 기존 API 함수/경로 잔여 확인 (매핑 테이블의 기존 경로 기준)
+grep -rn "from ['\"].*기존API경로" src/ --include="*.ts" --include="*.tsx" | head -20
+
+# DOMAIN_API import 정합성
+grep -rn "DOMAIN_API\." src/ --include="*.ts" --include="*.tsx" -l | while read f; do
+  grep -L "import.*DOMAIN_API" "$f"
+done
+```
+
 ### 빌드 검증 후 커밋
 
 빌드가 정상이면 중간 커밋을 생성한다:

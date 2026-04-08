@@ -93,6 +93,22 @@ brandstory/
 
 제안만 하고, 도입 여부는 사용자가 결정한다. 사용자가 원하면 해당 레이어를 생성하고 코드를 이동한다.
 
+### 사전 점검 (빌드 전)
+
+위반 수정 후, 빌드 실행 전에 아래를 점검한다:
+
+- **rename 후 import 잔여**: git mv로 이름 변경한 파일의 이전 경로가 import에 남아있지 않은지
+- **Named Export 전환 누락**: default → named 전환 후, import 측도 `{ }` 구문으로 변경되었는지
+- **index.tsx re-export 래퍼 잔존**: 폴더 전환 시 불필요한 re-export만 하는 index.ts가 없는지
+
+```bash
+# rename 후 이전 파일명 잔여 (대문자 포함 파일명이 import에 남아있는지)
+grep -rn "from ['\"].*[A-Z].*['\"]" src/ --include="*.ts" --include="*.tsx" | head -20
+
+# default import 잔여
+grep -rn "import [A-Z][a-zA-Z]* from" src/ --include="*.ts" --include="*.tsx" | grep -v "node_modules" | head -20
+```
+
 ### 빌드 검증 후 커밋
 
 빌드가 정상이면 중간 커밋을 생성한다:

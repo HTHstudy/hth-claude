@@ -51,6 +51,23 @@ useQuery(productQueries.list(params))
 2. **프로젝트 전체 대상 일괄 수정**: Agent에 위임할 경우, 전체 매핑을 한 번에 전달하여 누락을 방지한다
 3. **누락 검증**: 치환 후 팩토리를 거치지 않는 직접 `useQuery`/`useMutation` 호출이 남아있지 않은지 grep으로 확인한다
 
+### 사전 점검 (빌드 전)
+
+빌드 실행 전에 아래 항목을 grep으로 점검하고 일괄 수정한다:
+
+- **직접 useQuery/useMutation 잔여**: 팩토리를 거치지 않는 직접 호출이 남아있지 않은지
+- **import 경로 정합성**: 팩토리 파일 import가 정상인지
+- **queryKey 하드코딩 잔여**: 팩토리 키를 사용하지 않는 하드코딩 queryKey가 남아있지 않은지
+
+```bash
+# 팩토리를 거치지 않는 직접 호출 잔여
+grep -rn "useQuery({" src/ --include="*.ts" --include="*.tsx" | grep -v "node_modules" | head -20
+grep -rn "useMutation({" src/ --include="*.ts" --include="*.tsx" | grep -v "node_modules" | head -20
+
+# queryKey 하드코딩 잔여
+grep -rn "queryKey:" src/ --include="*.ts" --include="*.tsx" | grep -v "node_modules" | head -20
+```
+
 ### 빌드 검증 후 커밋
 
 빌드가 정상이면 중간 커밋을 생성한다:

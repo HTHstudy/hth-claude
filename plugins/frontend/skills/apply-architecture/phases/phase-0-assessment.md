@@ -36,6 +36,10 @@ find [소스루트] -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o 
 # 3. import 맵 (파일별 import 문)
 grep -rn "^import " [소스루트] --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" \
   | grep -v node_modules | grep -v __tests__
+
+# import 맵이 200줄을 초과하면 assessment.md에는 처음 200줄만 저장하고,
+# 전체 맵은 .architecture-migration/import-map.txt에 별도 저장한다.
+# Phase 1에서는 import-map.txt를 필요한 패턴별로 grep하여 참조한다.
 ```
 
 이 결과를 assessment.md에 포함한다. Phase 1은 이 스냅샷만으로 전환 계획을 수립할 수 있다.
