@@ -1,5 +1,5 @@
 ---
-name: apply-architecture
+name: migrate
 description: 기존 프론트엔드 프로젝트에 레이어드 아키텍처를 적용한다. 폴더 재구조화, API 패턴, query/mutation 팩토리까지 단계별로 진행.
 disable-model-invocation: true
 ---
@@ -86,10 +86,10 @@ Phase 0 완료 후, Phase 1 시작 전에 작업용 브랜치를 생성한다:
 3. 새 브랜치를 생성하고 체크아웃한다:
 
 ```bash
-git checkout -b refactor/apply-architecture
+git checkout -b refactor/migrate
 ```
 
-- 같은 이름의 브랜치가 이미 존재하면 날짜를 붙인다: `refactor/apply-architecture-YYYYMMDD`
+- 같은 이름의 브랜치가 이미 존재하면 날짜를 붙인다: `refactor/migrate-YYYYMMDD`
 
 사용자에게 생성된 브랜치를 확인시킨 후 Phase 1을 시작한다.
 

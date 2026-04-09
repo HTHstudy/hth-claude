@@ -14,8 +14,8 @@
 
 | 상황 | 실행 |
 |------|------|
-| 새 프로젝트 시작 | `/frontend:fe-init` |
-| 기존 프로젝트에 적용 | `/frontend:apply-architecture` |
+| 새 프로젝트 시작 | `/frontend:create` |
+| 기존 프로젝트에 적용 | `/frontend:migrate` |
 
 ---
 
@@ -26,8 +26,8 @@
 | 스킬 | 유형 | 설명 |
 |------|------|------|
 | `architecture` | 자동 적용 | 프론트엔드 코드 작성·리뷰·리팩토링 시 레이어 아키텍처 규칙을 자동 적용. Next.js 프로젝트 감지 시 추가 규칙 자동 로드 |
-| `fe-init` | 사용자 호출 | 레이어드 아키텍처 기반 새 프로젝트 생성 |
-| `apply-architecture` | 사용자 호출 | 기존 프로젝트를 레이어드 아키텍처로 단계별 전환 |
+| `create` | 사용자 호출 | 레이어드 아키텍처 기반 새 프로젝트 생성 |
+| `migrate` | 사용자 호출 | 기존 프로젝트를 레이어드 아키텍처로 단계별 전환 |
 
 `architecture` 스킬은 별도 호출 없이 프론트엔드 코드 작업 시 Claude가 자동으로 적용합니다:
 
@@ -42,12 +42,12 @@
 
 | 스킬 | 호출 방법 | 설명 |
 |------|-----------|------|
-| `fe-init` | `/frontend:fe-init` | 새 프로젝트 생성 |
-| `apply-architecture` | `/frontend:apply-architecture` | 기존 프로젝트에 아키텍처 적용 |
+| `create` | `/frontend:create` | 새 프로젝트 생성 |
+| `migrate` | `/frontend:migrate` | 기존 프로젝트에 아키텍처 적용 |
 
 ---
 
-## `/frontend:fe-init`
+## `/frontend:create`
 
 레이어드 아키텍처가 적용된 새 프론트엔드 프로젝트를 생성합니다.
 
@@ -65,7 +65,7 @@
 | 패키지 매니저 | Yarn |
 | 포매터 | Prettier |
 
-## `/frontend:apply-architecture`
+## `/frontend:migrate`
 
 기존 프로젝트의 구조를 분석하고, 레이어드 아키텍처로 단계별 전환합니다.
 React(Vite)와 Next.js(App Router / Pages Router) 프로젝트 모두 지원하며, 프레임워크를 자동 감지하여 적절한 구조를 적용합니다.

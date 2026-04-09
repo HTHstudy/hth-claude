@@ -52,8 +52,8 @@ curl -fsSL https://claude.ai/install.sh | bash
 
 - **Skills**:
   - `architecture` — 프론트엔드 코드 작성·리뷰·리팩토링 시 레이어 아키텍처 규칙 자동 적용 (Next.js 감지 시 추가 규칙 자동 로드)
-  - `fe-init` — 레이어드 아키텍처 기반 새 프로젝트 생성 (`/frontend:fe-init`)
-  - `apply-architecture` — 기존 프로젝트를 레이어드 아키텍처로 단계별 전환 (`/frontend:apply-architecture`)
+  - `create` — 레이어드 아키텍처 기반 새 프로젝트 생성 (`/frontend:create`)
+  - `migrate` — 기존 프로젝트를 레이어드 아키텍처로 단계별 전환 (`/frontend:migrate`)
 - **Architecture**: `app → pages → (widgets → features → entities →) shared`
 - **Resources**: 레이어별 상세 규칙, shared/api 3계층 패턴, query/mutation factory 패턴, Next.js FSD 적용 가이드
 - **Docs**: [한국어](plugins/frontend/docs/ko/README.md) · [English](plugins/frontend/docs/en/README.md)
@@ -80,9 +80,9 @@ hth-claude/
 │       │   │   │   └── nextjs-rsc-tanstack-query.md
 │       │   │   ├── layers/             # 레이어별 상세 규칙
 │       │   │   └── rules/              # Slice 공통 규칙
-│       │   ├── fe-init/                # 새 프로젝트 생성 스킬
+│       │   ├── create/                 # 새 프로젝트 생성 스킬
 │       │   │   └── SKILL.md
-│       │   └── apply-architecture/     # 기존 프로젝트 전환 스킬
+│       │   └── migrate/                # 기존 프로젝트 전환 스킬
 │       │       └── SKILL.md
 │       └── docs/                       # 한국어/영어 문서
 └── README.md
