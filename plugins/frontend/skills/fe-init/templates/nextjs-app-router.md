@@ -199,57 +199,7 @@ FSD pages 레이어는 src/pages/에 위치합니다.
 
 > `@/*` 같은 포괄적 alias는 제거한다. 레이어별 alias만 허용.
 
-**ESLint** — `no-restricted-imports` 규칙을 아래와 같이 **정확히** 추가한다:
-
-```js
-// 1. 전체 파일 대상 — 레이어 내부 모듈 직접 접근 차단 + 컨벤션 강제
-'no-restricted-imports': ['error', {
-  patterns: [
-    { group: ['@shared/api/*/*'], message: '@shared/api/[domain] 엔트리포인트를 사용하세요.' },
-    { group: ['@pages/*/*'], message: '@pages/[page] 엔트리포인트를 사용하세요.' },
-    { group: ['@widgets/*/*'], message: '@widgets/[widget] 엔트리포인트를 사용하세요.' },
-    { group: ['@features/*/*'], message: '@features/[feature] 엔트리포인트를 사용하세요.' },
-    { group: ['@entities/*/*'], message: '@entities/[entity] 엔트리포인트를 사용하세요.' },
-  ],
-}],
-'@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
-'import/no-default-export': 'error'
-```
-
-추가로, Next.js가 default export를 요구하는 파일은 예외 처리한다:
-
-```js
-// 2. Default Export 예외 — Next.js 라우팅 파일
-{
-  files: [
-    'app/**/page.tsx', 'app/**/layout.tsx', 'app/**/loading.tsx',
-    'app/**/error.tsx', 'app/**/not-found.tsx', 'app/**/template.tsx',
-    'app/**/default.tsx',
-  ],
-  rules: {
-    'import/no-default-export': 'off',
-  },
-}
-```
-
-또한, `app/api/` 파일에 대해 FSD 레이어 import를 차단하는 규칙을 **별도 override**로 추가한다:
-
-```js
-// 2. app/api/** 대상 — API route는 FSD 레이어를 import할 수 없다
-{
-  files: ['app/api/**/*'],
-  rules: {
-    'no-restricted-imports': ['error', {
-      patterns: [
-        {
-          group: ['@app/*', '@pages/*', '@shared/*', '@widgets/*', '@features/*', '@entities/*'],
-          message: 'API route는 FSD 레이어를 import할 수 없습니다. 자체적으로 로직을 완결하세요.',
-        },
-      ],
-    }],
-  },
-}
-```
+**ESLint** — [eslint-config.md](../../architecture/rules/eslint-config.md)를 읽고, ESLint 버전에 맞는 템플릿(Flat Config 또는 Legacy Config)을 **그대로** 적용한다. Next.js 프로젝트이므로 "Next.js 프로젝트 추가 규칙" 섹션도 함께 적용한다.
 
 **Prettier** — `.prettierrc` 생성:
 

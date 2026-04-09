@@ -94,33 +94,7 @@ src/
 }
 ```
 
-**ESLint** — `no-restricted-imports` 규칙을 아래와 같이 **정확히** 추가한다:
-
-```js
-'no-restricted-imports': ['error', {
-  patterns: [
-    { group: ['@shared/api/*/*'], message: '@shared/api/[domain] 엔트리포인트를 사용하세요.' },
-    { group: ['@pages/*/*'], message: '@pages/[page] 엔트리포인트를 사용하세요.' },
-    { group: ['@widgets/*/*'], message: '@widgets/[widget] 엔트리포인트를 사용하세요.' },
-    { group: ['@features/*/*'], message: '@features/[feature] 엔트리포인트를 사용하세요.' },
-    { group: ['@entities/*/*'], message: '@entities/[entity] 엔트리포인트를 사용하세요.' },
-  ],
-}],
-'@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
-'import/no-default-export': 'error'
-```
-
-`src/main.tsx`는 Vite 엔트리포인트이므로 default export 예외 처리한다:
-
-```js
-// override: Vite 엔트리 파일
-{
-  files: ['src/main.tsx'],
-  rules: {
-    'import/no-default-export': 'off',
-  },
-}
-```
+**ESLint** — [eslint-config.md](../../architecture/rules/eslint-config.md)를 읽고, ESLint 버전에 맞는 템플릿(Flat Config 또는 Legacy Config)을 **그대로** 적용한다.
 
 **Prettier** — `.prettierrc` 생성:
 

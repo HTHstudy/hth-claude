@@ -211,23 +211,12 @@ import { productHttpClient } from '@shared/api/product/product-http-client';
 
 ### ESLint로 강제
 
-`no-restricted-imports`로 내부 모듈 직접 접근을 차단한다. 도메인을 개별 나열하지 않고 와일드카드로 한 번에 처리한다.
-**프로젝트에 `shared/api`를 생성할 때 이 ESLint 규칙도 함께 추가한다.**
-
-```js
-// .eslintrc.js — 예시
-"no-restricted-imports": ["error", {
-  patterns: [
-    {
-      group: ["@shared/api/*/*"],
-      message: "API 내부 모듈은 직접 import 할 수 없습니다. @shared/api/[domain] entrypoint를 통해 접근하세요.",
-    },
-  ],
-}]
-```
+`@shared/api/*/*` 패턴으로 내부 모듈 직접 접근을 차단한다.
 
 `@shared/api/product` → 허용 (index.ts entrypoint)
 `@shared/api/product/endpoints/*`, `@shared/api/product/model` 등 → 차단
+
+프로젝트에 ESLint `no-restricted-imports` 규칙이 아직 없으면, [eslint-config.md](../rules/eslint-config.md)를 참조하여 추가한다.
 
 ---
 

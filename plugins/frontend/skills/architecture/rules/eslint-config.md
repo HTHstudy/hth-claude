@@ -79,11 +79,18 @@ export default tseslint.config(
   // ── Default Export 예외: 프레임워크가 요구하는 파일 ────
   {
     files: [
+      // Next.js App Router — UI 컴포넌트
       'app/**/page.tsx', 'app/**/layout.tsx', 'app/**/loading.tsx',
       'app/**/error.tsx', 'app/**/not-found.tsx', 'app/**/template.tsx',
-      'app/**/default.tsx',
-      'pages/**/*.tsx',          // Next.js Pages Router
-      'src/main.tsx',            // Vite 엔트리
+      'app/**/default.tsx', 'app/global-error.tsx',
+      // Next.js App Router — 메타데이터 생성 파일
+      'app/**/icon.tsx', 'app/**/apple-icon.tsx',
+      'app/**/opengraph-image.tsx', 'app/**/twitter-image.tsx',
+      'app/manifest.ts', 'app/sitemap.ts', 'app/robots.ts',
+      // Next.js Pages Router
+      'pages/**/*.tsx',
+      // Vite 엔트리
+      'src/main.tsx',
     ],
     rules: {
       'import/no-default-export': 'off',
@@ -215,11 +222,18 @@ module.exports = {
     // ── Default Export 예외: 프레임워크가 요구하는 파일 ──
     {
       files: [
+        // Next.js App Router — UI 컴포넌트
         'app/**/page.tsx', 'app/**/layout.tsx', 'app/**/loading.tsx',
         'app/**/error.tsx', 'app/**/not-found.tsx', 'app/**/template.tsx',
-        'app/**/default.tsx',
-        'pages/**/*.tsx',          // Next.js Pages Router
-        'src/main.tsx',            // Vite 엔트리
+        'app/**/default.tsx', 'app/global-error.tsx',
+        // Next.js App Router — 메타데이터 생성 파일
+        'app/**/icon.tsx', 'app/**/apple-icon.tsx',
+        'app/**/opengraph-image.tsx', 'app/**/twitter-image.tsx',
+        'app/manifest.ts', 'app/sitemap.ts', 'app/robots.ts',
+        // Next.js Pages Router
+        'pages/**/*.tsx',
+        // Vite 엔트리
+        'src/main.tsx',
       ],
       rules: {
         'import/no-default-export': 'off',

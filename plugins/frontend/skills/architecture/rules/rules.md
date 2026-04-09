@@ -20,14 +20,13 @@ import { NavMenu } from '@widgets/header/nav-menu';
 
 ### ESLint 강제
 
-아래 규칙을 ESLint로 강제한다. 전체 설정 템플릿은 [eslint-config.md](eslint-config.md) 참조.
+[eslint-config.md](eslint-config.md)의 전체 템플릿을 적용한다. 주요 규칙:
 
-- `@[layer]/*/*` 패턴으로 Slice 내부 직접 접근 차단
-- 레이어 방향 위반 import 차단 (하위 → 상위)
-- 같은 레이어 sibling 간 cross-import 차단
-- 상대경로로 다른 레이어 접근 차단 (path alias 강제)
-- `import/no-default-export` — Named Export 강제 (프레임워크 요구 파일은 override로 예외)
-- `@typescript-eslint/consistent-type-imports` — 타입 import에 `type` 키워드 강제
+- `no-restricted-imports` — Slice 내부 접근, 레이어 방향, cross-import, 상대경로 횡단 차단
+- `import/no-default-export` — Named Export 강제 (프레임워크 요구 파일은 예외)
+- `@typescript-eslint/consistent-type-imports` — 타입 import 강제
+
+규칙 추가/변경 시 eslint-config.md만 수정한다.
 
 ### import 규칙
 - Slice 내부: 상대경로

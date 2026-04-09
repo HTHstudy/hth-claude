@@ -278,13 +278,9 @@ done
 [eslint-config.md](../../architecture/rules/eslint-config.md)를 읽고, 프로젝트에 맞게 적용한다:
 
 1. **ESLint 버전 감지:** `eslint.config.js` 존재 → Flat Config (9+), `.eslintrc.*` 존재 → Legacy Config (8)
-2. **적용할 규칙:**
-   - `no-restricted-imports` — Slice 내부 접근 차단, 레이어 방향 강제, cross-import 차단, 상대경로 레이어 횡단 차단
-   - `@typescript-eslint/consistent-type-imports` — 타입 import에 `type` 키워드 강제
-   - `import/no-default-export` — Named Export 강제 + 프레임워크 요구 파일 예외 (eslint-config.md 참조)
-3. **ESLint config 파일에 규칙 추가:** eslint-config.md의 해당 버전 템플릿을 적용한다
-4. **Next.js 프로젝트:** [nextjs.md](../../architecture/integrations/nextjs.md)의 API route ↔ FSD 레이어 차단 규칙 + default export 예외 파일도 함께 추가한다
-5. **검증:** `yarn lint` (또는 프로젝트의 lint 명령)을 실행하여 규칙이 정상 동작하는지 확인한다
+2. **eslint-config.md의 해당 버전 템플릿을 그대로 적용한다** (규칙 목록은 eslint-config.md에서 관리)
+3. **Next.js 프로젝트:** eslint-config.md의 "Next.js 프로젝트 추가 규칙" 섹션도 함께 적용한다
+4. **검증:** `yarn lint` (또는 프로젝트의 lint 명령)을 실행하여 규칙이 정상 동작하는지 확인한다
 
 ### 5단계: 사전 점검 및 빌드 검증
 
