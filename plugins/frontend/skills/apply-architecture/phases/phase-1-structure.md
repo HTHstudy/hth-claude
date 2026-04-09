@@ -15,6 +15,8 @@ assessment.md의 스냅샷만으로 전환 계획을 수립한다. 소스 파일
 
 > **이 분류는 패턴 매칭이다. 설계 판단이 아니다.** import-map의 데이터만으로 기계적으로 분류한다. 컴포넌트를 개별로 읽거나 내부 로직을 분석하지 않는다. 개별 파일 Read 금지.
 
+> **Phase 1은 레이어 배치만 결정한다.** 파일명 변환(kebab-case), 폴더 구조 전환(단일 파일 → 폴더), re-export 래퍼 생성, FSD import 방향 검증은 **Phase 4에서 처리한다.** 여기서 판단하지 않는다.
+
 assessment.md의 import 맵(또는 `.architecture-migration/import-map.txt`)을 **1회 읽고**, 아래 절차를 순서대로 실행한다.
 
 #### 분류 절차 (순서대로 실행, 먼저 매칭 우선)
@@ -45,10 +47,12 @@ assessment.md의 import 맵(또는 `.architecture-migration/import-map.txt`)을 
 
 ```
 # 현재경로\t대상경로
-src/components/Header.tsx	src/app/header.tsx
-src/views/Home.tsx	src/pages/home/index.tsx
+src/components/Header.tsx	src/app/Header.tsx
+src/views/Home.tsx	src/pages/Home.tsx
 src/utils/format.ts	src/shared/lib/format.ts
 ```
+
+**파일명은 현재 이름 그대로 유지한다.** kebab-case 변환은 Phase 4에서 일괄 처리한다.
 
 계획(매핑 테이블)을 사용자에게 제시하고 **확인을 받은 후** 진행한다.
 
@@ -150,16 +154,10 @@ src/
 
 #### 파일 vs 폴더 판단 기준
 
-page(및 모든 컴포넌트)를 폴더로 만들지, 단일 파일로 둘지는 **하위 종속 컴포넌트 유무**로 결정한다:
+**Phase 1에서는 현재 디렉토리 구조를 그대로 유지하여 이동한다.** 폴더 전환(단일 파일 → 폴더 + index.tsx)은 Phase 4에서 수행한다.
 
-| 조건 | 형태 | 예시 |
-|------|------|------|
-| 종속 컴포넌트·훅·스타일이 없음 | **단일 파일** | `pages/about-brandstory.tsx` |
-| 종속 컴포넌트·훅·스타일이 2개 이상 | **폴더 + index.tsx** | `pages/about-brandstory/index.tsx` + 하위 파일들 |
-
-- 종속 파일이 **1개뿐**이면 해당 로직을 index.tsx에 합쳐서 단일 파일로 유지한다.
-- index.tsx가 단순 re-export만 하는 래퍼가 되어서는 안 된다. index.tsx는 실제 구현 파일이다.
-- 파일 크기가 아니라 **종속 컴포넌트 유무**가 기준이다.
+- 현재 폴더에 있는 파일들은 폴더 채로 이동한다 (예: `components/connect/` → `pages/connect/`)
+- 현재 단일 파일은 단일 파일로 이동한다 (예: `components/promotion/Promotion.tsx` → `pages/Promotion.tsx`)
 
 #### 일괄 처리 전략
 
@@ -169,29 +167,14 @@ page(및 모든 컴포넌트)를 폴더로 만들지, 단일 파일로 둘지는
 # 1. 대상 디렉토리 일괄 생성
 awk -F'\t' '{print $2}' .architecture-migration/mapping.tsv | xargs -I{} dirname {} | sort -u | xargs mkdir -p
 
-# 2. 대소문자만 변경하는 항목 분리 (macOS 대응)
-# 대소문자 변경이 필요한 파일: 임시 경로 경유 2단계 rename
-# 그 외: 직접 git mv
-
-# 3. git mv 일괄 실행
+# 2. git mv 일괄 실행 (파일명 유지이므로 대소문자 충돌 없음)
 while IFS=$'\t' read -r from to; do
   [[ "$from" == \#* ]] && continue  # 주석 스킵
   git mv "$from" "$to"
 done < .architecture-migration/mapping.tsv
 ```
 
-**macOS 대소문자 비구분 파일시스템 대응**: 파일명의 대소문자만 변경하는 경우(예: PascalCase → kebab-case) 직접 `git mv`가 실패한다. 반드시 임시 경로를 경유하는 2단계 rename을 사용한다:
-
-```bash
-# 틀림: macOS에서 실패
-git mv src/MyComponent.tsx src/my-component.tsx
-
-# 올바름: 임시 경로 경유
-git mv src/MyComponent.tsx src/tmp-my-component.tsx
-git mv src/tmp-my-component.tsx src/my-component.tsx
-```
-
-대소문자 변경이 필요한 파일이 여러 개이면, 모든 파일을 한 번에 임시 경로로 이동한 뒤 다시 한 번에 최종 경로로 이동한다.
+> **참고:** Phase 1에서는 파일명을 변경하지 않으므로 macOS 대소문자 비구분 파일시스템 문제가 발생하지 않는다. 대소문자 변경(PascalCase → kebab-case)은 Phase 4에서 처리하며, 이때 임시 경로 경유 2단계 rename을 사용한다.
 
 #### 빈 디렉토리 정리
 
@@ -275,7 +258,7 @@ done
 프레임워크별로 자주 발생하는 문제를 미리 grep해서 일괄 수정한다:
 
 - **Next.js App Router**: `searchParams`, `params`가 Promise로 바뀐 버전에서 null 체크/await 누락
-- **SCSS/CSS Module import**: 파일명 대소문자 변경 후 import 경로 불일치
+- **SCSS/CSS Module import**: 파일 이동 후 import 경로 불일치
 - **절대경로 잔여**: 이전 경로 별칭이나 상대경로가 남아있는지 확인
 - **타입 import**: `import { Type }` → `import type { Type }` 변환 누락
 
@@ -283,7 +266,7 @@ Grep 도구로 아래 패턴을 점검한다:
 - 이전 상대경로 잔여: pattern `from ['\"]\.\.\/`, glob `*.{ts,tsx}`, head_limit 20
 - 이전 경로 별칭 잔여: pattern `@old-alias/`, glob `*.{ts,tsx}`, head_limit 20
 - **SCSS/CSS import 경로 불일치**: pattern `@import|@use`, glob `*.{scss,css,sass,less}`, head_limit 20
-- **CSS Module import 불일치**: pattern `\.module\.(scss|css|sass|less)`, glob `*.{ts,tsx}`, head_limit 20 — 파일명 대소문자 변경 후 import 경로가 맞는지 확인
+- **CSS Module import 불일치**: pattern `\.module\.(scss|css|sass|less)`, glob `*.{ts,tsx}`, head_limit 20 — 파일 이동 후 import 경로가 맞는지 확인
 
 #### 빌드 검증
 
