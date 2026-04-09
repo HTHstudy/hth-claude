@@ -120,6 +120,8 @@ src/
 2. 루트 `app/[route]/page.tsx`는 `src/pages/`의 page를 re-export만 하도록 재작성한다
 3. 루트에 빈 `pages/` 폴더 + README.md를 생성한다
 
+**주의: 루트 `app/`의 파일을 재작성할 때 반드시 Read 도구로 먼저 읽은 후 Write한다.** Read 없이 Write하면 도구 에러가 발생하여 불필요한 왕복이 생긴다.
+
 **주의:**
 - `src/` 폴더가 없으면 생성하고 FSD 레이어를 `src/` 안에 배치한다.
 - **루트 `app/`에 로직, 훅, 컴포넌트를 직접 구현하지 않는다.**
