@@ -118,6 +118,8 @@ src/
 **Step C. 루트 `app/`의 파일을 re-export 래퍼로 교체**
 1. 루트 `app/layout.tsx`에서 `src/app/`의 providers와 global style을 조립하도록 재작성한다
 2. 루트 `app/[route]/page.tsx`는 `src/pages/`의 page를 re-export만 하도록 재작성한다
+   - 기존 route page.tsx에 조합 로직(Suspense, hooks, 여러 컴포넌트 합성)이 있으면, 해당 로직을 `src/pages/[page-name]/index.tsx`로 추출한다. `connect-page.tsx` 같은 이름이 아닌 **반드시 `index.tsx`**를 사용한다.
+   - 단일 컴포넌트를 그대로 반환하는 경우는 추출하지 않고 route page.tsx에서 직접 re-export한다.
 3. 루트에 빈 `pages/` 폴더 + README.md를 생성한다
 
 **주의: 루트 `app/`의 파일을 재작성할 때 반드시 Read 도구로 먼저 읽은 후 Write한다.** Read 없이 Write하면 도구 에러가 발생하여 불필요한 왕복이 생긴다.
