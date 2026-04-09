@@ -92,24 +92,23 @@ import 맵이 200줄을 초과하면 assessment.md에는 처음 200줄만 저장
 [전체 Phase 진행 / Phase 1만 우선 진행 / 진행 불가 — 사유]
 
 ### 적용 대상 Phase
-- [x] Phase 1: 구조 전환
-- [ ] Phase 2: shared/api 3계층
-- [ ] Phase 3: query/mutation 팩토리
-- [x] Phase 4: 코드 정리 및 세분화
-- [x] Phase 5: 최종 보고
-```
 
-**적용 대상 Phase 판단 기준:**
-
-0-1 스캔 결과를 바탕으로 체크 여부를 결정한다. 템플릿을 그대로 복사하지 않는다.
+아래 기준에 따라 체크 여부를 결정한다:
 
 | Phase | 체크 조건 |
 |-------|-----------|
-| Phase 1 | 항상 체크 |
-| Phase 2 | API 호출 코드가 존재할 때만 체크 (axios, fetch, HTTP 클라이언트 사용이 확인된 경우) |
-| Phase 3 | TanStack Query를 사용할 때만 체크 (`useQuery`/`useMutation` 호출이 확인된 경우) |
-| Phase 4 | 항상 체크 |
-| Phase 5 | 항상 체크 |
+| Phase 1: 구조 전환 | 항상 체크 |
+| Phase 2: shared/api 3계층 | API 호출 코드가 존재할 때만 체크 (axios, fetch, HTTP 클라이언트 사용이 확인된 경우) |
+| Phase 3: query/mutation 팩토리 | TanStack Query를 사용할 때만 체크 (`useQuery`/`useMutation` 호출이 확인된 경우) |
+| Phase 4: 코드 정리 및 세분화 | 항상 체크 |
+| Phase 5: 최종 보고 | 항상 체크 |
+
+- [ ] Phase 1: 구조 전환
+- [ ] Phase 2: shared/api 3계층
+- [ ] Phase 3: query/mutation 팩토리
+- [ ] Phase 4: 코드 정리 및 세분화
+- [ ] Phase 5: 최종 보고
+```
 
 저장 후 `.gitignore`에 `.architecture-migration/`을 추가한다.
 

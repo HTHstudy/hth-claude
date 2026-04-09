@@ -168,6 +168,14 @@ const { mutate } = useMutation({
 
 ## 6. import 규칙
 
+### segment 간 import 규칙
+
+| import 가능 | import 금지 |
+|-------------|-------------|
+| `api`, `config` | `ui`, `hooks`, `query-factory` |
+
+`mutation-factory`와 `query-factory`는 서로 import하지 않는다.
+
 ### 팩토리 내부
 
 - `default-mutation-keys.ts`는 상대경로로 import한다.

@@ -63,8 +63,9 @@ import 경로, export, 타입 import 오류는 eslint가 잡는다. 여기서는
 
 - **기존 API 패턴 잔여**: 이동/삭제한 기존 API 함수명이 여전히 사용되고 있지 않은지
 
-Grep 도구로 점검한다:
-- 기존 API 함수/경로 잔여: pattern `from ['\"].*기존API경로`, glob `*.{ts,tsx}`, head_limit 20
+9단계의 매핑 테이블에서 기존 API 함수명/import 경로를 추출하여 Grep 패턴을 생성한다:
+- 기존 import 경로 잔여: 매핑 테이블의 각 `기존 경로`에 대해 pattern `from ['\"].*[기존경로]`, glob `*.{ts,tsx}`, head_limit 20
+- 기존 함수 직접 호출 잔여: 매핑 테이블의 각 `기존 함수명`에 대해 pattern `[기존함수명]\(`, glob `*.{ts,tsx}`, head_limit 20
 
 이후 SKILL.md의 공통 tsc/eslint 점검을 실행한다.
 

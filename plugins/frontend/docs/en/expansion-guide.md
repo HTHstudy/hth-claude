@@ -143,6 +143,7 @@ Rules that apply equally to all expansion layers:
 - **Slice decomposition**: Same rules as pages. No predefined folder structure — decompose as needed.
 - **Public interface**: External access only through `@[layer]/[slice]` entrypoint. Direct import of internal files is forbidden.
 - **Same-layer cross-import ban**: When cross-import is needed, that's the signal to move to a wider scope.
+- **No import depth limit**: Widgets can directly import both Features and Entities (allowed by layer hierarchy). When composition becomes complex, decompose within the Widget.
 - **ESLint enforcement**: `@[layer]/*/*` pattern blocks internal access.
 
 ```js

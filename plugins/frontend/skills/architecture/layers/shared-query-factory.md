@@ -125,6 +125,14 @@ queryClient.invalidateQueries({ queryKey: productQueries.listKeys() });
 
 ## 6. import 규칙
 
+### segment 간 import 규칙
+
+| import 가능 | import 금지 |
+|-------------|-------------|
+| `api`, `config` | `ui`, `hooks`, `mutation-factory` |
+
+`query-factory`와 `mutation-factory`는 서로 import하지 않는다.
+
 ### 팩토리 내부
 
 - `default-query-keys.ts`는 상대경로로 import한다.
@@ -161,3 +169,7 @@ queryClient.invalidateQueries({ queryKey: productQueries.listKeys() });
 - 팩토리에서 응답 데이터를 변환하지 않는다.
 - queryKey를 팩토리 밖에서 문자열로 직접 작성하지 않는다.
 - 비즈니스 로직을 팩토리에 두지 않는다.
+
+### 단일 사용 쿼리도 팩토리를 거쳐야 하나?
+
+**권장한다.** API를 한 곳에서만 사용하더라도 팩토리를 거치면 queryKey 일관성과 무효화 편의가 보장된다. 단, 강제는 아니다 — 프로토타이핑이나 일회성 호출에서는 직접 `useQuery`를 사용할 수 있다.

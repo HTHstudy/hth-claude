@@ -6,10 +6,13 @@
 
 ### 10단계: 기존 쿼리/뮤테이션 분석
 
+**Phase 2에서 생성한 `shared/api/` 구조를 먼저 확인한다.** 각 도메인의 `index.ts`에서 export하는 `DOMAIN_API` 객체 목록을 파악한다. 이 목록이 팩토리의 `queryFn`/`mutationFn`에 사용된다.
+
 현재 TanStack Query 사용 패턴을 파악한다:
 - `useQuery`, `useMutation` 호출 위치
 - queryKey 관리 방식
 - 기존 커스텀 훅 구조
+- 각 쿼리/뮤테이션이 호출하는 `DOMAIN_API` 메서드 매핑
 
 분석 결과를 사용자에게 보고하고 **확인받은 후** 진행한다.
 

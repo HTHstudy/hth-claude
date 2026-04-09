@@ -166,6 +166,17 @@ export function useCreateAndPayOrder() {
 - queryKey / mutationKey are not written as raw strings outside the factory.
 - No business logic in factories.
 
+### Cross-Segment Import Rules
+
+query-factory and mutation-factory have restricted imports within `shared/`.
+
+| segment | Can import | Cannot import |
+|---------|-----------|---------------|
+| query-factory | `api`, `config` | `ui`, `hooks`, `mutation-factory` |
+| mutation-factory | `api`, `config` | `ui`, `hooks`, `query-factory` |
+
+query-factory and mutation-factory **must not import each other**.
+
 ---
 
 ## Do / Don't

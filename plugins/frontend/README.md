@@ -103,3 +103,5 @@ src/
 
 - [한국어 문서](docs/ko/README.md)
 - [English docs](docs/en/README.md)
+
+> **문서 동기화 주의:** `skills/` 내 규칙 문서(에이전트 지시문)와 `docs/`(사람용 설명)는 같은 내용을 다른 톤으로 작성합니다. `skills/` 규칙을 변경하면 `docs/ko/`와 `docs/en/`도 함께 반영해야 합니다.

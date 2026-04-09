@@ -166,6 +166,17 @@ export function useCreateAndPayOrder() {
 - queryKey / mutationKey를 팩토리 밖에서 문자열로 직접 작성하지 않습니다.
 - 비즈니스 로직을 팩토리에 두지 않습니다.
 
+### segment 간 import 규칙
+
+query-factory와 mutation-factory는 `shared/` 내부에서 import할 수 있는 segment가 제한됩니다.
+
+| segment | import 가능 | import 금지 |
+|---------|-------------|-------------|
+| query-factory | `api`, `config` | `ui`, `hooks`, `mutation-factory` |
+| mutation-factory | `api`, `config` | `ui`, `hooks`, `query-factory` |
+
+query-factory와 mutation-factory는 **서로 import하지 않습니다**.
+
 ---
 
 ## Do / Don't

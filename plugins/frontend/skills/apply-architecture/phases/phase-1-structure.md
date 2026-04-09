@@ -38,6 +38,20 @@ assessment.md의 import 맵(또는 `.architecture-migration/import-map.txt`)을 
 | `types/` | `shared/types/` | |
 | `styles/` 중 `globals` | `app/` | 전역 스타일 |
 | `styles/` 나머지 | `shared/styles/` | 설정/변수 |
+| `constants/` | `shared/config/` | |
+| `assets/` | `shared/assets/` | |
+| `providers/` | `app/` | Provider 조합 |
+| `context/` | import-map으로 판단 | 전역(app 전체)이면 `app/`, 여러 page에서 공유하면 `shared/`, page 전용이면 해당 page 내부 |
+| `services/` | import-map으로 판단 | API 호출이면 `shared/api/`, 유틸리티면 `shared/lib/` |
+| `helpers/` | `shared/lib/` | |
+| `utils/` | `shared/lib/` | |
+| `models/` | `shared/types/` | 타입 정의만 있는 경우 |
+| `enums/` | `shared/types/` | |
+| `schemas/`, `validations/` | `shared/lib/` | 검증 로직 |
+| `api/`, `apis/` | `shared/api/` | Phase 2에서 3계층으로 재구조화 |
+| `layouts/` | import-map으로 판단 | 전역 레이아웃 셸이면 `app/`, 재사용 UI면 `shared/ui/` |
+
+**위 매핑에 없는 디렉토리**는 사용자에게 확인 후 배치한다. 임의로 판단하지 않는다.
 
 이 절차에서 thinking을 길게 쓰지 않는다. import-map에서 카운트하고 바로 매핑 테이블을 작성한다.
 
@@ -275,10 +289,10 @@ done
 
 #### ESLint 규칙 설정
 
-[eslint-config.md](../../architecture/rules/eslint-config.md)를 읽고, 프로젝트에 맞게 적용한다:
+[eslint-config.md](../../architecture/rules/eslint-config.md)를 읽고, **전체 템플릿**을 프로젝트에 적용한다:
 
 1. **ESLint 버전 감지:** `eslint.config.js` 존재 → Flat Config (9+), `.eslintrc.*` 존재 → Legacy Config (8)
-2. **eslint-config.md의 해당 버전 템플릿을 그대로 적용한다** (규칙 목록은 eslint-config.md에서 관리)
+2. **eslint-config.md의 해당 버전 템플릿을 전체 적용한다** — `no-restricted-imports`뿐 아니라 `import/no-default-export`, `@typescript-eslint/consistent-type-imports` 등 모든 규칙을 포함해야 한다. Phase 4에서 이 규칙들이 설정되어 있다고 전제한다.
 3. **Next.js 프로젝트:** eslint-config.md의 "Next.js 프로젝트 추가 규칙" 섹션도 함께 적용한다
 4. **검증:** `yarn lint` (또는 프로젝트의 lint 명령)을 실행하여 규칙이 정상 동작하는지 확인한다
 

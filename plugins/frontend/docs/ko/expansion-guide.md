@@ -143,6 +143,7 @@ widget 자체를 이동하거나 widget 간 의존을 만들지 않습니다.
 - **Slice 내부 분해**: page와 같은 규칙. 미리 정해진 폴더 구조 없이 필요에 따라 분해.
 - **공개 인터페이스**: 외부는 `@[layer]/[slice]` entrypoint만 통해 접근. 내부 파일 직접 import 금지.
 - **같은 레이어 cross-import 금지**: cross-import가 필요한 순간이 이동할 시점.
+- **import 깊이 제한 없음**: Widget은 Feature와 Entity를 모두 직접 import할 수 있습니다(계층 규칙상 허용). 조합이 복잡해지면 Widget 내부에서 분해합니다.
 - **ESLint 강제**: `@[layer]/*/*` 패턴으로 내부 접근 차단.
 
 ```js

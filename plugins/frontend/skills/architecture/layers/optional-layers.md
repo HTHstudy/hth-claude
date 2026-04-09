@@ -15,7 +15,7 @@
 ### 도입 조건 (모두 충족)
 1. **2개 이상의 page에서 실제로 반복**된다.
 2. **page 문맥 없이 독립적으로 동작**한다.
-3. 해당 책임이 충분히 **안정적**이다.
+3. 해당 책임이 충분히 **안정적**이다 — 인터페이스(props/params/return type)가 최근 변경 중이면 이동하지 않는다.
 
 ### Slice 구조
 - Slice 단위로 구성한다. 각 Slice의 `index.ts`/`index.tsx`가 유일한 entrypoint.
@@ -25,6 +25,9 @@
 
 ### cross-import
 같은 레이어 sibling 간 cross-import 금지. 조합이 필요하면 사용하는 쪽(상위 레이어)에서 조합한다.
+
+### import 깊이
+Widget은 Feature와 Entity를 모두 직접 import할 수 있다 (계층 규칙상 허용). 깊이 제한은 두지 않는다. 조합이 복잡해지면 Widget 내부에서 분해한다 — [rules.md](../rules/rules.md)의 분해 규칙을 따른다.
 
 ---
 
