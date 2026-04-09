@@ -105,7 +105,21 @@ src/
     { group: ['@features/*/*'], message: '@features/[feature] 엔트리포인트를 사용하세요.' },
     { group: ['@entities/*/*'], message: '@entities/[entity] 엔트리포인트를 사용하세요.' },
   ],
-}]
+}],
+'@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+'import/no-default-export': 'error'
+```
+
+`src/main.tsx`는 Vite 엔트리포인트이므로 default export 예외 처리한다:
+
+```js
+// override: Vite 엔트리 파일
+{
+  files: ['src/main.tsx'],
+  rules: {
+    'import/no-default-export': 'off',
+  },
+}
 ```
 
 **Prettier** — `.prettierrc` 생성:

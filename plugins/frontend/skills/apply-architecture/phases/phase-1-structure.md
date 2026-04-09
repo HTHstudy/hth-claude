@@ -165,7 +165,9 @@ src/
 
 #### 일괄 처리 전략
 
-파일 이동은 2단계에서 저장한 `.architecture-migration/mapping.tsv`를 셸 스크립트의 입력으로 사용하여 일괄 처리한다:
+mapping.tsv의 행 수에 따라 전략을 선택한다:
+
+##### A. 파일 20개 미만 — 단일 스크립트
 
 ```bash
 # 1. 대상 디렉토리 일괄 생성
@@ -177,6 +179,38 @@ while IFS=$'\t' read -r from to; do
   git mv "$from" "$to"
 done < .architecture-migration/mapping.tsv
 ```
+
+##### B. 파일 20개 이상 — 레이어별 병렬 Agent
+
+파일이 많으면 레이어별 Agent를 **동시에** 생성하여 병렬 처리한다:
+
+**1단계: mapping.tsv를 레이어별로 분할**
+
+```bash
+# app/ 레이어
+grep -P '\t[^\t]*app/' .architecture-migration/mapping.tsv > .architecture-migration/app-mapping.tsv || true
+# pages/ 레이어
+grep -P '\t[^\t]*pages/' .architecture-migration/mapping.tsv > .architecture-migration/pages-mapping.tsv || true
+# shared/ 레이어
+grep -P '\t[^\t]*shared/' .architecture-migration/mapping.tsv > .architecture-migration/shared-mapping.tsv || true
+```
+
+**2단계: 레이어별 Agent를 동시에 생성 (Agent 도구 병렬 호출)**
+
+각 Agent에게 아래 작업을 지시한다 (3개 Agent를 단일 메시지에서 동시 호출):
+
+- **Agent 1 (app):** `.architecture-migration/app-mapping.tsv`를 읽고 대상 디렉토리 생성 → git mv 실행
+- **Agent 2 (pages):** `.architecture-migration/pages-mapping.tsv`를 읽고 대상 디렉토리 생성 → git mv 실행
+- **Agent 3 (shared):** `.architecture-migration/shared-mapping.tsv`를 읽고 대상 디렉토리 생성 → git mv 실행
+
+각 Agent는 자기 레이어의 mapping만 처리하므로 git mv 충돌이 없다. **worktree 격리를 사용하지 않는다** — 같은 워킹트리에서 실행해야 git mv가 정상 동작한다.
+
+**3단계: Agent 완료 후 메인에서 통합 처리**
+
+모든 Agent가 완료되면:
+1. 빈 디렉토리 정리
+2. cross-layer import 일괄 치환 (4단계에서 수행)
+3. 잔여 패턴 Grep 검증
 
 > **참고:** Phase 1에서는 파일명을 변경하지 않으므로 macOS 대소문자 비구분 파일시스템 문제가 발생하지 않는다. 대소문자 변경(PascalCase → kebab-case)은 Phase 4에서 처리하며, 이때 임시 경로 경유 2단계 rename을 사용한다.
 
@@ -239,43 +273,32 @@ done
 - Vite 사용 시 `resolve.tsconfigPaths: true` 설정
 - Next.js 사용 시 `next.config.js` 설정 확인
 
-#### ESLint `no-restricted-imports` 설정
+#### ESLint 규칙 설정
 
 [eslint-config.md](../../architecture/rules/eslint-config.md)를 읽고, 프로젝트에 맞게 적용한다:
 
 1. **ESLint 버전 감지:** `eslint.config.js` 존재 → Flat Config (9+), `.eslintrc.*` 존재 → Legacy Config (8)
-2. **적용할 패턴 결정:** Phase 1에서 실제 생성한 레이어만 포함한다. rules.md 템플릿의 4가지 규칙을 모두 적용한다:
-   - Slice 내부 접근 차단 (`@[layer]/*/*`)
-   - 레이어 방향 강제 (하위 → 상위 차단, 레이어별 override)
-   - 같은 레이어 cross-import 차단
-   - 상대경로 레이어 횡단 차단
+2. **적용할 규칙:**
+   - `no-restricted-imports` — Slice 내부 접근 차단, 레이어 방향 강제, cross-import 차단, 상대경로 레이어 횡단 차단
+   - `@typescript-eslint/consistent-type-imports` — 타입 import에 `type` 키워드 강제
+   - `import/no-default-export` — Named Export 강제 + 프레임워크 요구 파일 예외 (eslint-config.md 참조)
 3. **ESLint config 파일에 규칙 추가:** eslint-config.md의 해당 버전 템플릿을 적용한다
-4. **Next.js 프로젝트:** [nextjs.md](../../architecture/integrations/nextjs.md)의 API route ↔ FSD 레이어 차단 규칙도 함께 추가한다
+4. **Next.js 프로젝트:** [nextjs.md](../../architecture/integrations/nextjs.md)의 API route ↔ FSD 레이어 차단 규칙 + default export 예외 파일도 함께 추가한다
 5. **검증:** `yarn lint` (또는 프로젝트의 lint 명령)을 실행하여 규칙이 정상 동작하는지 확인한다
 
 ### 5단계: 사전 점검 및 빌드 검증
 
-빌드 실행 전에 known breaking pattern을 미리 점검하여 "빌드 → 실패 → 수정 → 재빌드" 반복을 최소화한다:
+#### 사전 점검 (빌드 전) — eslint가 잡지 못하는 항목만
 
-#### 사전 점검 (빌드 전)
+SCSS/CSS 파일은 eslint 대상이 아니므로 Grep으로 별도 점검한다:
 
-프레임워크별로 자주 발생하는 문제를 미리 grep해서 일괄 수정한다:
+- **SCSS/CSS `@import`/`@use` 경로 불일치**: pattern `@import|@use`, glob `*.{scss,css,sass,less}`, head_limit 20 — 파일 이동 후 내부 경로가 맞는지 확인
 
-- **Next.js App Router**: `searchParams`, `params`가 Promise로 바뀐 버전에서 null 체크/await 누락
-- **SCSS/CSS Module import**: 파일 이동 후 import 경로 불일치
-- **절대경로 잔여**: 이전 경로 별칭이나 상대경로가 남아있는지 확인
-- **타입 import**: `import { Type }` → `import type { Type }` 변환 누락
-
-Grep 도구로 아래 패턴을 점검한다:
-- 이전 상대경로 잔여: pattern `from ['\"]\.\.\/`, glob `*.{ts,tsx}`, head_limit 20
-- 이전 경로 별칭 잔여: pattern `@old-alias/`, glob `*.{ts,tsx}`, head_limit 20
-- **SCSS/CSS import 경로 불일치**: pattern `@import|@use`, glob `*.{scss,css,sass,less}`, head_limit 20
-- **CSS Module import 불일치**: pattern `\.module\.(scss|css|sass|less)`, glob `*.{ts,tsx}`, head_limit 20 — 파일 이동 후 import 경로가 맞는지 확인
+이후 SKILL.md의 공통 tsc/eslint 점검을 실행한다.
 
 #### 빌드 검증
 
 - 프로젝트를 실행하여 빌드 및 동작에 오류가 없는지 확인
-- 남아 있는 깨진 import 확인
 - 최종 구조를 사용자에게 보고
 
 ### 빌드 검증 후 커밋

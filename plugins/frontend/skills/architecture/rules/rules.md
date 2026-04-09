@@ -26,6 +26,8 @@ import { NavMenu } from '@widgets/header/nav-menu';
 - 레이어 방향 위반 import 차단 (하위 → 상위)
 - 같은 레이어 sibling 간 cross-import 차단
 - 상대경로로 다른 레이어 접근 차단 (path alias 강제)
+- `import/no-default-export` — Named Export 강제 (프레임워크 요구 파일은 override로 예외)
+- `@typescript-eslint/consistent-type-imports` — 타입 import에 `type` 키워드 강제
 
 ### import 규칙
 - Slice 내부: 상대경로

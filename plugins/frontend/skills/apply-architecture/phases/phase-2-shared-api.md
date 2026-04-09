@@ -57,18 +57,16 @@ shared/api/[domain]/
 2. **프로젝트 전체 대상 일괄 수정**: Agent에 위임할 경우, 전체 매핑을 한 번에 전달하여 누락을 방지한다
 3. **누락 검증**: 치환 후 기존 API 함수명이나 import 경로가 남아있지 않은지 grep으로 확인한다
 
-### 사전 점검 (빌드 전)
+### 사전 점검 (빌드 전) — eslint가 잡지 못하는 항목만
 
-빌드 실행 전에 아래 항목을 grep으로 점검하고 일괄 수정한다:
+import 경로, export, 타입 import 오류는 eslint가 잡는다. 여기서는 **마이그레이션 완료 여부**만 점검한다:
 
-- **기존 API import 잔여**: Phase 2에서 제거/이동한 기존 API 함수명이나 import 경로가 남아있지 않은지
-- **DOMAIN_API import 누락**: 새 API 객체를 사용하는 파일에 import 문이 정상인지
-- **타입 import**: API 타입을 `import type`으로 가져오는지
+- **기존 API 패턴 잔여**: 이동/삭제한 기존 API 함수명이 여전히 사용되고 있지 않은지
 
-Grep 도구로 아래 패턴을 점검한다:
+Grep 도구로 점검한다:
 - 기존 API 함수/경로 잔여: pattern `from ['\"].*기존API경로`, glob `*.{ts,tsx}`, head_limit 20
-- DOMAIN_API 사용 파일 목록: pattern `DOMAIN_API\.`, glob `*.{ts,tsx}`, output_mode: files_with_matches
-- 위 파일 목록에서 import 누락 확인: pattern `import.*DOMAIN_API`, glob `*.{ts,tsx}`, 대상 파일별 검증
+
+이후 SKILL.md의 공통 tsc/eslint 점검을 실행한다.
 
 ### 빌드 검증 후 커밋
 

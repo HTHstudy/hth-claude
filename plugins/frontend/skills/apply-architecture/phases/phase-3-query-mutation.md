@@ -51,18 +51,19 @@ useQuery(productQueries.list(params))
 2. **프로젝트 전체 대상 일괄 수정**: Agent에 위임할 경우, 전체 매핑을 한 번에 전달하여 누락을 방지한다
 3. **누락 검증**: 치환 후 팩토리를 거치지 않는 직접 `useQuery`/`useMutation` 호출이 남아있지 않은지 grep으로 확인한다
 
-### 사전 점검 (빌드 전)
+### 사전 점검 (빌드 전) — eslint가 잡지 못하는 항목만
 
-빌드 실행 전에 아래 항목을 grep으로 점검하고 일괄 수정한다:
+import 경로 오류는 eslint가 잡는다. 여기서는 **팩토리 패턴 마이그레이션 완료 여부**만 점검한다 (직접 호출은 문법적으로 유효하므로 eslint가 잡지 못함):
 
-- **직접 useQuery/useMutation 잔여**: 팩토리를 거치지 않는 직접 호출이 남아있지 않은지
-- **import 경로 정합성**: 팩토리 파일 import가 정상인지
-- **queryKey 하드코딩 잔여**: 팩토리 키를 사용하지 않는 하드코딩 queryKey가 남아있지 않은지
+- **직접 useQuery/useMutation 잔여**: 팩토리를 거치지 않는 직접 호출
+- **queryKey 하드코딩 잔여**: 팩토리 키를 사용하지 않는 하드코딩 queryKey
 
-Grep 도구로 아래 패턴을 점검한다:
+Grep 도구로 점검한다:
 - 직접 useQuery 호출 잔여: pattern `useQuery\(\{`, glob `*.{ts,tsx}`, head_limit 20
 - 직접 useMutation 호출 잔여: pattern `useMutation\(\{`, glob `*.{ts,tsx}`, head_limit 20
 - queryKey 하드코딩 잔여: pattern `queryKey:`, glob `*.{ts,tsx}`, head_limit 20
+
+이후 SKILL.md의 공통 tsc/eslint 점검을 실행한다.
 
 ### 빌드 검증 후 커밋
 

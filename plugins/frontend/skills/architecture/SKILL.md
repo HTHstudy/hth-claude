@@ -50,6 +50,8 @@ Next.js 프로젝트(`package.json`에 `next` 의존성 존재)를 감지하면 
 **필수 설정:**
 - [ ] tsconfig path alias — 레이어별 alias만 허용(`@app/*`, `@pages/*`, `@shared/*`, `@widgets/*`, `@features/*`, `@entities/*`). 전체 소스를 잡는 포괄적 alias(`@/*` 등)는 사용하지 않는다.
 - [ ] ESLint `no-restricted-imports` — Slice 내부 접근 차단, 레이어 방향 강제, cross-import 차단, 상대경로 레이어 횡단 차단. 상세 템플릿은 [eslint-config.md](rules/eslint-config.md) 참조
+- [ ] ESLint `@typescript-eslint/consistent-type-imports` — 타입 import에 `type` 키워드 강제
+- [ ] ESLint `import/no-default-export` — Named Export 강제 (프레임워크 요구 파일은 override로 예외 처리). 상세 템플릿은 [eslint-config.md](rules/eslint-config.md) 참조
 - [ ] vite.config.ts — `resolve.tsconfigPaths: true` 설정
 - [ ] `.prettierrc` 설정
 

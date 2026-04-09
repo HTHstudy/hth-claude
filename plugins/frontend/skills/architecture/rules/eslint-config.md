@@ -11,6 +11,8 @@
 | 레이어 방향 강제 | 하위 → 상위 레이어 import 차단 | shared에서 `import { x } from '@pages/home'` |
 | 같은 레이어 cross-import 차단 | sibling Slice 간 import 차단 | pages/home에서 `import { x } from '@pages/products'` |
 | 상대경로 레이어 횡단 차단 | 다른 레이어 접근 시 alias 강제 | `import { x } from '../../shared/lib/utils'` |
+| Named Export 강제 | default export 차단 (프레임워크 요구 파일 제외) | `export default function Page()` |
+| 타입 import 강제 | 타입에 `type` 키워드 필수 | `import { Foo } from './types'` (타입인 경우) |
 
 > **주의:** ESLint `no-restricted-imports`는 파일별 override 시 기본 규칙을 덮어쓴다(merge가 아닌 replace). 따라서 각 레이어별 설정에 공통 패턴(`basePatterns`)을 반복 포함해야 한다. 아래 템플릿은 헬퍼 함수로 이를 처리한다.
 
@@ -69,6 +71,22 @@ export default tseslint.config(
   {
     rules: {
       'no-restricted-imports': ['error', { patterns: basePatterns }],
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+      'import/no-default-export': 'error',
+    },
+  },
+
+  // ── Default Export 예외: 프레임워크가 요구하는 파일 ────
+  {
+    files: [
+      'app/**/page.tsx', 'app/**/layout.tsx', 'app/**/loading.tsx',
+      'app/**/error.tsx', 'app/**/not-found.tsx', 'app/**/template.tsx',
+      'app/**/default.tsx',
+      'pages/**/*.tsx',          // Next.js Pages Router
+      'src/main.tsx',            // Vite 엔트리
+    ],
+    rules: {
+      'import/no-default-export': 'off',
     },
   },
 
@@ -190,8 +208,24 @@ module.exports = {
   rules: {
     // 기본 규칙 (특정 레이어에 속하지 않는 파일)
     'no-restricted-imports': ['error', { patterns: basePatterns }],
+    '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+    'import/no-default-export': 'error',
   },
   overrides: [
+    // ── Default Export 예외: 프레임워크가 요구하는 파일 ──
+    {
+      files: [
+        'app/**/page.tsx', 'app/**/layout.tsx', 'app/**/loading.tsx',
+        'app/**/error.tsx', 'app/**/not-found.tsx', 'app/**/template.tsx',
+        'app/**/default.tsx',
+        'pages/**/*.tsx',          // Next.js Pages Router
+        'src/main.tsx',            // Vite 엔트리
+      ],
+      rules: {
+        'import/no-default-export': 'off',
+      },
+    },
+
     // ── 레이어별 import 방향 규칙 ──────────────────
 
     // shared: 모든 상위 레이어 import 금지
