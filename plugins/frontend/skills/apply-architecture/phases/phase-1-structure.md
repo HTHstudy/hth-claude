@@ -15,7 +15,7 @@ assessment.md의 스냅샷만으로 전환 계획을 수립한다. 소스 파일
 
 > **이 분류는 패턴 매칭이다. 설계 판단이 아니다.** import-map의 데이터만으로 기계적으로 분류한다. 컴포넌트를 개별로 읽거나 내부 로직을 분석하지 않는다. 개별 파일 Read 금지.
 
-> **Phase 1은 레이어 배치만 결정한다.** 파일명 변환(kebab-case), 폴더 구조 전환(단일 파일 → 폴더), re-export 래퍼 생성, FSD import 방향 검증은 **Phase 4에서 처리한다.** 여기서 판단하지 않는다.
+> **Phase 1은 레이어 배치와 구조 전환만 수행한다.** 파일명 변환(kebab-case), 폴더 구조 전환(단일 파일 → 폴더), FSD import 방향 검증은 **Phase 4에서 처리한다.** 여기서 판단하지 않는다.
 
 assessment.md의 import 맵(또는 `.architecture-migration/import-map.txt`)을 **1회 읽고**, 아래 절차를 순서대로 실행한다.
 

@@ -1,20 +1,6 @@
 # Phase 4: 코드 정리 및 세분화
 
-> Phase 1에서 레이어 배치(app/pages/shared)만 완료된 상태이다. 파일명은 원래 이름 그대로이고, 폴더 구조도 원본을 유지하고 있다. 이 단계에서 네이밍 컨벤션(kebab-case), 폴더 구조 전환, re-export 래퍼 생성을 수행한다.
-
-### 13-a단계: 루트 라우팅 파일 re-export 래퍼 정리
-
-Next.js 프로젝트에서 루트 `app/`의 라우팅 파일(`layout.tsx`, `page.tsx` 등)이 `src/pages/`의 page를 re-export만 하도록 재작성한다:
-
-1. 루트 `app/layout.tsx` → `src/app/`의 providers와 global style을 조립
-2. 루트 `app/[route]/page.tsx` → `src/pages/`의 page를 re-export만 수행
-3. 루트에 빈 `pages/` 폴더 + README.md 생성 (Pages Router 폴백 방지)
-
-re-export 패턴:
-```tsx
-// app/[locale]/about/brandstory/page.tsx
-export { default } from '@pages/about/Brandstory';
-```
+> Phase 1에서 레이어 배치(app/pages/shared)와 re-export 래퍼 생성이 완료된 상태이다. 파일명은 원래 이름 그대로이고, 폴더 구조도 원본을 유지하고 있다. 이 단계에서 네이밍 컨벤션(kebab-case), 폴더 구조 전환을 수행한다.
 
 ### 14단계: shared 세그먼트 분류
 
