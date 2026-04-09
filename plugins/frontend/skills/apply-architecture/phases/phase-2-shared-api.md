@@ -6,6 +6,8 @@
 
 ### 6단계: 기존 API 코드 분석
 
+**assessment.md와 참조 문서([shared-api.md](../../architecture/layers/shared-api.md))를 병렬로 동시에 읽는다.**
+
 현재 API 관련 코드를 파악한다:
 - API 호출 함수 위치와 패턴
 - HTTP 클라이언트 설정 (Axios, fetch 등)

@@ -9,31 +9,35 @@
 
 assessment.md의 스냅샷만으로 전환 계획을 수립한다. 소스 파일을 개별적으로 다시 읽지 않는다. 변경 전 현재 구조를 사용자에게 보고한다.
 
+**병렬 읽기:** assessment.md와 참조 문서(Next.js 프로젝트면 [nextjs.md](../../architecture/integrations/nextjs.md))를 **동시에** 읽는다. 직렬로 읽지 않는다.
+
 ### 2단계: 전환 계획 수립
 
-assessment.md의 스냅샷을 바탕으로 전환 계획을 작성한다:
-- `app/`으로 이동할 파일 (라우팅, Provider, 전역 스타일)
-- `pages/`로 이동할 파일 (route 기준 화면 모듈)
-- `shared/`로 이동할 파일 (유틸리티, 훅, 설정, API 클라이언트)
-- 현재 위치에 그대로 둘 파일 (이미 올바른 위치)
+> **이 분류는 패턴 매칭이다. 설계 판단이 아니다.** import-map의 데이터만으로 기계적으로 분류한다. 컴포넌트를 개별로 읽거나 내부 로직을 분석하지 않는다. 개별 파일 Read 금지.
 
-#### 컴포넌트 레이어 분류 기준
+assessment.md의 import 맵(또는 `.architecture-migration/import-map.txt`)을 **1회 읽고**, 아래 절차를 순서대로 실행한다.
 
-assessment.md의 import 맵을 참고하여 각 컴포넌트의 레이어를 판단한다. 아래 휴리스틱을 **위에서 아래로** 적용한다 (먼저 매칭되는 규칙 우선):
+#### 분류 절차 (순서대로 실행, 먼저 매칭 우선)
 
-| 판단 기준 | → 레이어 | 예시 |
-|-----------|----------|------|
-| Router, Provider, 전역 Layout을 감싸는 최상위 컴포넌트 | `app/` | `Providers`, `AppRouter` |
-| 루트 layout/App에서 직접 import하는 레이아웃 셸 | `app/` | `Header`, `Footer`, `Sidebar`, `ClientLayout` |
-| route와 1:1 대응하는 화면 | `pages/` | `HomePage`, `ProductList` |
-| 2개 이상의 page에서 import하는 공통 UI 컴포넌트 | `shared/ui/` | `Button`, `Modal`, `Card` |
-| 유틸리티, 훅, 설정, API 클라이언트 | `shared/` 하위 적절한 세그먼트 | `useAuth` → `shared/hooks/`, `axios` → `shared/api/` |
-| 1개 page에서만 사용하는 하위 컴포넌트 | 해당 page 폴더 내부 | `ProductCard` (ProductList 전용) |
+**Step A.** import-map에서 `ClientLayout` 또는 루트 `layout.tsx`가 직접 import하는 컴포넌트 목록 추출 → 전부 `app/`
 
-**빠른 판단법:** import 맵에서 해당 컴포넌트를 import하는 파일 수를 세면 된다:
-- 0개 (엔트리에서만 사용) → `app/`
-- 1개 page → 해당 page 폴더 내부
-- 2개 이상 page → `shared/ui/`
+**Step B.** 각 route `page.tsx`가 import하는 컴포넌트 추출 → 해당 page에 귀속 (`pages/[page-name]/`)
+
+**Step C.** Step B에서 2개 이상 page에 등장한 컴포넌트 → `shared/ui/`로 승격
+
+**Step D.** 나머지는 현재 디렉토리 기반으로 기계적 매핑:
+
+| 현재 디렉토리 | → 대상 | 비고 |
+|--------------|--------|------|
+| `hooks/` | `shared/hooks/` | |
+| `lib/` | `shared/lib/` | |
+| `stores/` | `shared/stores/` | |
+| `i18n/` | `shared/i18n/` | |
+| `types/` | `shared/types/` | |
+| `styles/` 중 `globals` | `app/` | 전역 스타일 |
+| `styles/` 나머지 | `shared/styles/` | 설정/변수 |
+
+이 절차에서 thinking을 길게 쓰지 않는다. import-map에서 카운트하고 바로 매핑 테이블을 작성한다.
 
 #### 매핑 테이블 작성
 
