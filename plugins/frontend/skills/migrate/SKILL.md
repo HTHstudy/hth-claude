@@ -159,6 +159,30 @@ Phase 0은 분석만 수행하므로 커밋 불필요.
 
 ---
 
+## 작업 효율 측정
+
+모든 Phase에서 `.architecture-migration/timing.log`에 아래 항목을 기록한다:
+
+1. **단계 시작 타임스탬프**: 각 단계(N단계) 작업 시작 시
+   ```bash
+   echo "step_N: $(date +%s)" >> .architecture-migration/timing.log
+   ```
+
+2. **사전 점검 실패**: tsc 또는 eslint 실패 시
+   ```bash
+   echo "phase_N_tsc_fail" >> .architecture-migration/timing.log
+   echo "phase_N_eslint_fail" >> .architecture-migration/timing.log
+   ```
+
+3. **빌드 시도**: 빌드 실행 시
+   ```bash
+   echo "phase_N_build" >> .architecture-migration/timing.log
+   ```
+
+Phase 6에서 이 로그를 분석하여 보고서에 포함한다. 사용자 대기 단계(0-6, Phase 전환 확인)는 소요 시간에서 제외 표시한다.
+
+---
+
 ## 토큰/속도 최적화 원칙
 
 모든 Phase에 공통으로 적용한다:
