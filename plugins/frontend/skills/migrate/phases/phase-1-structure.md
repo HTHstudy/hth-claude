@@ -9,7 +9,7 @@
 
 assessment.md의 스냅샷만으로 전환 계획을 수립한다. 소스 파일을 개별적으로 다시 읽지 않는다. 변경 전 현재 구조를 사용자에게 보고한다.
 
-**병렬 읽기:** assessment.md와 참조 문서(Next.js 프로젝트면 [nextjs.md](../../architecture/integrations/nextjs.md))를 **동시에** 읽는다. 직렬로 읽지 않는다.
+**병렬 읽기:** assessment.md와 참조 문서(Next.js 프로젝트면 [nextjs.md](../../architecture/integrations/nextjs.md))를 **동시에** 읽는다. 직렬로 읽지 않는다. nextjs.md를 읽을 때는 assessment.md에서 확인한 라우터 타입(App Router / Pages Router)에 해당하는 섹션과 공통 섹션(route-Slice 매핑, API Routes, 특수 파일)만 읽는다. 비해당 라우터 섹션은 건너뛴다.
 
 ### 2단계: 전환 계획 수립
 
@@ -289,12 +289,13 @@ done
 
 #### ESLint 규칙 설정
 
-[eslint-config.md](../../architecture/rules/eslint-config.md)를 읽고, **전체 템플릿**을 프로젝트에 적용한다:
+[eslint-config.md](../../architecture/rules/eslint-config.md)를 읽고 프로젝트에 적용한다:
 
-1. **ESLint 버전 감지:** `eslint.config.js` 존재 → Flat Config (9+), `.eslintrc.*` 존재 → Legacy Config (8)
-2. **eslint-config.md의 해당 버전 템플릿을 전체 적용한다** — `no-restricted-imports`뿐 아니라 `import/no-default-export`, `@typescript-eslint/consistent-type-imports` 등 모든 규칙을 포함해야 한다. Phase 4에서 이 규칙들이 설정되어 있다고 전제한다.
+1. **ESLint 버전 감지:** `eslint.config.*` 존재 (`.js`, `.mjs`, `.cjs`, `.ts`, `.mts`, `.cts`) → Flat Config (9+), `.eslintrc.*` 존재 → Legacy Config (8)
+2. **해당 버전의 템플릿 파일만 읽는다** — eslint-config.md의 "버전별 템플릿" 링크를 따라 [eslint-flat-config.md](../../architecture/rules/eslint-flat-config.md) 또는 [eslint-legacy-config.md](../../architecture/rules/eslint-legacy-config.md) 중 하나만 로드. `no-restricted-imports`뿐 아니라 `import/no-default-export`, `@typescript-eslint/consistent-type-imports` 등 모든 규칙을 포함해야 한다. Phase 4에서 이 규칙들이 설정되어 있다고 전제한다.
 3. **Next.js 프로젝트:** eslint-config.md의 "Next.js 프로젝트 추가 규칙" 섹션도 함께 적용한다
-4. **검증:** `yarn lint` (또는 프로젝트의 lint 명령)을 실행하여 규칙이 정상 동작하는지 확인한다
+4. **기존 설정이 있으면:** eslint-config.md의 "기존 ESLint 설정이 있는 프로젝트" 병합 절차를 따른다
+5. **검증:** `yarn lint` (또는 프로젝트의 lint 명령)을 실행하여 규칙이 정상 동작하는지 확인한다
 
 ### 5단계: 사전 점검 및 빌드 검증
 
