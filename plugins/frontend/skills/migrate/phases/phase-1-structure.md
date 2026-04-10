@@ -163,7 +163,7 @@ grep -P '\t[^\t]*shared/' .architecture-migration/mapping.tsv > .architecture-mi
 
 모든 Agent가 완료되면:
 1. 빈 디렉토리 정리
-2. cross-layer import 일괄 치환 (4단계에서 수행)
+2. cross-layer import 일괄 치환 (3단계에서 수행)
 3. 잔여 패턴 Grep 검증
 
 > **macOS 대소문자 비구분 파일시스템 대응**: PascalCase → kebab-case rename 시 대소문자만 다른 경로로 인식되어 직접 `git mv`가 실패한다. 반드시 임시 경로를 경유하는 2단계 rename을 사용한다:

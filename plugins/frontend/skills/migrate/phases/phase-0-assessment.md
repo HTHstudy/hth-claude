@@ -42,7 +42,7 @@ import 맵이 200줄을 초과하면 assessment.md에는 처음 200줄만 저장
 
 | 등급 | 컴포넌트 수 | 권장 범위 |
 |------|------------|-----------|
-| **Small** | 20개 미만 | 전체 Phase (1-5) 진행 가능 |
+| **Small** | 20개 미만 | 전체 Phase (1-6) 진행 가능 |
 | **Medium** | 20-50개 | 전체 Phase 진행 가능, 단 각 Phase 사이 충분한 검증 필요 |
 | **Large** | 50개 이상 | Phase 1(구조 전환)만 우선 진행 권장. 나머지는 안정화 후 별도 실행 |
 
@@ -98,16 +98,18 @@ import 맵이 200줄을 초과하면 assessment.md에는 처음 200줄만 저장
 | Phase | 체크 조건 |
 |-------|-----------|
 | Phase 1: 구조 전환 | 항상 체크 |
-| Phase 2: shared/api 3계층 | API 호출 코드가 존재할 때만 체크 (axios, fetch, HTTP 클라이언트 사용이 확인된 경우) |
-| Phase 3: query/mutation 팩토리 | TanStack Query를 사용할 때만 체크 (`useQuery`/`useMutation` 호출이 확인된 경우) |
-| Phase 4: 코드 정리 및 세분화 | 항상 체크 |
-| Phase 5: 최종 보고 | 항상 체크 |
+| Phase 2: 규칙 적용 | 항상 체크 |
+| Phase 3: shared/api 3계층 | API 호출 코드가 존재할 때만 체크 (axios, fetch, HTTP 클라이언트 사용이 확인된 경우) |
+| Phase 4: query/mutation 팩토리 | TanStack Query를 사용할 때만 체크 (`useQuery`/`useMutation` 호출이 확인된 경우) |
+| Phase 5: 코드 정리 및 세분화 | 항상 체크 |
+| Phase 6: 최종 보고 | 항상 체크 |
 
 - [ ] Phase 1: 구조 전환
-- [ ] Phase 2: shared/api 3계층
-- [ ] Phase 3: query/mutation 팩토리
-- [ ] Phase 4: 코드 정리 및 세분화
-- [ ] Phase 5: 최종 보고
+- [ ] Phase 2: 규칙 적용
+- [ ] Phase 3: shared/api 3계층
+- [ ] Phase 4: query/mutation 팩토리
+- [ ] Phase 5: 코드 정리 및 세분화
+- [ ] Phase 6: 최종 보고
 ```
 
 저장 후 `.gitignore`에 `.architecture-migration/`을 추가한다.
@@ -179,6 +181,6 @@ src/utils/format.ts	src/shared/lib/format.ts
 해결 불가능한 차단 요소가 있거나 사용자가 중단을 선택하면:
 
 1. 차단 요소와 해결 방안을 보고한다
-2. `.architecture-migration/assessment.md`는 남겨둔다 (해결 후 재실행 시 참고용)
+2. `.architecture-migration/` 디렉토리는 남겨둔다 (assessment.md, mapping.tsv 등 해결 후 재실행 시 참고용)
 3. 브랜치를 생성하지 않고 스킬을 종료한다
 4. 사용자에게 "차단 요소 해결 후 다시 실행하면 Phase 0을 건너뛰고 진행할 수 있다"고 안내한다

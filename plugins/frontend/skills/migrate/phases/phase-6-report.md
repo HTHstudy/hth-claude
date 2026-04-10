@@ -25,7 +25,7 @@
 
 즉시:
 - 코드 리뷰 후 머지 대상 브랜치
-- Phase 중 스킵한 Phase가 있으면 실행 시점 제안 (예: Phase 3은 TanStack Query 도입 후)
+- Phase 중 스킵한 Phase가 있으면 실행 시점 제안 (예: Phase 3은 API 코드 추가 후, Phase 4는 TanStack Query 도입 후)
 
 코드 증가 시:
 - Phase 5의 16단계에서 도입을 보류한 선택 레이어(widgets/features/entities)의 재검토 시점과 기준
