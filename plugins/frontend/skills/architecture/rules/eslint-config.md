@@ -16,6 +16,24 @@
 
 > **주의:** ESLint `no-restricted-imports`는 파일별 override 시 기본 규칙을 덮어쓴다(merge가 아닌 replace). 따라서 각 레이어별 설정에 공통 패턴(`basePatterns`)을 반복 포함해야 한다. 아래 템플릿은 헬퍼 함수로 이를 처리한다.
 
+## 필수 의존성
+
+아래 패키지가 설치되어 있지 않으면 규칙을 적용하기 전에 설치한다. 이미 설치된 패키지는 건너뛴다.
+
+| 패키지 | 용도 | 필요 버전 |
+|--------|------|----------|
+| `eslint-plugin-import` | `import/no-default-export` 규칙 | ^2.29 |
+| `@typescript-eslint/eslint-plugin` | `consistent-type-imports` 규칙 | ^7.0 \|\| ^8.0 |
+| `@typescript-eslint/parser` | TypeScript 파싱 | ^7.0 \|\| ^8.0 |
+| `typescript-eslint` | Flat Config 전용 (9+) — 위 두 패키지를 통합 제공 | ^8.0 |
+
+**감지 후 설치:**
+1. `package.json`의 `devDependencies`에서 각 패키지 존재 여부를 확인한다
+2. 미설치 패키지가 있으면 프로젝트의 패키지 매니저로 설치한다:
+   - Flat Config (9+): `typescript-eslint` + `eslint-plugin-import`
+   - Legacy Config (8): `@typescript-eslint/eslint-plugin` + `@typescript-eslint/parser` + `eslint-plugin-import`
+3. **플러그인 미설치 상태로 규칙을 건너뛰지 않는다.** 설치 후 규칙을 적용한다.
+
 ## 버전별 템플릿
 
 ESLint 버전을 감지한 후 **해당 템플릿만** 읽는다. 두 파일을 모두 읽지 않는다:

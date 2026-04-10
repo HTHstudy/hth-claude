@@ -17,7 +17,8 @@ disable-model-invocation: true
 | Phase 0-1 | 로드 불필요. phase-1-structure.md에 필요한 구조/네이밍/import 규칙이 포함되어 있다. ESLint 설정 시 [eslint-config.md](../architecture/rules/eslint-config.md)만 참조. Next.js 프로젝트면 [nextjs.md](../architecture/integrations/nextjs.md)도 참조. **Phase 1 진입 시 assessment.md + 참조 문서(nextjs.md 등)를 병렬로 동시에 읽는다.** |
 | Phase 2 | [shared-api.md](../architecture/layers/shared-api.md) 참조 |
 | Phase 3 | [shared-query-factory.md](../architecture/layers/shared-query-factory.md), [shared-mutation-factory.md](../architecture/layers/shared-mutation-factory.md) 참조 |
-| Phase 4-5 | `/frontend:architecture` SKILL.md에서 "레이어 역할"(선택 레이어: widgets/features/entities), "네이밍 및 폴더 규칙", "추출 이동 기준", "판단 순서" 섹션만 읽는다. 행동 규칙·체크리스트 등 나머지는 불필요. |
+| Phase 4 | `/frontend:architecture` SKILL.md에서 "레이어 역할"(선택 레이어: widgets/features/entities), "네이밍 및 폴더 규칙", "추출 이동 기준", "판단 순서" 섹션만 읽는다. 행동 규칙·체크리스트 등 나머지는 불필요. |
+| Phase 5 | 로드 불필요. 보고서 작성만 수행. |
 
 ---
 
@@ -46,6 +47,7 @@ disable-model-invocation: true
 - `refactor: shared/api 3계층 구조 적용` → Phase 2 완료
 - `refactor: query/mutation 팩토리 패턴 적용` → Phase 3 완료
 - `refactor: 코드 정리 및 shared 모듈 세분화` → Phase 4 완료
+- `chore: 마이그레이션 임시 파일 정리` → Phase 5 완료
 
 **기준 B — 프로젝트 구조** (수동 작업 감지용):
 - `.architecture-migration/assessment.md` 존재 → Phase 0 완료
@@ -106,6 +108,8 @@ Phase 상세 문서는 **해당 Phase에 진입할 때만** 읽는다. 모든 Ph
 4. Phase 완료 후, 빌드 검증 및 중간 커밋을 수행한다
 5. 다음 Phase로 넘어가기 전에 이전 Phase 문서의 세부 내용에 의존하지 않는다
 
+**Phase 스킵:** Phase 2, 3은 조건부(API 코드 유무, TanStack Query 사용 여부)이다. 해당 조건이 없으면 사용자에게 "Phase N은 해당 사항이 없어 건너뜁니다. Phase M으로 진행할까요?"라고 안내하고, 다음 적용 대상 Phase로 진행한다.
+
 이렇게 하면 각 Phase에서 필요한 정보만 컨텍스트에 유지되어, 긴 마이그레이션에서도 정확한 지시를 따를 수 있다.
 
 ---
@@ -122,8 +126,9 @@ Phase 상세 문서는 **해당 Phase에 진입할 때만** 읽는다. 모든 Ph
 | Phase 2 | `refactor: shared/api 3계층 구조 적용` |
 | Phase 3 | `refactor: query/mutation 팩토리 패턴 적용` |
 | Phase 4 | `refactor: 코드 정리 및 shared 모듈 세분화` |
+| Phase 5 | `chore: 마이그레이션 임시 파일 정리` |
 
-Phase 0은 분석만 수행하므로 커밋 불필요. Phase 5는 보고서만 생성하므로 커밋 불필요.
+Phase 0은 분석만 수행하므로 커밋 불필요.
 
 **커밋 절차:**
 1. 빌드가 정상인지 확인한다

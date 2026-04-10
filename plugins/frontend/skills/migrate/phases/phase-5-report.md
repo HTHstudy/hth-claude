@@ -35,3 +35,9 @@
 
 - `.architecture-migration/` 디렉토리를 삭제한다 (Phase 0에서 생성한 평가 보고서)
 - `.gitignore`에 추가했던 `.architecture-migration/` 항목을 제거한다
+- 정리 후 커밋한다:
+
+```bash
+git add -A
+git commit -m "chore: 마이그레이션 임시 파일 정리"
+```

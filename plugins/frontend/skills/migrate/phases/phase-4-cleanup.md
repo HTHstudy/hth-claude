@@ -87,6 +87,8 @@ brandstory/
 
 ### 16단계: 선택 레이어 도입 제안
 
+[architecture SKILL.md](../../architecture/SKILL.md)의 "레이어 역할"(선택 레이어: widgets/features/entities), "추출 이동 기준", "판단 순서" 섹션을 읽고 아래 분석을 수행한다.
+
 코드 중복을 분석한다:
 - 복합 UI 블록이 여러 page에서 반복 → `widgets/` 도입 제안
 - 사용자 인터랙션이 여러 page에서 반복 → `features/` 도입 제안
@@ -101,7 +103,23 @@ brandstory/
 Grep 도구로 점검한다:
 - 불필요한 re-export 패턴: pattern `export \{ .* \} from '\.\/'`, glob `**/index.{ts,tsx}`, head_limit 20
 
-이후 SKILL.md의 공통 tsc/eslint 점검을 실행한다.
+#### 공통 점검 (tsc → eslint → 빌드)
+
+Phase별 Grep 점검을 통과한 후 아래를 **순서대로** 실행한다. 빌드는 두 검사를 모두 통과한 후에만 수행한다.
+
+```bash
+# tsc 타입 검사
+npx tsc --noEmit 2>&1 | head -50
+```
+
+tsc 에러가 있으면 수정한다.
+
+```bash
+# eslint 레이어 규칙 검증
+npx eslint --no-warn-ignored --quiet --rule '{"no-restricted-imports": "error"}' 'src/**/*.{ts,tsx}' 2>&1 | head -30
+```
+
+eslint 에러가 있으면 수정한다. **두 검사를 모두 통과한 후** 빌드를 실행한다.
 
 ### 빌드 검증 후 커밋
 

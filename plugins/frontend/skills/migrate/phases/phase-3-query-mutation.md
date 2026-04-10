@@ -66,7 +66,23 @@ Grep 도구로 점검한다:
 - 직접 useMutation 호출 잔여: pattern `useMutation\(\{`, glob `*.{ts,tsx}`, head_limit 20
 - queryKey 하드코딩 잔여: pattern `queryKey:`, glob `*.{ts,tsx}`, head_limit 20
 
-이후 SKILL.md의 공통 tsc/eslint 점검을 실행한다.
+#### 공통 점검 (tsc → eslint → 빌드)
+
+Phase별 Grep 점검을 통과한 후 아래를 **순서대로** 실행한다. 빌드는 두 검사를 모두 통과한 후에만 수행한다.
+
+```bash
+# tsc 타입 검사
+npx tsc --noEmit 2>&1 | head -50
+```
+
+tsc 에러가 있으면 수정한다.
+
+```bash
+# eslint 레이어 규칙 검증
+npx eslint --no-warn-ignored --quiet --rule '{"no-restricted-imports": "error"}' 'src/**/*.{ts,tsx}' 2>&1 | head -30
+```
+
+eslint 에러가 있으면 수정한다. **두 검사를 모두 통과한 후** 빌드를 실행한다.
 
 ### 빌드 검증 후 커밋
 

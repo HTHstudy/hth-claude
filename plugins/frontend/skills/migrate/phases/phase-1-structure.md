@@ -291,6 +291,7 @@ done
 
 [eslint-config.md](../../architecture/rules/eslint-config.md)를 읽고 프로젝트에 적용한다:
 
+0. **필수 의존성 확인:** eslint-config.md의 "필수 의존성" 섹션을 따라 `eslint-plugin-import`, `@typescript-eslint/*` 등이 설치되어 있는지 확인하고, 미설치 시 설치한다
 1. **ESLint 버전 감지:** `eslint.config.*` 존재 (`.js`, `.mjs`, `.cjs`, `.ts`, `.mts`, `.cts`) → Flat Config (9+), `.eslintrc.*` 존재 → Legacy Config (8)
 2. **해당 버전의 템플릿 파일만 읽는다** — eslint-config.md의 "버전별 템플릿" 링크를 따라 [eslint-flat-config.md](../../architecture/rules/eslint-flat-config.md) 또는 [eslint-legacy-config.md](../../architecture/rules/eslint-legacy-config.md) 중 하나만 로드. `no-restricted-imports`뿐 아니라 `import/no-default-export`, `@typescript-eslint/consistent-type-imports` 등 모든 규칙을 포함해야 한다. Phase 4에서 이 규칙들이 설정되어 있다고 전제한다.
 3. **Next.js 프로젝트:** eslint-config.md의 "Next.js 프로젝트 추가 규칙" 섹션도 함께 적용한다
@@ -305,7 +306,23 @@ SCSS/CSS 파일은 eslint 대상이 아니므로 Grep으로 별도 점검한다:
 
 - **SCSS/CSS `@import`/`@use` 경로 불일치**: pattern `@import|@use`, glob `*.{scss,css,sass,less}`, head_limit 20 — 파일 이동 후 내부 경로가 맞는지 확인
 
-이후 SKILL.md의 공통 tsc/eslint 점검을 실행한다.
+#### 공통 점검 (tsc → eslint → 빌드)
+
+Phase별 Grep 점검을 통과한 후 아래를 **순서대로** 실행한다. 빌드는 두 검사를 모두 통과한 후에만 수행한다.
+
+```bash
+# tsc 타입 검사
+npx tsc --noEmit 2>&1 | head -50
+```
+
+tsc 에러가 있으면 수정한다.
+
+```bash
+# eslint 레이어 규칙 검증
+npx eslint --no-warn-ignored --quiet --rule '{"no-restricted-imports": "error"}' 'src/**/*.{ts,tsx}' 2>&1 | head -30
+```
+
+eslint 에러가 있으면 수정한다. **두 검사를 모두 통과한 후** 빌드를 실행한다.
 
 #### 빌드 검증
 
