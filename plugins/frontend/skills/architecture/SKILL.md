@@ -22,6 +22,11 @@ description: 프론트엔드 아키텍처 규칙. React, Next.js 프로젝트에
 - **규칙이 있으면**: 추가 행동 없이 진행한다.
 - **규칙이 없으면**: 사용자에게 "아키텍처 ESLint 규칙이 설정되어 있지 않습니다. [eslint-config.md](rules/eslint-config.md) 템플릿을 적용할까요?"라고 안내하고, 동의 시 eslint-config.md의 "기존 ESLint 설정이 있는 프로젝트" 병합 절차에 따라 기존 규칙을 유지하면서 아키텍처 규칙만 추가한다. 거부 시 규칙 없이 진행하되, 코드 리뷰 시 ESLint로 잡을 수 없는 위반은 수동으로 지적한다.
 
+### 경로 상수 파일 감지 (스킬 로드 시 1회)
+이 스킬이 로드되면 `src/shared/routes/paths.ts`(경로 상수)가 존재하는지 확인한다.
+- **파일이 있으면**: 추가 행동 없이 진행한다.
+- **파일이 없으면**: 사용자에게 "`shared/routes/paths.ts`가 누락되어 있습니다. 생성할까요?"라고 안내한다. 동의 시 프로젝트의 기존 라우트를 분석하여 경로 상수 파일을 scaffold한다. 거부 시 진행하되, 라우트 관련 코드 작성 시 누락을 지적한다.
+
 ### Next.js 프로젝트 감지 시 필수 행동
 Next.js 프로젝트(`package.json`에 `next` 의존성 존재)를 감지하면 [nextjs.md](integrations/nextjs.md)를 **반드시 읽고** 해당 규칙을 적용한다. 이 단계를 건너뛰지 않는다.
 추가로 App Router + TanStack Query를 함께 사용하는 프로젝트를 감지하면 [nextjs-rsc-tanstack-query.md](integrations/nextjs-rsc-tanstack-query.md)도 **반드시 읽고** 적용한다.
