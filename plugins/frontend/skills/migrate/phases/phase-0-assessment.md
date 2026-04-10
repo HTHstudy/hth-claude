@@ -101,14 +101,14 @@ import 맵이 200줄을 초과하면 assessment.md에는 처음 200줄만 저장
 | Phase 2: 규칙 적용 | 항상 체크 |
 | Phase 3: shared/api 3계층 | API 호출 코드가 존재할 때만 체크 (axios, fetch, HTTP 클라이언트 사용이 확인된 경우) |
 | Phase 4: query/mutation 팩토리 | TanStack Query를 사용할 때만 체크 (`useQuery`/`useMutation` 호출이 확인된 경우) |
-| Phase 5: 코드 정리 및 세분화 | 항상 체크 |
+| Phase 5: 아키텍처 준수 점검 | 항상 체크 |
 | Phase 6: 최종 보고 | 항상 체크 |
 
 - [ ] Phase 1: 구조 전환
 - [ ] Phase 2: 규칙 적용
 - [ ] Phase 3: shared/api 3계층
 - [ ] Phase 4: query/mutation 팩토리
-- [ ] Phase 5: 코드 정리 및 세분화
+- [ ] Phase 5: 아키텍처 준수 점검
 - [ ] Phase 6: 최종 보고
 ```
 
@@ -125,6 +125,18 @@ assessment.md의 import 맵(또는 `.architecture-migration/import-map.txt`)을 
 **Step A.** import-map에서 `ClientLayout` 또는 루트 `layout.tsx`가 직접 import하는 컴포넌트 목록 추출 → 전부 `app/`
 
 **Step B.** 각 route `page.tsx`가 import하는 컴포넌트 추출 → 해당 page에 귀속 (`pages/[page-name]/`)
+
+**page 이름은 route 경로에서 도출한다.** 컴포넌트 이름이 아닌 route 경로를 kebab-case로 평탄화:
+
+| route 경로 | page Slice 이름 | ❌ 잘못된 예 |
+|-----------|-----------------|-------------|
+| `/` | `home` | — |
+| `/about/brandstory` | `about-brandstory` | `brandstory` |
+| `/about/identity` | `about-identity` | `identity` |
+| `/settings/profile` | `settings-profile` | `profile` |
+| `/products/[id]` | `product-detail` | `products-id` |
+
+Next.js 프로젝트는 [nextjs.md의 route-Slice 매핑](../../architecture/integrations/nextjs.md)을 참조한다.
 
 **Step C.** Step B에서 2개 이상 page에 등장한 컴포넌트 → `shared/ui/`로 승격
 

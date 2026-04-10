@@ -117,6 +117,30 @@ src/
 - 현재 폴더에 있는 파일들은 폴더 채로 이동한다 (예: `components/connect/` → `pages/connect/`)
 - 현재 단일 파일은 단일 파일로 이동한다 (예: `components/promotion/Promotion.tsx` → `pages/promotion.tsx`)
 
+#### 폴더 page의 index.tsx 규칙
+
+폴더로 이동한 page에 공개 엔트리(`index.tsx`)가 없으면 생성해야 한다. 이때 **re-export 래퍼가 아닌 실제 구현 파일**로 만든다:
+
+**올바른 방법 — 루트 컴포넌트 파일을 index.tsx로 rename:**
+```bash
+# home/main.tsx가 하위 컴포넌트를 조합하는 루트 파일인 경우
+git mv src/pages/home/main.tsx src/pages/home/tmp-index.tsx
+git mv src/pages/home/tmp-index.tsx src/pages/home/index.tsx
+# main.module.scss가 있으면 함께 rename
+```
+SCSS import 경로도 함께 수정한다.
+
+**잘못된 방법 — re-export 래퍼 생성:**
+```tsx
+// ❌ pages/home/index.tsx
+export { Main } from './main';
+```
+
+**판단 기준:**
+1. 폴더 내에 다른 파일을 import하는 "루트" 파일이 1개 → 그 파일을 `index.tsx`로 rename
+2. 루트 파일 없이 모든 파일이 독립적 → `index.tsx`에서 조합 로직을 직접 작성
+3. 이미 `index.tsx`가 존재 → 그대로 유지
+
 #### 일괄 처리 전략
 
 mapping.tsv의 행 수에 따라 전략을 선택한다:

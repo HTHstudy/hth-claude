@@ -78,7 +78,7 @@ disable-model-invocation: true
 | Phase 2 | 규칙 적용 — ESLint 설정, Named Export, import type | [phase-2-rules.md](phases/phase-2-rules.md) |
 | Phase 3 | shared/api 3계층 구조 적용 — 기존 API 코드를 도메인별 3계층으로 전환 | [phase-3-shared-api.md](phases/phase-3-shared-api.md) |
 | Phase 4 | query/mutation 팩토리 적용 — TanStack Query 사용 프로젝트만 | [phase-4-query-mutation.md](phases/phase-4-query-mutation.md) |
-| Phase 5 | 코드 정리 및 세분화 — shared 세그먼트 분류, page 분해, 선택 레이어 제안 | [phase-5-cleanup.md](phases/phase-5-cleanup.md) |
+| Phase 5 | 아키텍처 준수 점검 — architecture 스킬 규칙 기반 레이어/네이밍/구조 점검 | [phase-5-cleanup.md](phases/phase-5-cleanup.md) |
 | Phase 6 | 최종 보고 — 전환 결과 요약, 미적용 항목, 후속 작업 제안 | [phase-6-report.md](phases/phase-6-report.md) |
 
 ---
