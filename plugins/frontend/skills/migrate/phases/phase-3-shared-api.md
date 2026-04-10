@@ -1,4 +1,4 @@
-# Phase 2: shared/api 3계층 구조 적용
+# Phase 3: shared/api 3계층 구조 적용
 
 > 기존 API 호출 코드가 있는 경우에만 진행한다. 없으면 건너뛴다.
 
@@ -94,4 +94,4 @@ git add -A
 git commit -m "refactor: shared/api 3계층 구조 적용"
 ```
 
-**사용자에게 Phase 2 완료를 알리고, Phase 3 진행 여부를 확인한다.**
+**사용자에게 Phase 3 완료를 알리고, Phase 4 진행 여부를 확인한다.**

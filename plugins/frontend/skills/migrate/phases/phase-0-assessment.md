@@ -112,9 +112,64 @@ import 맵이 200줄을 초과하면 assessment.md에는 처음 200줄만 저장
 
 저장 후 `.gitignore`에 `.architecture-migration/`을 추가한다.
 
-## 0-5. 사용자 확인
+## 0-5. 전환 계획 수립
 
-사용자에게 권장 범위를 안내하고, 진행 여부와 범위를 확인받는다.
+> **이 분류는 패턴 매칭이다. 설계 판단이 아니다.** import-map의 데이터만으로 기계적으로 분류한다. 컴포넌트를 개별로 읽거나 내부 로직을 분석하지 않는다. 개별 파일 Read 금지.
+
+assessment.md의 import 맵(또는 `.architecture-migration/import-map.txt`)을 **1회 읽고**, 아래 절차를 순서대로 실행한다.
+
+### 분류 절차 (순서대로 실행, 먼저 매칭 우선)
+
+**Step A.** import-map에서 `ClientLayout` 또는 루트 `layout.tsx`가 직접 import하는 컴포넌트 목록 추출 → 전부 `app/`
+
+**Step B.** 각 route `page.tsx`가 import하는 컴포넌트 추출 → 해당 page에 귀속 (`pages/[page-name]/`)
+
+**Step C.** Step B에서 2개 이상 page에 등장한 컴포넌트 → `shared/ui/`로 승격
+
+**Step D.** 나머지는 현재 디렉토리 기반으로 기계적 매핑:
+
+| 현재 디렉토리 | → 대상 | 비고 |
+|--------------|--------|------|
+| `hooks/` | `shared/hooks/` | |
+| `lib/` | `shared/lib/` | |
+| `stores/` | `shared/stores/` | |
+| `i18n/` | `shared/i18n/` | |
+| `types/` | `shared/types/` | |
+| `styles/` 중 `globals` | `app/` | 전역 스타일 |
+| `styles/` 나머지 | `shared/styles/` | 설정/변수 |
+| `constants/` | `shared/config/` | |
+| `assets/` | `shared/assets/` | |
+| `providers/` | `app/` | Provider 조합 |
+| `context/` | import-map으로 판단 | 전역(app 전체)이면 `app/`, 여러 page에서 공유하면 `shared/`, page 전용이면 해당 page 내부 |
+| `services/` | import-map으로 판단 | API 호출이면 `shared/api/`, 유틸리티면 `shared/lib/` |
+| `helpers/` | `shared/lib/` | |
+| `utils/` | `shared/lib/` | |
+| `models/` | `shared/types/` | 타입 정의만 있는 경우 |
+| `enums/` | `shared/types/` | |
+| `schemas/`, `validations/` | `shared/lib/` | 검증 로직 |
+| `api/`, `apis/` | `shared/api/` | Phase 3에서 3계층으로 재구조화 |
+| `layouts/` | import-map으로 판단 | 전역 레이아웃 셸이면 `app/`, 재사용 UI면 `shared/ui/` |
+
+**위 매핑에 없는 디렉토리**는 사용자에게 확인 후 배치한다. 임의로 판단하지 않는다.
+
+이 절차에서 thinking을 길게 쓰지 않는다. import-map에서 카운트하고 바로 매핑 테이블을 작성한다.
+
+### 매핑 테이블 작성
+
+매핑 테이블을 `.architecture-migration/mapping.tsv`에 TSV 형식으로 저장한다. Phase 1에서 셸 스크립트의 입력으로 사용한다.
+
+```
+# 현재경로\t대상경로
+src/components/Header.tsx	src/app/header.tsx
+src/views/Home.tsx	src/pages/home.tsx
+src/utils/format.ts	src/shared/lib/format.ts
+```
+
+**파일명을 kebab-case로 변환하여 매핑한다.** 예: `Header.tsx` → `header.tsx`, `ProductCard.tsx` → `product-card.tsx`. 매핑 테이블에 변환 후 이름을 사용한다.
+
+## 0-6. 사용자 확인
+
+평가 결과와 매핑 테이블을 사용자에게 제시하고, 진행 여부와 범위를 확인받는다.
 
 - 사용자가 권장 범위와 다른 선택을 하면 그에 따른다
 - Large 프로젝트에서 전체 Phase를 원하면 각 Phase 사이 커밋 및 검증을 더욱 철저히 수행한다

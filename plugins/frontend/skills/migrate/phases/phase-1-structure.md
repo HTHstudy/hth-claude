@@ -1,78 +1,18 @@
 # Phase 1: 구조 전환
 
-### 1단계: Phase 0 평가 확인
+> Phase 0에서 assessment.md + mapping.tsv가 준비된 상태이다. 이 Phase에서는 파일 이동, kebab-case rename, import 재작성만 수행한다. ESLint/Named Export/import type은 Phase 2에서 처리한다. 폴더 구조 전환(단일 파일 → 폴더)은 Phase 5에서 처리한다.
 
-`.architecture-migration/assessment.md`를 읽고 프로젝트 정보를 확인한다:
-- 프레임워크, 빌드 도구, 소스 루트, 패키지 매니저
-- 복잡도 등급과 적용 대상 Phase
-- **파일 구조, 소스 파일 목록, import 맵** (Phase 0에서 수집한 스냅샷)
+### 1단계: mapping.tsv 및 프로젝트 정보 확인
 
-assessment.md의 스냅샷만으로 전환 계획을 수립한다. 소스 파일을 개별적으로 다시 읽지 않는다. 변경 전 현재 구조를 사용자에게 보고한다.
+`.architecture-migration/mapping.tsv`와 `.architecture-migration/assessment.md`를 읽는다. Next.js 프로젝트면 [nextjs.md](../../architecture/integrations/nextjs.md)도 **병렬로 동시에** 읽는다. nextjs.md를 읽을 때는 assessment.md에서 확인한 라우터 타입(App Router / Pages Router)에 해당하는 섹션과 공통 섹션(route-Slice 매핑, API Routes, 특수 파일)만 읽는다.
 
-**병렬 읽기:** assessment.md와 참조 문서(Next.js 프로젝트면 [nextjs.md](../../architecture/integrations/nextjs.md))를 **동시에** 읽는다. 직렬로 읽지 않는다. nextjs.md를 읽을 때는 assessment.md에서 확인한 라우터 타입(App Router / Pages Router)에 해당하는 섹션과 공통 섹션(route-Slice 매핑, API Routes, 특수 파일)만 읽는다. 비해당 라우터 섹션은 건너뛴다.
+확인 항목:
+- 프레임워크, 빌드 도구, 소스 루트
+- mapping.tsv의 이동 계획 (Phase 0에서 사용자 승인 완료)
 
-### 2단계: 전환 계획 수립
+### 2단계: 기본 구조 생성 및 파일 이동
 
-> **이 분류는 패턴 매칭이다. 설계 판단이 아니다.** import-map의 데이터만으로 기계적으로 분류한다. 컴포넌트를 개별로 읽거나 내부 로직을 분석하지 않는다. 개별 파일 Read 금지.
-
-> **Phase 1은 레이어 배치와 구조 전환만 수행한다.** 파일명 변환(kebab-case), 폴더 구조 전환(단일 파일 → 폴더), FSD import 방향 검증은 **Phase 4에서 처리한다.** 여기서 판단하지 않는다.
-
-assessment.md의 import 맵(또는 `.architecture-migration/import-map.txt`)을 **1회 읽고**, 아래 절차를 순서대로 실행한다.
-
-#### 분류 절차 (순서대로 실행, 먼저 매칭 우선)
-
-**Step A.** import-map에서 `ClientLayout` 또는 루트 `layout.tsx`가 직접 import하는 컴포넌트 목록 추출 → 전부 `app/`
-
-**Step B.** 각 route `page.tsx`가 import하는 컴포넌트 추출 → 해당 page에 귀속 (`pages/[page-name]/`)
-
-**Step C.** Step B에서 2개 이상 page에 등장한 컴포넌트 → `shared/ui/`로 승격
-
-**Step D.** 나머지는 현재 디렉토리 기반으로 기계적 매핑:
-
-| 현재 디렉토리 | → 대상 | 비고 |
-|--------------|--------|------|
-| `hooks/` | `shared/hooks/` | |
-| `lib/` | `shared/lib/` | |
-| `stores/` | `shared/stores/` | |
-| `i18n/` | `shared/i18n/` | |
-| `types/` | `shared/types/` | |
-| `styles/` 중 `globals` | `app/` | 전역 스타일 |
-| `styles/` 나머지 | `shared/styles/` | 설정/변수 |
-| `constants/` | `shared/config/` | |
-| `assets/` | `shared/assets/` | |
-| `providers/` | `app/` | Provider 조합 |
-| `context/` | import-map으로 판단 | 전역(app 전체)이면 `app/`, 여러 page에서 공유하면 `shared/`, page 전용이면 해당 page 내부 |
-| `services/` | import-map으로 판단 | API 호출이면 `shared/api/`, 유틸리티면 `shared/lib/` |
-| `helpers/` | `shared/lib/` | |
-| `utils/` | `shared/lib/` | |
-| `models/` | `shared/types/` | 타입 정의만 있는 경우 |
-| `enums/` | `shared/types/` | |
-| `schemas/`, `validations/` | `shared/lib/` | 검증 로직 |
-| `api/`, `apis/` | `shared/api/` | Phase 2에서 3계층으로 재구조화 |
-| `layouts/` | import-map으로 판단 | 전역 레이아웃 셸이면 `app/`, 재사용 UI면 `shared/ui/` |
-
-**위 매핑에 없는 디렉토리**는 사용자에게 확인 후 배치한다. 임의로 판단하지 않는다.
-
-이 절차에서 thinking을 길게 쓰지 않는다. import-map에서 카운트하고 바로 매핑 테이블을 작성한다.
-
-#### 매핑 테이블 작성
-
-매핑 테이블을 `.architecture-migration/mapping.tsv`에 TSV 형식으로 저장한다. 이 파일은 3단계(git mv)와 4단계(import 수정)에서 셸 스크립트의 입력으로 사용한다.
-
-```
-# 현재경로\t대상경로
-src/components/Header.tsx	src/app/Header.tsx
-src/views/Home.tsx	src/pages/Home.tsx
-src/utils/format.ts	src/shared/lib/format.ts
-```
-
-**파일명은 현재 이름 그대로 유지한다.** kebab-case 변환은 Phase 4에서 일괄 처리한다.
-
-계획(매핑 테이블)을 사용자에게 제시하고 **확인을 받은 후** 진행한다.
-
-### 3단계: 기본 구조 생성 및 파일 이동
-
-1단계에서 확인한 프레임워크에 따라 구조를 생성한다.
+assessment.md에서 확인한 프레임워크에 따라 구조를 생성한다.
 
 #### React (Vite) 프로젝트
 
@@ -172,10 +112,10 @@ src/
 
 #### 파일 vs 폴더 판단 기준
 
-**Phase 1에서는 현재 디렉토리 구조를 그대로 유지하여 이동한다.** 폴더 전환(단일 파일 → 폴더 + index.tsx)은 Phase 4에서 수행한다.
+**Phase 1에서는 현재 디렉토리 구조를 그대로 유지하여 이동한다.** 폴더 전환(단일 파일 → 폴더 + index.tsx)은 Phase 5에서 수행한다.
 
 - 현재 폴더에 있는 파일들은 폴더 채로 이동한다 (예: `components/connect/` → `pages/connect/`)
-- 현재 단일 파일은 단일 파일로 이동한다 (예: `components/promotion/Promotion.tsx` → `pages/Promotion.tsx`)
+- 현재 단일 파일은 단일 파일로 이동한다 (예: `components/promotion/Promotion.tsx` → `pages/promotion.tsx`)
 
 #### 일괄 처리 전략
 
@@ -226,7 +166,14 @@ grep -P '\t[^\t]*shared/' .architecture-migration/mapping.tsv > .architecture-mi
 2. cross-layer import 일괄 치환 (4단계에서 수행)
 3. 잔여 패턴 Grep 검증
 
-> **참고:** Phase 1에서는 파일명을 변경하지 않으므로 macOS 대소문자 비구분 파일시스템 문제가 발생하지 않는다. 대소문자 변경(PascalCase → kebab-case)은 Phase 4에서 처리하며, 이때 임시 경로 경유 2단계 rename을 사용한다.
+> **macOS 대소문자 비구분 파일시스템 대응**: PascalCase → kebab-case rename 시 대소문자만 다른 경로로 인식되어 직접 `git mv`가 실패한다. 반드시 임시 경로를 경유하는 2단계 rename을 사용한다:
+>
+> ```bash
+> git mv src/pages/MyPage.tsx src/pages/tmp-my-page.tsx
+> git mv src/pages/tmp-my-page.tsx src/pages/my-page.tsx
+> ```
+>
+> 일괄 처리 스크립트에서 이를 자동 적용한다.
 
 #### 빈 디렉토리 정리
 
@@ -241,12 +188,11 @@ done
 
 정리 후 `src/` 아래에 FSD 레이어(`app/`, `pages/`, `shared/`)만 남아있는지 확인한다. 이전 구조의 디렉토리(`components/`, `hooks/`, `lib/`, `stores/`, `styles/`, `types/` 등)가 빈 폴더로 남아있으면 안 된다.
 
-### 4단계: import 수정 및 도구 설정
+### 3단계: import 수정 및 tsconfig paths 설정
 
 모든 import 경로를 새 구조에 맞게 수정한다:
 - 상대 경로를 경로 별칭으로 교체 (`@app/`, `@pages/`, `@shared/`)
 - 파일 이동으로 인한 깨진 import 수정
-- 타입 import는 반드시 `import type` 사용
 
 #### import 일괄 치환
 
@@ -287,42 +233,24 @@ done
 - Vite 사용 시 `resolve.tsconfigPaths: true` 설정
 - Next.js 사용 시 `next.config.js` 설정 확인
 
-#### ESLint 규칙 설정
+### 사전 점검 및 빌드 검증
 
-[eslint-config.md](../../architecture/rules/eslint-config.md)를 읽고 프로젝트에 적용한다:
+#### 사전 점검 (빌드 전)
 
-0. **필수 의존성 확인:** eslint-config.md의 "필수 의존성" 섹션을 따라 `eslint-plugin-import`, `@typescript-eslint/*` 등이 설치되어 있는지 확인하고, 미설치 시 설치한다
-1. **ESLint 버전 감지:** `eslint.config.*` 존재 (`.js`, `.mjs`, `.cjs`, `.ts`, `.mts`, `.cts`) → Flat Config (9+), `.eslintrc.*` 존재 → Legacy Config (8)
-2. **해당 버전의 템플릿 파일만 읽는다** — eslint-config.md의 "버전별 템플릿" 링크를 따라 [eslint-flat-config.md](../../architecture/rules/eslint-flat-config.md) 또는 [eslint-legacy-config.md](../../architecture/rules/eslint-legacy-config.md) 중 하나만 로드. `no-restricted-imports`뿐 아니라 `import/no-default-export`, `@typescript-eslint/consistent-type-imports` 등 모든 규칙을 포함해야 한다. Phase 4에서 이 규칙들이 설정되어 있다고 전제한다.
-3. **Next.js 프로젝트:** eslint-config.md의 "Next.js 프로젝트 추가 규칙" 섹션도 함께 적용한다
-4. **기존 설정이 있으면:** eslint-config.md의 "기존 ESLint 설정이 있는 프로젝트" 병합 절차를 따른다
-5. **검증:** `yarn lint` (또는 프로젝트의 lint 명령)을 실행하여 규칙이 정상 동작하는지 확인한다
-
-### 5단계: 사전 점검 및 빌드 검증
-
-#### 사전 점검 (빌드 전) — eslint가 잡지 못하는 항목만
-
-SCSS/CSS 파일은 eslint 대상이 아니므로 Grep으로 별도 점검한다:
+SCSS/CSS 파일은 tsc 대상이 아니므로 Grep으로 별도 점검한다:
 
 - **SCSS/CSS `@import`/`@use` 경로 불일치**: pattern `@import|@use`, glob `*.{scss,css,sass,less}`, head_limit 20 — 파일 이동 후 내부 경로가 맞는지 확인
 
-#### 공통 점검 (tsc → eslint → 빌드)
+#### 공통 점검 (tsc → 빌드)
 
-Phase별 Grep 점검을 통과한 후 아래를 **순서대로** 실행한다. 빌드는 두 검사를 모두 통과한 후에만 수행한다.
+Phase 1에서는 ESLint가 아직 설정되지 않았으므로 **tsc만** 실행한다. eslint는 Phase 2에서 설정 후 검증한다.
 
 ```bash
 # tsc 타입 검사
 npx tsc --noEmit 2>&1 | head -50
 ```
 
-tsc 에러가 있으면 수정한다.
-
-```bash
-# eslint 레이어 규칙 검증
-npx eslint --no-warn-ignored --quiet --rule '{"no-restricted-imports": "error"}' 'src/**/*.{ts,tsx}' 2>&1 | head -30
-```
-
-eslint 에러가 있으면 수정한다. **두 검사를 모두 통과한 후** 빌드를 실행한다.
+tsc 에러가 있으면 수정한다. **tsc를 통과한 후** 빌드를 실행한다.
 
 #### 빌드 검증
 

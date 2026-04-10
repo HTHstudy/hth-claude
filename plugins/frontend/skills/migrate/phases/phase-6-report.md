@@ -1,4 +1,4 @@
-# Phase 5: 최종 보고
+# Phase 6: 최종 보고
 
 ### 17단계: 전환 결과 요약
 
@@ -21,15 +21,15 @@
 
 **다음 작업 제안:**
 
-아래 관점에서 프로젝트를 점검하고, 해당 사항이 있는 항목만 제안한다. 이미 Phase 1~4에서 처리 완료된 항목(ESLint 규칙, shared 모듈 재배치 등)은 다시 제안하지 않는다.
+아래 관점에서 프로젝트를 점검하고, 해당 사항이 있는 항목만 제안한다. 이미 Phase 1~5에서 처리 완료된 항목(ESLint 규칙, shared 모듈 재배치 등)은 다시 제안하지 않는다.
 
 즉시:
 - 코드 리뷰 후 머지 대상 브랜치
 - Phase 중 스킵한 Phase가 있으면 실행 시점 제안 (예: Phase 3은 TanStack Query 도입 후)
 
 코드 증가 시:
-- Phase 4의 16단계에서 도입을 보류한 선택 레이어(widgets/features/entities)의 재검토 시점과 기준
-- Phase 4의 사용처 분석에서 "shared 유지 + entities 후보"로 분류된 모듈의 재검토 시점
+- Phase 5의 16단계에서 도입을 보류한 선택 레이어(widgets/features/entities)의 재검토 시점과 기준
+- Phase 5의 사용처 분석에서 "shared 유지 + entities 후보"로 분류된 모듈의 재검토 시점
 
 ### 정리
 

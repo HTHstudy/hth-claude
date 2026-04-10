@@ -14,11 +14,12 @@ disable-model-invocation: true
 
 | Phase | 로드 대상 |
 |-------|-----------|
-| Phase 0-1 | 로드 불필요. phase-1-structure.md에 필요한 구조/네이밍/import 규칙이 포함되어 있다. ESLint 설정 시 [eslint-config.md](../architecture/rules/eslint-config.md)만 참조. Next.js 프로젝트면 [nextjs.md](../architecture/integrations/nextjs.md)도 참조. **Phase 1 진입 시 assessment.md + 참조 문서(nextjs.md 등)를 병렬로 동시에 읽는다.** |
-| Phase 2 | [shared-api.md](../architecture/layers/shared-api.md) 참조 |
-| Phase 3 | [shared-query-factory.md](../architecture/layers/shared-query-factory.md), [shared-mutation-factory.md](../architecture/layers/shared-mutation-factory.md) 참조 |
-| Phase 4 | `/frontend:architecture` SKILL.md에서 "레이어 역할"(선택 레이어: widgets/features/entities), "네이밍 및 폴더 규칙", "추출 이동 기준", "판단 순서" 섹션만 읽는다. 행동 규칙·체크리스트 등 나머지는 불필요. |
-| Phase 5 | 로드 불필요. 보고서 작성만 수행. |
+| Phase 0-1 | 로드 불필요. phase-0-assessment.md와 phase-1-structure.md에 필요한 구조/네이밍/import 규칙이 포함되어 있다. Next.js 프로젝트면 [nextjs.md](../architecture/integrations/nextjs.md)도 참조. |
+| Phase 2 | ESLint 설정 시 [eslint-config.md](../architecture/rules/eslint-config.md)만 참조. |
+| Phase 3 | [shared-api.md](../architecture/layers/shared-api.md) 참조 |
+| Phase 4 | [shared-query-factory.md](../architecture/layers/shared-query-factory.md), [shared-mutation-factory.md](../architecture/layers/shared-mutation-factory.md) 참조 |
+| Phase 5 | `/frontend:architecture` SKILL.md에서 "레이어 역할"(선택 레이어: widgets/features/entities), "네이밍 및 폴더 규칙", "추출 이동 기준", "판단 순서" 섹션만 읽는다. 행동 규칙·체크리스트 등 나머지는 불필요. |
+| Phase 6 | 로드 불필요. 보고서 작성만 수행. |
 
 ---
 
@@ -44,16 +45,18 @@ disable-model-invocation: true
 
 **기준 A — 커밋 메시지** (`git log --oneline`):
 - `refactor: 레이어드 아키텍처 폴더 구조 전환` → Phase 1 완료
-- `refactor: shared/api 3계층 구조 적용` → Phase 2 완료
-- `refactor: query/mutation 팩토리 패턴 적용` → Phase 3 완료
-- `refactor: 코드 정리 및 shared 모듈 세분화` → Phase 4 완료
-- `chore: 마이그레이션 임시 파일 정리` → Phase 5 완료
+- `refactor: ESLint 규칙 및 Named Export 적용` → Phase 2 완료
+- `refactor: shared/api 3계층 구조 적용` → Phase 3 완료
+- `refactor: query/mutation 팩토리 패턴 적용` → Phase 4 완료
+- `refactor: 코드 정리 및 shared 모듈 세분화` → Phase 5 완료
+- `chore: 마이그레이션 임시 파일 정리` → Phase 6 완료
 
 **기준 B — 프로젝트 구조** (수동 작업 감지용):
 - `.architecture-migration/assessment.md` 존재 → Phase 0 완료
 - `app/`, `pages/`, `shared/` 구조 존재 → Phase 1 완료 가능성
-- `shared/api/base/` + 도메인별 3계층 구조 존재 → Phase 2 완료 가능성
-- `shared/query-factory/`, `shared/mutation-factory/` 존재 → Phase 3 완료 가능성
+- ESLint 설정에 `no-restricted-imports` 규칙 존재 → Phase 2 완료 가능성
+- `shared/api/base/` + 도메인별 3계층 구조 존재 → Phase 3 완료 가능성
+- `shared/query-factory/`, `shared/mutation-factory/` 존재 → Phase 4 완료 가능성
 
 **판별 로직:**
 - 커밋 있음 → 해당 Phase 완료 확정
@@ -70,12 +73,13 @@ disable-model-invocation: true
 
 | Phase | 내용 | 상세 문서 |
 |-------|------|-----------|
-| Phase 0 | 사전 평가 — 프로젝트 규모·복잡도 분석, 전환 범위 결정 | [phase-0-assessment.md](phases/phase-0-assessment.md) |
-| Phase 1 | 구조 전환 — 폴더 구조 분석, 전환 계획, 파일 이동, import 수정 | [phase-1-structure.md](phases/phase-1-structure.md) |
-| Phase 2 | shared/api 3계층 구조 적용 — 기존 API 코드를 도메인별 3계층으로 전환 | [phase-2-shared-api.md](phases/phase-2-shared-api.md) |
-| Phase 3 | query/mutation 팩토리 적용 — TanStack Query 사용 프로젝트만 | [phase-3-query-mutation.md](phases/phase-3-query-mutation.md) |
-| Phase 4 | 코드 정리 및 세분화 — shared 세그먼트 분류, page 분해, 선택 레이어 제안 | [phase-4-cleanup.md](phases/phase-4-cleanup.md) |
-| Phase 5 | 최종 보고 — 전환 결과 요약, 미적용 항목, 후속 작업 제안 | [phase-5-report.md](phases/phase-5-report.md) |
+| Phase 0 | 사전 평가 + 전환 계획 — 프로젝트 분석, 매핑 테이블 작성 | [phase-0-assessment.md](phases/phase-0-assessment.md) |
+| Phase 1 | 구조 전환 — 파일 이동, kebab-case, import 수정 | [phase-1-structure.md](phases/phase-1-structure.md) |
+| Phase 2 | 규칙 적용 — ESLint 설정, Named Export, import type | [phase-2-rules.md](phases/phase-2-rules.md) |
+| Phase 3 | shared/api 3계층 구조 적용 — 기존 API 코드를 도메인별 3계층으로 전환 | [phase-3-shared-api.md](phases/phase-3-shared-api.md) |
+| Phase 4 | query/mutation 팩토리 적용 — TanStack Query 사용 프로젝트만 | [phase-4-query-mutation.md](phases/phase-4-query-mutation.md) |
+| Phase 5 | 코드 정리 및 세분화 — shared 세그먼트 분류, page 분해, 선택 레이어 제안 | [phase-5-cleanup.md](phases/phase-5-cleanup.md) |
+| Phase 6 | 최종 보고 — 전환 결과 요약, 미적용 항목, 후속 작업 제안 | [phase-6-report.md](phases/phase-6-report.md) |
 
 ---
 
@@ -108,7 +112,7 @@ Phase 상세 문서는 **해당 Phase에 진입할 때만** 읽는다. 모든 Ph
 4. Phase 완료 후, 빌드 검증 및 중간 커밋을 수행한다
 5. 다음 Phase로 넘어가기 전에 이전 Phase 문서의 세부 내용에 의존하지 않는다
 
-**Phase 스킵:** Phase 2, 3은 조건부(API 코드 유무, TanStack Query 사용 여부)이다. 해당 조건이 없으면 사용자에게 "Phase N은 해당 사항이 없어 건너뜁니다. Phase M으로 진행할까요?"라고 안내하고, 다음 적용 대상 Phase로 진행한다.
+**Phase 스킵:** Phase 3, 4는 조건부(API 코드 유무, TanStack Query 사용 여부)이다. 해당 조건이 없으면 사용자에게 "Phase N은 해당 사항이 없어 건너뜁니다. Phase M으로 진행할까요?"라고 안내하고, 다음 적용 대상 Phase로 진행한다.
 
 이렇게 하면 각 Phase에서 필요한 정보만 컨텍스트에 유지되어, 긴 마이그레이션에서도 정확한 지시를 따를 수 있다.
 
@@ -123,10 +127,11 @@ Phase 상세 문서는 **해당 Phase에 진입할 때만** 읽는다. 모든 Ph
 | Phase | 커밋 메시지 |
 |-------|-------------|
 | Phase 1 | `refactor: 레이어드 아키텍처 폴더 구조 전환` |
-| Phase 2 | `refactor: shared/api 3계층 구조 적용` |
-| Phase 3 | `refactor: query/mutation 팩토리 패턴 적용` |
-| Phase 4 | `refactor: 코드 정리 및 shared 모듈 세분화` |
-| Phase 5 | `chore: 마이그레이션 임시 파일 정리` |
+| Phase 2 | `refactor: ESLint 규칙 및 Named Export 적용` |
+| Phase 3 | `refactor: shared/api 3계층 구조 적용` |
+| Phase 4 | `refactor: query/mutation 팩토리 패턴 적용` |
+| Phase 5 | `refactor: 코드 정리 및 shared 모듈 세분화` |
+| Phase 6 | `chore: 마이그레이션 임시 파일 정리` |
 
 Phase 0은 분석만 수행하므로 커밋 불필요.
 
@@ -169,7 +174,7 @@ Phase 0은 분석만 수행하므로 커밋 불필요.
 
 ### 빌드 전 사전 점검 필수
 
-모든 Phase에서 빌드 실행 전, 아래 3단계를 순서대로 수행한다:
+모든 Phase에서 빌드 실행 전, 아래 단계를 순서대로 수행한다:
 
 **1단계: Phase별 Grep 점검** — tsc/eslint가 잡지 못하는 항목만 검사한다. 각 Phase 문서의 "사전 점검" 섹션에 정의.
 
@@ -179,13 +184,13 @@ npx tsc --noEmit 2>&1 | head -50
 ```
 tsc 에러가 있으면 빌드 전에 수정한다.
 
-**3단계: eslint 레이어 규칙 검증** — Phase 1에서 설정한 `no-restricted-imports` 규칙 위반을 검증한다:
+**3단계: eslint 레이어 규칙 검증 (Phase 2 이후만)** — Phase 2에서 설정한 `no-restricted-imports` 규칙 위반을 검증한다. Phase 1에서는 ESLint가 아직 설정되지 않았으므로 이 단계를 건너뛴다.
 ```bash
 npx eslint --no-warn-ignored --quiet --rule '{"no-restricted-imports": "error"}' 'src/**/*.{ts,tsx}' 2>&1 | head -30
 ```
 레이어 방향 위반이 있으면 빌드 전에 수정한다.
 
-> **역할 분담:** tsc는 타입/import 오류를 잡고, eslint는 레이어 방향 규칙(`no-restricted-imports`)을 잡는다. 빌드 실행은 이 두 검사를 통과한 후에만 수행한다.
+> **역할 분담:** tsc는 타입/import 오류를 잡고, eslint는 레이어 방향 규칙(`no-restricted-imports`)을 잡는다. Phase 1은 tsc만, Phase 2부터는 tsc + eslint 두 검사를 통과한 후에만 빌드를 수행한다.
 
 - 목표: Phase당 빌드 최대 2회 (1회 성공이 이상적, 1회 실패+수정 후 재빌드가 한계)
 

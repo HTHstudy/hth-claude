@@ -1,4 +1,4 @@
-# Phase 3: query/mutation 팩토리 적용
+# Phase 4: query/mutation 팩토리 적용
 
 > TanStack Query를 사용하는 프로젝트에서만 진행한다. 사용하지 않으면 건너뛴다.
 
@@ -6,7 +6,7 @@
 
 ### 10단계: 기존 쿼리/뮤테이션 분석
 
-**Phase 2에서 생성한 `shared/api/` 구조를 먼저 확인한다.** 각 도메인의 `index.ts`에서 export하는 `DOMAIN_API` 객체 목록을 파악한다. 이 목록이 팩토리의 `queryFn`/`mutationFn`에 사용된다.
+**Phase 3에서 생성한 `shared/api/` 구조를 먼저 확인한다.** 각 도메인의 `index.ts`에서 export하는 `DOMAIN_API` 객체 목록을 파악한다. 이 목록이 팩토리의 `queryFn`/`mutationFn`에 사용된다.
 
 현재 TanStack Query 사용 패턴을 파악한다:
 - `useQuery`, `useMutation` 호출 위치
@@ -93,4 +93,4 @@ git add -A
 git commit -m "refactor: query/mutation 팩토리 패턴 적용"
 ```
 
-사용자에게 Phase 3 완료를 알리고, Phase 4 진행 여부를 확인한다.
+사용자에게 Phase 4 완료를 알리고, Phase 5 진행 여부를 확인한다.
