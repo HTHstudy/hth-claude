@@ -47,9 +47,26 @@ shared/api/
 
 `base/`는 모든 도메인이 공유하는 전송 계층 기반 코드를 둔다.
 
-- `base-http-client.ts` — Axios 래퍼, 인터셉터, 인증 토큰 주입
-- `errors.ts` — 에러 매핑, 공통 에러 클래스
-- `types.ts` — 공통 pagination 응답 등 모든 도메인이 공유하는 인프라 타입
+```txt
+shared/api/base/
+├─ base-http-client.ts      # BaseHttpClient 클래스 (프로젝트 포터블)
+├─ [auth]-http-client.ts    # 중간 클래스 (선택 — 인증 그룹 공유 시)
+├─ errors.ts                # HttpError 클래스, 에러 로깅
+└─ types.ts                 # 공통 응답 타입 (DefaultResponse 등)
+```
+
+| 파일 | 역할 |
+|------|------|
+| `base-http-client.ts` | 모든 도메인 HTTP 클라이언트의 기반 클래스. 기본 설정, 인터셉터 훅(`protected` — 하위 클래스에서 override), `res.data` 언래핑 HTTP 래퍼 메서드를 제공한다. 프로젝트 종속 로직을 포함하지 않는다. |
+| `[auth]-http-client.ts` | 여러 도메인이 공유하는 인터셉터(인증, 모니터링 등)를 중앙화하는 중간 클래스. 필요할 때만 생성한다. |
+| `errors.ts` | `AxiosError` → `HttpError` 변환. 모든 도메인의 에러를 표준화한다. |
+| `types.ts` | `DefaultResponse<T>` 등 백엔드 공통 응답 래퍼 타입. 프로젝트에 맞게 조정한다. |
+
+**BaseHttpClient에 두는 것:** 프로젝트 포터블 로직 (기본 설정, 에러 정규화, 응답 타입)
+**BaseHttpClient에 두지 않는 것:** 프로젝트 종속 로직 (인증, 세션, 리다이렉트) → 중간 클래스 또는 도메인 http-client에서 override
+**base/ 폴더에는** 중간 클래스(`auth-http-client.ts` 등) 배치 가능 — 여러 도메인이 공유하는 코드이므로
+
+템플릿, 설계 원칙, 확장 패턴 → [http-client.md](../rules/http-client.md)
 
 ---
 
@@ -66,7 +83,13 @@ shared/api/
    └─ *.ts                     # 엔드포인트별 파일
 ```
 
-### 4.1 model.ts — 도메인 모델
+### 4.1 [domain]-http-client.ts — 도메인 HTTP 클라이언트
+
+BaseHttpClient(또는 중간 클래스)를 상속한 도메인별 인스턴스. 파일명은 `[domain]-http-client.ts`.
+
+역할, 설계 원칙, 확장 패턴 → [http-client.md](../rules/http-client.md)
+
+### 4.2 model.ts — 도메인 모델
 
 `model.ts`는 여러 endpoint에서 공유되는 도메인 엔티티, 도메인 상태 타입, 도메인 상수를 정의한다.
 
@@ -97,12 +120,11 @@ export type ProductItem = {
 };
 ```
 
-### 4.2 endpoints/*.ts — Transport 레이어
+### 4.3 endpoints/*.ts — Transport 레이어
 
 엔드포인트별로 API 함수와 요청/응답 타입을 **반드시 한 파일에** 둔다.
 
 **허용되는 변환:**
-- Axios 응답 객체에서 `response.data`를 꺼내 반환하는 것
 - 백엔드 공통 응답 래퍼(예: `{ data: T, success: boolean }`)에서 실제 데이터(`T`)까지 꺼내 반환하는 것. 단, 공통 응답 타입이 `base/types.ts`에 정의되어 있어야 한다.
 
 **금지되는 변환:**
@@ -135,15 +157,11 @@ type GetProductListRes = DefaultResponse<{
 }>;
 
 export const getProductList = async (params: GetProductListReq) => {
-  const response = await productHttpClient.get<GetProductListRes>(
-    '/products',
-    { params },
-  );
-  return response.data;
+  return productHttpClient.get<GetProductListRes>('/products', { params });
 };
 ```
 
-### 4.3 index.ts — 공개 인터페이스
+### 4.4 index.ts — 공개 인터페이스
 
 `index.ts`는 도메인 외부에 공개되는 **유일한 entrypoint**이다.
 
@@ -241,8 +259,7 @@ import { productHttpClient } from '@shared/api/product/product-http-client';
 ### HTTP 클라이언트
 
 - 파일명은 `[domain]-http-client.ts` 형태를 사용한다.
-- `base-http-client.ts`를 확장하여 도메인별 설정을 적용한다.
-- **도메인별 http-client는 baseURL 단위로 구분한다.** 같은 서버의 도메인은 같은 baseURL을 사용하고, 다른 서버(외부 BE, API route 등)는 다른 baseURL을 설정한다.
+- 역할, 설계 원칙, 확장 패턴 → [http-client.md](../rules/http-client.md)
 
 ---
 
@@ -276,11 +293,7 @@ type Get[Resource]Req = { /* ... */ };
 type Get[Resource]Res = DefaultResponse<{ /* ... */ }>;
 
 export const get[Resource] = async (params: Get[Resource]Req) => {
-  const response = await [domain]HttpClient.get<Get[Resource]Res>(
-    '/endpoint',
-    { params },
-  );
-  return response.data;
+  return [domain]HttpClient.get<Get[Resource]Res>('/endpoint', { params });
 };
 ```
 
@@ -310,7 +323,7 @@ export type { [DomainEntity] } from './model';
 - `index.ts`에서 `[DOMAIN]_API` 객체 하나를 export한다.
 - 외부 코드는 `@shared/api/[domain]`만 import한다.
 - 도메인 내부에서는 상대경로로 import한다.
-- `endpoints/*.ts`는 `response.data`만 꺼내서 반환한다.
+- `endpoints/*.ts`는 도메인 http-client의 HTTP 래퍼 메서드를 통해 호출한다.
 - 타입은 반드시 `type` import로 가져온다. (`import { type Foo }`)
 - 새 도메인은 기존 도메인과 동일한 구조로 생성한다.
 - `model.ts`에는 둘 이상의 endpoint 또는 외부 consumer가 공유하는 도메인 엔티티, 상태 타입, 상수를 둔다.

@@ -76,14 +76,36 @@ hth-claude/
 │       │   ├── architecture/           # 자동 적용 스킬
 │       │   │   ├── SKILL.md
 │       │   │   ├── integrations/       # 프레임워크별 적용 가이드
-│       │   │   │   ├── nextjs.md       # Next.js App Router / Pages Router
+│       │   │   │   ├── nextjs.md
 │       │   │   │   └── nextjs-rsc-tanstack-query.md
 │       │   │   ├── layers/             # 레이어별 상세 규칙
-│       │   │   └── rules/              # Slice 공통 규칙
+│       │   │   │   ├── app.md
+│       │   │   │   ├── pages.md
+│       │   │   │   ├── shared.md
+│       │   │   │   ├── shared-api.md
+│       │   │   │   ├── shared-query-factory.md
+│       │   │   │   ├── shared-mutation-factory.md
+│       │   │   │   └── optional-layers.md
+│       │   │   └── rules/              # 공통 규칙 및 템플릿
+│       │   │       ├── rules.md
+│       │   │       ├── eslint-config.md
+│       │   │       ├── eslint-flat-config.md
+│       │   │       ├── eslint-legacy-config.md
+│       │   │       └── http-client.md
 │       │   ├── create/                 # 새 프로젝트 생성 스킬
-│       │   │   └── SKILL.md
+│       │   │   ├── SKILL.md
+│       │   │   └── templates/
+│       │   │       ├── react-vite.md
+│       │   │       └── nextjs-app-router.md
 │       │   └── migrate/                # 기존 프로젝트 전환 스킬
-│       │       └── SKILL.md
+│       │       ├── SKILL.md
+│       │       └── phases/
+│       │           ├── phase-0-plan.md
+│       │           ├── phase-1-structure.md
+│       │           ├── phase-2-rules.md
+│       │           ├── phase-3-api.md
+│       │           ├── phase-4-query.md
+│       │           └── phase-5-verify.md
 │       └── docs/                       # 한국어/영어 문서
 └── README.md
 ```

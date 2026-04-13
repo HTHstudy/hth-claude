@@ -128,7 +128,15 @@ export const ENV = {
 } as const;
 ```
 
-### 5단계: 완료
+### 5단계: 검증
+
+1. `npx tsc --noEmit` — 타입 에러 확인
+2. `yarn lint` — ESLint 규칙 위반 확인
+3. `yarn build` — 빌드 성공 확인
+
+에러 발생 시 수정 후 재검증한다. 목표: 빌드 최대 2회.
+
+### 6단계: 완료
 
 사용자에게 안내:
 - `yarn dev`로 개발 서버를 시작할 수 있다

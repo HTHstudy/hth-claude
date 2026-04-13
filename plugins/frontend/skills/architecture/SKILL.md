@@ -71,6 +71,7 @@ Next.js 프로젝트(`package.json`에 `next` 의존성 존재)를 감지하면 
 ### 상세 패턴이 필요할 때
 아래 파일을 참조한다. 일반적인 작업에서는 이 SKILL.md만으로 충분하다.
 - shared/api 3계층 패턴 → [shared-api.md](layers/shared-api.md)
+- HTTP 클라이언트 (base + 도메인) → [http-client.md](rules/http-client.md)
 - query-factory 패턴 → [shared-query-factory.md](layers/shared-query-factory.md)
 - mutation-factory 패턴 → [shared-mutation-factory.md](layers/shared-mutation-factory.md)
 - app 레이어 상세 → [app.md](layers/app.md)

@@ -9,9 +9,10 @@
 ```
 shared/api/
 ├─ base/                       # Common infrastructure
-│  ├─ base-http-client.ts      # Axios wrapper, interceptors
+│  ├─ base-http-client.ts      # BaseHttpClient class (project-portable)
+│  ├─ [auth]-http-client.ts    # Intermediate class (optional — shared auth groups)
 │  ├─ errors.ts                # Error mapping
-│  └─ types.ts                 # Common response types (pagination, etc.)
+│  └─ types.ts                 # Common response types
 │
 ├─ product/                    # Per-domain folder
 │  ├─ index.ts                 # Public interface (only external access point)
@@ -26,6 +27,95 @@ shared/api/
    ├─ auth-http-client.ts
    └─ endpoints/
 ```
+
+---
+
+## base/ — Common Infrastructure
+
+The `base/` folder contains transport-layer code shared by all domains.
+
+```
+shared/api/base/
+├─ base-http-client.ts      # BaseHttpClient class (project-portable)
+├─ [auth]-http-client.ts    # Intermediate class (optional — shared auth groups)
+├─ errors.ts                # Error mapping, common error class
+└─ types.ts                 # Common response types
+```
+
+The `base/` folder can contain two types of files:
+- **BaseHttpClient** — A portable base class that works across projects. Contains no project-specific logic (auth, session).
+- **Intermediate classes** — Project-specific interceptors shared by multiple domains (auth, monitoring, etc.). Created only when needed.
+
+### BaseHttpClient
+
+The base class for all domain HTTP clients. It applies default settings (timeout, headers) and exposes `protected` interceptor hooks that domain HTTP clients can override.
+
+- `onRequest` — Request preprocessing (e.g., auth token injection)
+- `onRequestError` — Request error handling
+- `onResponse` — Response postprocessing (e.g., session expiry detection)
+- `onResponseError` — Response error handling (default: converts to `HttpError`)
+
+HTTP wrapper methods (get, post, put, patch, delete) unwrap `response.data` automatically. Endpoints don't need to unwrap manually.
+
+### What goes in base / What doesn't
+
+| Include | Exclude |
+|---------|---------|
+| Axios creation, default timeout/headers | Auth token injection |
+| `HttpError` class, error logging | Session expiry handling |
+| `DefaultResponse` common response type | Response code redirects |
+| `response.data` unwrapping wrappers | |
+
+Rule of thumb: **"Is this shared by all domains?"** — If yes, it belongs in base. If no, override it in the domain HTTP client.
+
+---
+
+## Domain HTTP Client
+
+Each domain folder contains a `[domain]-http-client.ts`. It's an adapter that applies domain-specific settings (baseURL, auth, etc.) to BaseHttpClient.
+
+### Why separate?
+
+- **baseURL isolation** — Resources on the same server share one http-client; different servers get separate http-clients.
+- **Interceptor isolation** — Separate request preprocessing for authenticated vs. public domains.
+- **Transport encapsulation** — Endpoints don't need to know about baseURL or auth details.
+
+### Two Patterns
+
+**Basic — when only baseURL differs:**
+
+```ts
+import { BaseHttpClient } from '../base/base-http-client';
+import { ENV } from '@shared/config/env';
+
+export const mainHttpClient = new BaseHttpClient({
+  baseURL: ENV.API_URL,
+});
+```
+
+**Extended — interceptor override (auth, etc.):**
+
+```ts
+import { BaseHttpClient } from '../base/base-http-client';
+import type { HttpConfig } from '../base/base-http-client';
+import { ENV } from '@shared/config/env';
+
+class MainHttpClient extends BaseHttpClient {
+  protected onRequest(config: HttpConfig): HttpConfig {
+    const token = getAccessToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  }
+}
+
+export const mainHttpClient = new MainHttpClient({
+  baseURL: ENV.API_URL,
+});
+```
+
+When multiple domains share the same auth logic, create an intermediate class and have domain clients inherit from it.
 
 ---
 
