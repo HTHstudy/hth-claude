@@ -4,6 +4,8 @@
 
 상세 규칙: [shared-query-factory.md](../../architecture/layers/shared-query-factory.md), [shared-mutation-factory.md](../../architecture/layers/shared-mutation-factory.md) — 이 문서들을 읽고 팩토리 패턴을 적용한다.
 
+> **timing.log 기록:** 각 단계(9~11) 시작 시 `echo "step_N: $(date +%s)" >> .architecture-migration/timing.log` 실행. tsc/eslint 실패 시 `echo "phase_4_[tsc|eslint]_fail" >>`, 빌드 시 `echo "phase_4_build" >>`.
+
 ### 9단계: 기존 쿼리/뮤테이션 분석
 
 Phase 3에서 생성한 `shared/api/` 구조를 먼저 확인한다. 각 도메인의 `DOMAIN_API` 객체 목록을 파악한다.

@@ -64,13 +64,16 @@ src/
 └─ shared/
    ├─ api/
    │  └─ base/
-   │     └─ base-http-client.ts
+   │     ├─ base-http-client.ts
+   │     ├─ errors.ts
+   │     └─ types.ts
    ├─ config/
    │  └─ env.ts
    └─ routes/
       └─ paths.ts
 ```
 
+- `shared/api/base/` 파일은 [http-client.md](../../architecture/rules/http-client.md)의 템플릿을 따라 생성
 - Vite 기본 파일 제거: `App.css`, `index.css`, `App.tsx` (아키텍처 구조로 대체)
 - `vite.config.ts` 수정: Tailwind 플러그인 추가 및 `resolve.tsconfigPaths: true` 설정
 - `global.css` 수정: `@import 'tailwindcss'`

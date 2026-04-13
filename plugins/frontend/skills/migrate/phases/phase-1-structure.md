@@ -2,6 +2,8 @@
 
 > Phase 0에서 migration-plan.md + mapping.tsv가 준비된 상태이다. 이 Phase에서는 파일 이동, import 재작성만 수행한다. 구조/레이어 규칙은 migration-plan.md를 따른다.
 
+> **timing.log 기록:** 각 단계(1~3) 시작 시 `echo "step_N: $(date +%s)" >> .architecture-migration/timing.log` 실행. tsc 실패 시 `echo "phase_1_tsc_fail" >>`, 빌드 시 `echo "phase_1_build" >>`.
+
 ### 1단계: 계획 확인
 
 `.architecture-migration/migration-plan.md`와 `.architecture-migration/mapping.tsv`를 읽는다. Next.js 프로젝트면 migration-plan.md의 "프레임워크 특이사항"을 확인한다.

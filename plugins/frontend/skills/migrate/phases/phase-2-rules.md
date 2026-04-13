@@ -2,6 +2,8 @@
 
 > Phase 1에서 구조 전환이 완료된 상태이다. 이 Phase에서는 ESLint 규칙 설정, Named Export 전환, import type 전환을 수행한다. 규칙 정의는 [eslint-config.md](../../architecture/rules/eslint-config.md)를 따른다.
 
+> **timing.log 기록:** 각 단계(4~5) 시작 시 `echo "step_N: $(date +%s)" >> .architecture-migration/timing.log` 실행. tsc/eslint 실패 시 `echo "phase_2_[tsc|eslint]_fail" >>`, 빌드 시 `echo "phase_2_build" >>`.
+
 ### 4단계: ESLint 규칙 설정
 
 [eslint-config.md](../../architecture/rules/eslint-config.md)를 읽고 프로젝트에 적용한다:

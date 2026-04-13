@@ -4,6 +4,8 @@
 
 상세 규칙: [shared-api.md](../../architecture/layers/shared-api.md) — 이 문서를 읽고 3계층 구조를 적용한다.
 
+> **timing.log 기록:** 각 단계(6~8) 시작 시 `echo "step_N: $(date +%s)" >> .architecture-migration/timing.log` 실행. tsc/eslint 실패 시 `echo "phase_3_[tsc|eslint]_fail" >>`, 빌드 시 `echo "phase_3_build" >>`.
+
 ### 6단계: 기존 API 코드 분석
 
 **migration-plan.md와 [shared-api.md](../../architecture/layers/shared-api.md)를 병렬로 동시에 읽는다.**
@@ -18,14 +20,14 @@
 
 ### 7단계: base 인프라 + 도메인 구조 생성
 
-shared-api.md의 구조를 따라 생성한다.
+[shared-api.md](../../architecture/layers/shared-api.md)의 구조와 [http-client.md](../../architecture/rules/http-client.md)의 BaseHttpClient 템플릿을 따라 생성한다.
 
 **병렬화:** base/ 생성과 각 도메인 구조 생성은 독립적이므로 **도메인별 Agent + base Agent를 동시에** 생성할 수 있다:
 
-- **Agent 1 (base):** `shared/api/base/` 생성 — 기존 HTTP 클라이언트 설정 통합
+- **Agent 1 (base):** `shared/api/base/` 생성 — http-client.md의 BaseHttpClient 템플릿 + errors.ts + types.ts. 기존 HTTP 클라이언트 설정(인터셉터, 인증 등)이 있으면 중간 클래스로 분리
 - **Agent 2+ (도메인):** 각 도메인의 3계층 구조 생성 — shared-api.md 규칙에 따라 index.ts, http-client.ts, endpoints/ 구성
 
-각 Agent에게 shared-api.md의 구조 규칙과 해당 도메인의 기존 API 코드 위치를 전달한다.
+각 Agent에게 shared-api.md + http-client.md의 구조 규칙과 해당 도메인의 기존 API 코드 위치를 전달한다.
 
 ### 8단계: 기존 API 호출부 수정
 

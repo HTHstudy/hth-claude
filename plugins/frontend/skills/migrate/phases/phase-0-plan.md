@@ -1,5 +1,7 @@
 # Phase 0: 분석 + 계획
 
+> **timing.log 기록:** 각 단계(0-1~0-7) 시작 시 `echo "step_0_N: $(date +%s)" >> .architecture-migration/timing.log` 실행.
+
 ## 0-1. architecture 스킬 로드
 
 [architecture SKILL.md](../../architecture/SKILL.md)를 읽는다. 다음 섹션을 모두 확인한다:
@@ -110,7 +112,7 @@ import-map을 **1회 읽고**, 아래 절차를 순서대로 실행한다.
 | `constants/` | `shared/config/` | |
 | `assets/` | `shared/assets/` | |
 | `providers/` | `app/` | |
-| `api/`, `apis/` | `shared/api/` | Phase 3에서 3계층으로 재구조화 |
+| `api/`, `apis/` | `shared/api/` | Phase 3에서 3계층으로 재구조화. baseURL이 다른 API가 있으면 도메인 후보로 기록 |
 | `schemas/`, `validations/` | `shared/lib/` | |
 
 위 매핑에 없는 디렉토리는 사용자에게 확인 후 배치한다. `context/`, `services/`, `layouts/`는 import-map으로 판단한다.
