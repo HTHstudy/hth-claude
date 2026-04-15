@@ -1,5 +1,7 @@
 # HTH Claude Code Plugins
 
+> **Repository**: https://github.com/HTHstudy/hth-claude
+
 ## 개요
 
 Claude Code 플러그인으로 구성된 팀 내부 마켓플레이스입니다.
@@ -63,9 +65,19 @@ curl -fsSL https://claude.ai/install.sh | bash
 
 3줄 구성의 커스텀 상태바 프리셋을 설치합니다. 10초마다 자동 갱신.
 
-- **Line 1**: 📁 프로젝트명 | 🌿 브랜치(dirty/변경파일) | 모델명 | ⏱ 시간
-- **Line 2**: CTX 게이지 | 5H 게이지 | 7D 게이지
-- **Line 3**: 🔢 누적 토큰 | 💰 세션 비용
+| 표시 | 의미 |
+|------|------|
+| 📁 `hth-claude` | 현재 프로젝트명 |
+| 🌿 `main*` (+N ~N) | 브랜치, 미커밋 변경(`*`), staged/unstaged 파일 수 |
+| `Opus 4.6 (1M context)` | 현재 사용 중인 모델명 |
+| ⏱ `14:23` | 현재 시각 |
+| **CTX** `▓▓▓▓▓░░░ 62%` | 컨텍스트 윈도우 사용률 |
+| **5H** `▓▓▓░░░░░ 38%` | 5시간 rate limit 사용률 |
+| **7D** `▓▓▓▓▓▓░░ 73%` | 7일 rate limit 사용률 |
+| 🔢 `482.7K tokens` | 세션 누적 토큰 수 |
+| 💰 `$12.84` | 세션 누적 비용 (USD) |
+
+**출력 예시**
 
 ```
 📁 hth-claude | 🌿 main* (+3 ~2) | Opus 4.6 (1M context) | ⏱ 14:23
