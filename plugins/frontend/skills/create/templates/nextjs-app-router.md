@@ -2,17 +2,11 @@
 
 ## 버전 관리 정책
 
-공급망 공격(Supply Chain Attack) 방지를 위해 의존성 설치 시 버전을 명시적으로 지정한다.
+공급망 공격(Supply Chain Attack) 방지를 위해 의존성 설치 시 버전을 명시적으로 지정한다. 버전 조회는 `${CLAUDE_PLUGIN_ROOT}/scripts/resolve-versions.js` 스크립트를 사용한다.
 
-**설치 전 버전 조회 절차:**
-1. 아래 명령으로 각 패키지의 최신 stable 버전과 릴리스 날짜를 확인한다:
-   ```bash
-   npm view [패키지명] time --json | jq 'to_entries | map(select(.key | test("^[0-9]"))) | sort_by(.value) | last'
-   ```
-2. 릴리스일이 **2주 이상** 경과한 버전 중 가장 최신 버전을 선택한다
-3. 2주 이내 릴리스만 있으면 그 직전 버전을 사용한다
-4. `@latest`를 사용하지 않는다
-5. 선택한 버전을 `yarn add 패키지명@^X.Y.Z` 형태로 설치한다
+- 스크립트는 npm registry에서 각 패키지의 stable 버전 중 **릴리스 후 14일 이상** 경과한 최신 버전을 자동 선택한다
+- 결과는 `.resolved-versions.json`에 기록되며, 설치 완료 후 삭제한다
+- `@latest`를 사용하지 않는다
 
 ## 기술 스택
 
@@ -23,31 +17,31 @@
 | 스타일링 | Tailwind CSS |
 | 서버 상태 관리 | TanStack Query |
 | HTTP 클라이언트 | Axios |
-| 패키지 매니저 | Yarn |
+| 패키지 매니저 | 사용자 선택 (yarn / npm / pnpm) |
 | 포매터 | Prettier |
 
 ## 실행 단계
 
+> 아래 모든 설치/실행 명령은 사용자가 선택한 패키지 매니저를 사용한다.
+
 ### 1단계: 기본 프로젝트 생성
 
-버전 관리 정책에 따라 `next` 패키지의 안정 버전을 조회한 뒤 실행한다.
+`create-next-app`으로 프로젝트를 생성하고 프로젝트 디렉토리로 이동한다. 선택된 패키지 매니저에 맞는 `--use-*` 플래그를 지정한다.
 
-```bash
-npx create-next-app@[조회버전] [project-name] --typescript --tailwind --eslint --app --use-yarn
-cd [project-name]
-```
-
-> `--src-dir`는 사용하지 않는다. 루트 `app/`이 Next.js 라우팅 디렉토리가 되고, `src/`는 FSD 레이어 전용으로 수동 생성한다.
-> `--import-alias`는 지정하지 않는다 — 5단계에서 레이어별 alias로 교체한다.
+- `--typescript --tailwind --eslint --app` 옵션을 포함한다
+- `--src-dir`는 사용하지 않는다. 루트 `app/`이 Next.js 라우팅 디렉토리가 되고, `src/`는 FSD 레이어 전용으로 수동 생성한다.
+- `--import-alias`는 지정하지 않는다 — 5단계에서 레이어별 alias로 교체한다.
 
 ### 2단계: 추가 의존성 설치
 
-버전 관리 정책에 따라 각 패키지의 안정 버전을 조회한 뒤 설치한다.
-
-```bash
-yarn add @tanstack/react-query@^[조회버전] axios@^[조회버전]
-yarn add -D prettier@^[조회버전] eslint-config-prettier@^[조회버전]
-```
+1. 버전 조회 스크립트를 실행한다:
+   ```bash
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-versions.js" @tanstack/react-query axios prettier eslint-config-prettier
+   ```
+2. `.resolved-versions.json`을 읽고 각 패키지의 `version` 값으로 설치한다:
+   - **dependencies:** `@tanstack/react-query`, `axios`
+   - **devDependencies:** `prettier`, `eslint-config-prettier`
+3. `.resolved-versions.json`을 삭제한다
 
 ### 3단계: 아키텍처 구조로 재구성
 
@@ -240,12 +234,12 @@ export const ENV = {
 ### 6단계: 검증
 
 1. `npx tsc --noEmit` — 타입 에러 확인
-2. `yarn lint` — ESLint 규칙 위반 확인
-3. `yarn build` — 빌드 성공 확인
+2. lint 실행 — ESLint 규칙 위반 확인
+3. build 실행 — 빌드 성공 확인
+4. `npm audit` — 알려진 취약점 확인 (moderate 이상 발견 시 사용자에게 보고)
 
 에러 발생 시 수정 후 재검증한다. 목표: 빌드 최대 2회.
 
 ### 7단계: 완료
 
-사용자에게 안내:
-- `yarn dev`로 개발 서버를 시작할 수 있다
+사용자에게 개발 서버 시작 방법을 안내한다.
