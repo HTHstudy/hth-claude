@@ -1,6 +1,7 @@
 ---
 name: remove-statusline
 description: 상태바 설정을 제거한다. 상태바 삭제, statusline 제거, 상태바 초기화 요청 시 사용한다.
+allowed-tools: Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/uninstall.js")
 ---
 
 아래 명령을 실행한다:
