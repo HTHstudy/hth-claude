@@ -19,14 +19,6 @@ curl -fsSL https://claude.ai/install.sh | bash
 /plugin marketplace add HTHstudy/hth-claude
 ```
 
-## 플러그인 설치
-
-```
-/plugin install frontend@hth-plugins
-```
-
-> 설치 후 세션을 재시작해야 스킬이 적용됩니다.
-
 ## 팀 프로젝트에 자동 등록
 
 팀 프로젝트의 `.claude/settings.json`에 아래를 추가하면, 팀원이 프로젝트를 클론받았을 때 마켓플레이스가 자동으로 등록됩니다:
@@ -44,6 +36,15 @@ curl -fsSL https://claude.ai/install.sh | bash
 }
 ```
 
+## 플러그인 설치 (개별)
+
+```
+/plugin install frontend@hth-plugins
+/plugin install statusline@hth-plugins
+```
+
+> 설치 후 세션을 재시작해야 스킬이 적용됩니다.
+
 ## 플러그인 상세
 
 ### 1. frontend (프론트엔드 아키텍처)
@@ -58,6 +59,24 @@ curl -fsSL https://claude.ai/install.sh | bash
 - **Resources**: 레이어별 상세 규칙, shared/api 3계층 패턴, query/mutation factory 패턴, Next.js FSD 적용 가이드
 - **Docs**: [한국어](plugins/frontend/docs/ko/README.md) · [English](plugins/frontend/docs/en/README.md)
 
+### 2. statusline (커스텀 상태바)
+
+3줄 구성의 커스텀 상태바 프리셋을 설치합니다. 10초마다 자동 갱신.
+
+- **Line 1**: 📁 프로젝트명 | 🌿 브랜치(dirty/변경파일) | 모델명 | ⏱ 시간
+- **Line 2**: CTX 게이지 | 5H 게이지 | 7D 게이지
+- **Line 3**: 🔢 누적 토큰 | 💰 세션 비용
+
+```
+📁 hth-claude | 🌿 main* (+3 ~2) | Opus 4.6 (1M context) | ⏱ 14:23
+CTX ▓▓▓▓▓░░░ 62% | 5H ▓▓▓░░░░░ 38% | 7D ▓▓▓▓▓▓░░ 73%
+🔢 482.7K tokens | 💰 $12.84
+```
+
+- **Skills**:
+  - `setup-statusline` — 상태바 설치 (`/statusline:setup-statusline`)
+  - `remove-statusline` — 상태바 제거 (`/statusline:remove-statusline`)
+
 ## 업데이트
 
 - GitHub repo 기반 마켓플레이스는 세션 시작 시 자동으로 업데이트를 확인합니다.
@@ -70,6 +89,15 @@ hth-claude/
 ├── .claude-plugin/
 │   └── marketplace.json                # 마켓플레이스 정의
 ├── plugins/
+│   ├── statusline/                     # 상태바 플러그인
+│   │   ├── .claude-plugin/plugin.json
+│   │   ├── scripts/
+│   │   │   ├── statusline-command.sh   # 상태바 스크립트
+│   │   │   ├── install.sh             # 설치 스크립트
+│   │   │   └── uninstall.sh           # 제거 스크립트
+│   │   └── skills/
+│   │       ├── setup-statusline/       # 설치 스킬
+│   │       └── remove-statusline/      # 제거 스킬
 │   └── frontend/                       # 프론트엔드 플러그인
 │       ├── .claude-plugin/plugin.json  # 플러그인 매니페스트
 │       ├── skills/

@@ -1,0 +1,10 @@
+{
+  "name": "statusline",
+  "description": "커스텀 상태바 프리셋 — 3줄 구성 (프로젝트/환경, 사용량 게이지, 토큰/비용)",
+  "version": "1.0.0",
+  "author": {
+    "name": "하태현",
+    "email": "taehyen11@gmail.com"
+  },
+  "skills": "./skills/"
+}
