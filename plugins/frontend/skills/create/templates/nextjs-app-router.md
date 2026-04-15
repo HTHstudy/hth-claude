@@ -197,7 +197,7 @@ FSD pages 레이어는 src/pages/에 위치합니다.
 
 > `@/*` 같은 포괄적 alias는 제거한다. 레이어별 alias만 허용.
 
-**ESLint** — [eslint-config.md](../../architecture/rules/eslint-config.md)를 읽고, ESLint 버전에 맞는 템플릿(Flat Config 또는 Legacy Config)을 **그대로** 적용한다. Next.js 프로젝트이므로 "Next.js 프로젝트 추가 규칙" 섹션도 함께 적용한다.
+**ESLint** — [eslint-config.md](../../architecture/rules/eslint-config.md)를 읽고, `create-next-app`이 생성한 기존 ESLint 설정에 아키텍처 규칙을 **병합**한다. 병합 절차는 eslint-config.md의 "기존 ESLint 설정이 있는 프로젝트" 섹션을 따른다. Next.js 프로젝트이므로 "Next.js 프로젝트 추가 규칙" 섹션도 함께 적용한다.
 
 **Prettier** — `.prettierrc` 생성:
 

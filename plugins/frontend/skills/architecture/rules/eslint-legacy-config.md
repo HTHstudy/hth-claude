@@ -40,6 +40,7 @@ function blockSiblings(layer) {
 }
 
 module.exports = {
+  plugins: ['import'],
   rules: {
     // 기본 규칙 (특정 레이어에 속하지 않는 파일)
     'no-restricted-imports': ['error', { patterns: basePatterns }],

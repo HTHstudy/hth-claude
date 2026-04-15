@@ -92,7 +92,7 @@ src/
 }
 ```
 
-**ESLint** — [eslint-config.md](../../architecture/rules/eslint-config.md)를 읽고, ESLint 버전에 맞는 템플릿(Flat Config 또는 Legacy Config)을 **그대로** 적용한다.
+**ESLint** — [eslint-config.md](../../architecture/rules/eslint-config.md)를 읽고, 스캐폴딩이 생성한 기존 ESLint 설정에 아키텍처 규칙을 **병합**한다. 병합 절차는 eslint-config.md의 "기존 ESLint 설정이 있는 프로젝트" 섹션을 따른다.
 
 **Prettier** — `.prettierrc` 생성:
 

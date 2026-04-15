@@ -47,7 +47,7 @@ function parseArgs(argv) {
 
 function npmView(pkg) {
   return new Promise((resolve) => {
-    execFile('npm', ['view', pkg, 'dist-tags', 'time', '--json'], {
+    execFile('npm', ['view', pkg, 'dist-tags', 'time', 'versions', '--json'], {
       timeout: 30_000,
     }, (err, stdout, stderr) => {
       if (err) {
@@ -83,11 +83,14 @@ function resolveVersion(data, ageDays) {
     return { error: 'No dist-tags.latest found' };
   }
 
+  const availableVersions = new Set(data.versions || []);
+
   const latestParsed = parseSemver(latestTag.replace(/-.*$/, ''));
   const targetMajor = latestParsed.major;
 
   const candidates = Object.entries(data.time)
     .filter(([ver]) => STABLE_VERSION_RE.test(ver))
+    .filter(([ver]) => availableVersions.has(ver))
     .filter(([ver]) => parseSemver(ver).major === targetMajor)
     .sort((a, b) => compareSemver(a[0], b[0]));
 

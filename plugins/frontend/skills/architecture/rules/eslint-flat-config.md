@@ -4,6 +4,7 @@
 // eslint.config.js
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
+import importPlugin from 'eslint-plugin-import';
 
 // ── 공통 패턴 ──────────────────────────────────────────
 
@@ -51,6 +52,7 @@ export default tseslint.config(
 
   // 기본 규칙 (특정 레이어에 속하지 않는 파일)
   {
+    plugins: { import: importPlugin },
     rules: {
       'no-restricted-imports': ['error', { patterns: basePatterns }],
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
