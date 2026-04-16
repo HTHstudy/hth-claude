@@ -104,14 +104,16 @@ hth-claude/
 │   ├── statusline/                     # 상태바 플러그인
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── scripts/
-│   │   │   ├── statusline-command.sh   # 상태바 스크립트
-│   │   │   ├── install.sh             # 설치 스크립트
-│   │   │   └── uninstall.sh           # 제거 스크립트
+│   │   │   ├── statusline-command.js   # 상태바 스크립트
+│   │   │   ├── install.js             # 설치 스크립트
+│   │   │   └── uninstall.js           # 제거 스크립트
 │   │   └── skills/
 │   │       ├── setup-statusline/       # 설치 스킬
 │   │       └── remove-statusline/      # 제거 스킬
 │   └── frontend/                       # 프론트엔드 플러그인
 │       ├── .claude-plugin/plugin.json  # 플러그인 매니페스트
+│       ├── scripts/
+│       │   └── resolve-versions.js     # 버전 검증 스크립트
 │       ├── skills/
 │       │   ├── architecture/           # 자동 적용 스킬
 │       │   │   ├── SKILL.md
