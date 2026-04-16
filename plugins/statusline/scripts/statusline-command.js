@@ -5,7 +5,7 @@ const path = require('path');
 // ============================================================
 // 설정
 // ============================================================
-const BAR_WIDTH = 12;
+const BAR_WIDTH = 10;
 
 // ============================================================
 // 색상 (ANSI escape)
@@ -45,15 +45,14 @@ function getNum(data, keyPath) {
 function getPct(data, keyPath) {
   const v = get(data, keyPath);
   if (v == null) return '';
-  const n = Math.max(0, Math.min(100, Math.floor(Number(v))));
+  const n = Math.max(0, Math.min(100, Math.ceil(Number(v))));
   return String(n);
 }
 
 function bar(pct) {
-  let filled = Math.floor(pct * BAR_WIDTH / 100);
-  if (pct > 0 && filled === 0) filled = 1;
+  const filled = Math.ceil(pct * BAR_WIDTH / 100);
   const empty = BAR_WIDTH - filled;
-  return '█'.repeat(filled) + '░'.repeat(empty);
+  return '▰'.repeat(filled) + '▱'.repeat(empty);
 }
 
 function formatTokens(t) {
@@ -145,13 +144,14 @@ process.stdin.on('end', () => {
   if (BRANCH) line1 += ` ${SEP} 🌿 ${GIT_COLOR}${BRANCH}${DIRTY}${RESET}${GIT_STAT}`;
   line1 += ` ${SEP} ${CYAN}${MODEL}${RESET} ${SEP} ⏱️  ${WHITE}${NOW}${RESET}`;
 
-  // Line 2: CTX | 5H | 7D 게이지
+  // Line 2: CTX | 토큰 | 비용 (세션 지표)
   let line2 = `${GRAY}CTX${RESET} ${usageColor(ctxN)}${bar(ctxN)}${RESET} ${WHITE}${CTX}%${RESET}`;
-  line2 += ` ${SEP} ${GRAY}5H${RESET} ${usageColor(sesN)}${bar(sesN)}${RESET} ${WHITE}${SES}%${RESET}`;
-  line2 += ` ${SEP} ${GRAY}7D${RESET} ${usageColor(weekN)}${bar(weekN)}${RESET} ${WHITE}${WEEK}%${RESET}`;
+  line2 += ` ${SEP} 📈 ${WHITE}${formatTokens(TOTAL_TOKENS)} tokens${RESET}`;
+  line2 += ` ${SEP} 💰 ${GREEN}$${COST.toFixed(2)}${RESET}`;
 
-  // Line 3: 토큰 | 비용
-  const line3 = `📈 ${WHITE}${formatTokens(TOTAL_TOKENS)} tokens${RESET} ${SEP} 💰 ${GREEN}$${COST.toFixed(2)}${RESET}`;
+  // Line 3: 5H | 7D 게이지 (레이트 리밋)
+  let line3 = `${GRAY}5H${RESET} ${usageColor(sesN)}${bar(sesN)}${RESET} ${WHITE}${SES}%${RESET}`;
+  line3 += ` ${SEP} ${GRAY}7D${RESET} ${usageColor(weekN)}${bar(weekN)}${RESET} ${WHITE}${WEEK}%${RESET}`;
 
   console.log(line1);
   console.log(line2);
