@@ -22,7 +22,9 @@ try {
       process.exit(0);
     }
     delete data.statusLine;
-    fs.writeFileSync(SETTINGS, JSON.stringify(data, null, 2) + '\n');
+    const tmp = SETTINGS + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify(data, null, 2) + '\n');
+    fs.renameSync(tmp, SETTINGS);
   }
 
   console.log('✅ Statusline removed. Restart session to apply.');

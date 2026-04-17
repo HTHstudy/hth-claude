@@ -34,7 +34,9 @@ try {
     command: 'node ~/.claude/statusline-command.js',
     refreshInterval: 10
   };
-  fs.writeFileSync(SETTINGS, JSON.stringify(data, null, 2) + '\n');
+  const tmp = SETTINGS + '.tmp';
+  fs.writeFileSync(tmp, JSON.stringify(data, null, 2) + '\n');
+  fs.renameSync(tmp, SETTINGS);
 
   console.log('✅ Statusline installed. Restart session to apply.');
 } catch (err) {

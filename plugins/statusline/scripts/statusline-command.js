@@ -105,30 +105,46 @@ process.stdin.on('end', () => {
   const TOTAL_TOKENS = TOTAL_IN + TOTAL_OUT;
 
   // ============================================================
-  // Git 상태
+  // Git 상태 — `git status --porcelain --branch` 한 번으로 통합
   // ============================================================
   let BRANCH = '';
   let DIRTY = '';
   let GIT_STAT = '';
 
   if (exec('git rev-parse --git-dir', DIR)) {
-    BRANCH = exec('git branch --show-current', DIR);
+    const status = exec('git status --porcelain --branch', DIR);
+    const lines = status ? status.split('\n') : [];
 
-    try {
-      execSync('git diff --quiet', { cwd: DIR, stdio: 'ignore' });
-      try {
-        execSync('git diff --cached --quiet', { cwd: DIR, stdio: 'ignore' });
-      } catch { DIRTY = '*'; }
-    } catch { DIRTY = '*'; }
+    const head = lines[0] || '';
+    if (head.startsWith('## ')) {
+      const rest = head.slice(3);
+      const noCommits = rest.match(/^No commits yet on (\S+)/);
+      if (noCommits) BRANCH = noCommits[1];
+      else if (rest.startsWith('HEAD ')) BRANCH = 'detached';
+      else {
+        const m = rest.match(/^([^.\s]+)/);
+        if (m) BRANCH = m[1];
+      }
+    }
 
-    const addedRaw = exec('git diff --cached --numstat', DIR);
-    const modifiedRaw = exec('git diff --numstat', DIR);
-    const ADDED = addedRaw ? addedRaw.split('\n').length : 0;
-    const MODIFIED = modifiedRaw ? modifiedRaw.split('\n').length : 0;
+    let staged = 0, modified = 0, untracked = 0;
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i];
+      if (!line) continue;
+      const X = line[0], Y = line[1];
+      if (X === '?' && Y === '?') untracked++;
+      else {
+        if (X !== ' ' && X !== '?') staged++;
+        if (Y === 'M' || Y === 'D') modified++;
+      }
+    }
+
+    if (staged || modified || untracked) DIRTY = '*';
 
     const parts = [];
-    if (ADDED > 0) parts.push(`${GREEN}+${ADDED}${RESET}`);
-    if (MODIFIED > 0) parts.push(`${YELLOW}~${MODIFIED}${RESET}`);
+    if (staged > 0) parts.push(`${GREEN}+${staged}${RESET}`);
+    if (modified > 0) parts.push(`${YELLOW}!${modified}${RESET}`);
+    if (untracked > 0) parts.push(`${GRAY}?${untracked}${RESET}`);
     if (parts.length) GIT_STAT = ` (${parts.join(' ')})`;
   }
 
