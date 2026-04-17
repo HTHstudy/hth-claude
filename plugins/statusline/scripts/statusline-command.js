@@ -81,7 +81,12 @@ function exec(cmd, cwd) {
 let input = '';
 process.stdin.on('data', chunk => input += chunk);
 process.stdin.on('end', () => {
-  const data = JSON.parse(input);
+  let data;
+  try {
+    data = JSON.parse(input);
+  } catch {
+    process.exit(0);
+  }
 
   // ============================================================
   // 데이터 추출
@@ -109,9 +114,6 @@ process.stdin.on('end', () => {
   if (exec('git rev-parse --git-dir', DIR)) {
     BRANCH = exec('git branch --show-current', DIR);
 
-    const diffQuiet = exec('git diff --quiet', DIR);
-    const diffCachedQuiet = exec('git diff --cached --quiet', DIR);
-    // exec returns '' on error (non-zero exit), check if diff --quiet failed
     try {
       execSync('git diff --quiet', { cwd: DIR, stdio: 'ignore' });
       try {

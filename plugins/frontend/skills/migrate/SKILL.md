@@ -2,6 +2,7 @@
 name: migrate
 description: 기존 프론트엔드 프로젝트에 레이어드 아키텍처를 적용한다. architecture 스킬 기반 2중 검증(계획 + 검증).
 disable-model-invocation: true
+allowed-tools: Bash(npx tsc *) Bash(npx eslint *) Bash(echo *>> .architecture-migration/timing.log)
 ---
 
 # 기존 프로젝트에 레이어드 아키텍처 적용
