@@ -51,19 +51,31 @@
 
 레이어드 아키텍처가 적용된 새 프론트엔드 프로젝트를 생성합니다.
 
-**기술 스택 (Vite 템플릿 기준)**
+**React (Vite) 템플릿**
 
-| 분류 | 기술 |
-|------|------|
-| 빌드 | Vite |
-| UI | React |
-| 언어 | TypeScript |
-| 스타일링 | Tailwind CSS |
-| 라우팅 | React Router |
-| 서버 상태 | TanStack Query |
-| HTTP | Axios |
-| 패키지 매니저 | Yarn |
-| 포매터 | Prettier |
+| 분류          | 기술                            |
+| ------------- | ------------------------------- |
+| 빌드          | Vite                            |
+| UI            | React                           |
+| 언어          | TypeScript                      |
+| 스타일링      | Tailwind CSS                    |
+| 라우팅        | React Router                    |
+| 서버 상태     | TanStack Query                  |
+| HTTP          | Axios                           |
+| 패키지 매니저 | yarn / npm / pnpm (사용자 선택) |
+| 포매터        | Prettier                        |
+
+**Next.js App Router 템플릿**
+
+| 분류          | 기술                            |
+| ------------- | ------------------------------- |
+| 프레임워크    | Next.js (App Router)            |
+| 언어          | TypeScript                      |
+| 스타일링      | Tailwind CSS                    |
+| 서버 상태     | TanStack Query                  |
+| HTTP          | Axios                           |
+| 패키지 매니저 | yarn / npm / pnpm (사용자 선택) |
+| 포매터        | Prettier                        |
 
 ## `/frontend:migrate`
 

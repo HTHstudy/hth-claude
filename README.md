@@ -70,7 +70,7 @@ curl -fsSL https://claude.ai/install.sh | bash
 | 표시 | 의미 |
 |------|------|
 | 📁 `hth-claude` | 현재 프로젝트명 |
-| 🌿 `main*` (+N ~N) | 브랜치, 미커밋 변경(`*`), staged/unstaged 파일 수 |
+| 🌿 `main*` (+N !N ?N) | 브랜치, 미커밋 변경(`*`), staged(`+`) / modified(`!`) / untracked(`?`) 파일 수 |
 | `Opus 4.6 (1M context)` | 현재 사용 중인 모델명 |
 | ⏱ `14:23` | 현재 시각 |
 
@@ -78,7 +78,7 @@ curl -fsSL https://claude.ai/install.sh | bash
 
 | 표시 | 의미 |
 |------|------|
-| **CTX** `▓▓▓▓▓░░░ 62%` | 컨텍스트 윈도우 사용률 |
+| **CTX** `▰▰▰▰▰▰▱▱▱▱ 62%` | 컨텍스트 윈도우 사용률 |
 | 📈 `482.7K tokens` | 세션 누적 토큰 수 |
 | 💰 `$12.84` | 세션 누적 비용 (USD) |
 
@@ -86,13 +86,13 @@ curl -fsSL https://claude.ai/install.sh | bash
 
 | 표시 | 의미 |
 |------|------|
-| **5H** `▓▓▓░░░░░ 38%` | 5시간 rate limit 사용률 |
-| **7D** `▓▓▓▓▓▓░░ 73%` | 7일 rate limit 사용률 |
+| **5H** `▰▰▰▰▱▱▱▱▱▱ 38%` | 5시간 rate limit 사용률 |
+| **7D** `▰▰▰▰▰▰▰▱▱▱ 73%` | 7일 rate limit 사용률 |
 
 **출력 예시**
 
 ```
-📁 hth-claude | 🌿 main* (+3 ~2) | Opus 4.6 (1M context) | ⏱ 14:23
+📁 hth-claude | 🌿 main* (+3 !2 ?1) | Opus 4.6 (1M context) | ⏱ 14:23
 CTX ▰▰▰▰▰▰▱▱▱▱ 62% | 📈 482.7K tokens | 💰 $12.84
 5H ▰▰▰▰▱▱▱▱▱▱ 38% | 7D ▰▰▰▰▰▰▰▱▱▱ 73%
 ```
