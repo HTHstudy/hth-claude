@@ -4,7 +4,7 @@
 
 ## 0-1. architecture 스킬 로드
 
-[architecture SKILL.md](../../architecture/SKILL.md)를 읽는다. 다음 섹션을 모두 확인한다:
+`frontend:architecture` 스킬을 로드한다. 다음 섹션을 모두 확인한다:
 - 레이어 역할 (app, pages, shared, 선택 레이어)
 - 네이밍 및 폴더 규칙
 - import 방향 규칙

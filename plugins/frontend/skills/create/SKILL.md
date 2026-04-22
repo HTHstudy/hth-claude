@@ -11,7 +11,7 @@ allowed-tools: Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-versions.js" *)
 
 ## 사전 요구사항
 
-이 스킬 실행 전 `/frontend:architecture` 스킬을 반드시 로드한다.
+이 스킬 실행 전 `frontend:architecture` 스킬을 반드시 로드한다.
 
 ---
 

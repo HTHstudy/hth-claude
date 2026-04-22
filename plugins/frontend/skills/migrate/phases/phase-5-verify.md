@@ -4,7 +4,7 @@
 
 ### 12단계: architecture 스킬 기반 준수 점검
 
-[architecture SKILL.md](../../architecture/SKILL.md)를 다시 로드한다. Phase 0과 동일한 범위:
+`frontend:architecture` 스킬을 다시 로드한다. Phase 0과 동일한 범위:
 - 레이어 역할
 - 네이밍 및 폴더 규칙
 - import 방향 규칙
@@ -13,7 +13,7 @@
 
 architecture 스킬의 **모든 규칙 섹션**을 기준으로 현재 코드를 점검한다. 구체적 점검 항목은 architecture 스킬에서 도출한다 — 이 문서에 하드코딩하지 않는다.
 
-> **참고:** 12단계에서 architecture SKILL.md를 전체 로드하면, 스킬의 "경로 상수 파일 감지" 행동 규칙이 자동으로 실행된다. Phase 3이 스킵된 경우에도 `shared/routes/paths.ts`는 이 단계에서 검증된다.
+> **참고:** 12단계에서 `frontend:architecture` 스킬을 전체 로드하면, 스킬의 "경로 상수 파일 감지" 행동 규칙이 자동으로 실행된다. Phase 3이 스킵된 경우에도 `shared/routes/paths.ts`는 이 단계에서 검증된다.
 
 **병렬화:** 레이어별로 병렬 Grep을 실행하여 점검한다:
 - **app 레이어**: architecture 스킬의 app 역할 기준 점검
