@@ -67,6 +67,19 @@ function usageColor(pct) {
   return WHITE;
 }
 
+// 리셋까지 남은 시간(d/h/m) — 5H·7D 공용
+function formatRemaining(resetsAt, nowSec) {
+  if (!resetsAt) return '';
+  const remain = resetsAt - nowSec;
+  if (remain <= 0) return 'ready';
+  const d = Math.floor(remain / 86400);
+  const h = Math.floor((remain % 86400) / 3600);
+  const m = Math.floor((remain % 3600) / 60);
+  if (d > 0) return `${d}d${h}h`;
+  if (h > 0) return `${h}h${m}m`;
+  return `${m}m`;
+}
+
 function exec(cmd, cwd) {
   try {
     return execSync(cmd, { encoding: 'utf8', cwd, stdio: ['pipe', 'pipe', 'ignore'] }).trim();
@@ -96,12 +109,15 @@ process.stdin.on('end', () => {
   const CTX = getPct(data, 'context_window.used_percentage') || '0';
   const SES = getPct(data, 'rate_limits.five_hour.used_percentage') || '0';
   const WEEK = getPct(data, 'rate_limits.seven_day.used_percentage') || '0';
+  const SES_RESETS_AT = getNum(data, 'rate_limits.five_hour.resets_at');
+  const WEEK_RESETS_AT = getNum(data, 'rate_limits.seven_day.resets_at');
   const TOTAL_IN = getNum(data, 'context_window.total_input_tokens');
   const TOTAL_OUT = getNum(data, 'context_window.total_output_tokens');
   const COST = getNum(data, 'cost.total_cost_usd');
 
   const PROJECT = path.basename(DIR);
   const NOW = new Date().toTimeString().slice(0, 5);
+  const NOW_SEC = Math.floor(Date.now() / 1000);
   const TOTAL_TOKENS = TOTAL_IN + TOTAL_OUT;
 
   // ============================================================
@@ -167,9 +183,13 @@ process.stdin.on('end', () => {
   line2 += ` ${SEP} 📈 ${WHITE}${formatTokens(TOTAL_TOKENS)} tokens${RESET}`;
   line2 += ` ${SEP} 💰 ${GREEN}$${COST.toFixed(2)}${RESET}`;
 
-  // Line 3: 5H | 7D 게이지 (레이트 리밋)
-  let line3 = `${GRAY}5H${RESET} ${usageColor(sesN)}${bar(sesN)}${RESET} ${WHITE}${SES}%${RESET}`;
-  line3 += ` ${SEP} ${GRAY}7D${RESET} ${usageColor(weekN)}${bar(weekN)}${RESET} ${WHITE}${WEEK}%${RESET}`;
+  // Line 3: 5H | 7D 게이지 + 리셋 남은 시간 (레이트 리밋)
+  const sesTimer = formatRemaining(SES_RESETS_AT, NOW_SEC);
+  const weekTimer = formatRemaining(WEEK_RESETS_AT, NOW_SEC);
+  let line3 = `${GRAY}5H${RESET} ${usageColor(sesN)}${bar(sesN)}${RESET} ${usageColor(sesN)}${SES}%${RESET}`;
+  if (sesTimer) line3 += ` ${GRAY}⏳${sesTimer}${RESET}`;
+  line3 += ` ${SEP} ${GRAY}7D${RESET} ${usageColor(weekN)}${bar(weekN)}${RESET} ${usageColor(weekN)}${WEEK}%${RESET}`;
+  if (weekTimer) line3 += ` ${GRAY}⏳${weekTimer}${RESET}`;
 
   console.log(line1);
   console.log(line2);
