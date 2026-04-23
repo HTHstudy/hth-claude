@@ -12,14 +12,15 @@
 - 모든 코드는 **page에서 시작**한다. 재사용이 실제로 발생하면 적절한 레이어로 추출한다.
 
 ### 도입 조건
-공통 추출 조건(2개 이상 Slice 실사용 / 책임 안정 / Slice 문맥 무관 / 가장 가까운 공통 범위부터)을 따른다 → [slice.md §3](../rules/slice.md).
-레이어별 고유 시점은 아래 각 섹션(Widgets / Features / Entities)을 참조한다.
+다음 조건을 **모두** 만족할 때 도입한다 — 상세는 [slice.md §3](../rules/slice.md):
+1. 2개 이상의 사용처에서 실제 사용 (사용처 = page, 그리고 도입되어 있는 상위 레이어)
+2. 책임 안정성
+3. 문맥 독립성
+
+원칙: 가장 가까운 공통 범위로 먼저 추출. 레이어별 고유 시점은 아래 각 섹션 참조.
 
 ### Slice 구조
-- Slice 단위로 구성한다. 각 Slice의 `index.ts`/`index.tsx`가 유일한 entrypoint.
-- Slice 이름은 케밥 케이스.
-- 내부 구조는 미리 정하지 않고, 필요에 따라 page와 같은 규칙으로 분해한다.
-- 공개 인터페이스, 분해, 추출 규칙 → [slice.md](../rules/slice.md)
+공통 Slice 규칙(entrypoint, 네이밍, 분해, 추출)을 따른다 — [slice.md](../rules/slice.md).
 
 ### cross-import
 같은 레이어 sibling 간 cross-import 금지. 조합이 필요하면 사용하는 쪽(상위 레이어)에서 조합한다.
@@ -56,7 +57,7 @@ Widget은 Feature와 Entity를 모두 직접 import할 수 있다 (계층 규칙
 **Slice 이름:** 동작 명사구 — `add-to-cart`, `auth-form`, `product-search`
 
 **도입 시점:**
-- 동일한 인터랙션이 2개 이상 page에서 반복
+- 동일한 인터랙션이 2개 이상 **page 또는 widget(도입돼 있으면)** 에서 반복
 - 인터랙션 로직과 UI가 함께 이동해야 할 때
 
 **주의:**
@@ -75,8 +76,7 @@ Widget은 Feature와 Entity를 모두 직접 import할 수 있다 (계층 규칙
 **Slice 이름:** 도메인 명사 — `product`, `user`, `order`
 
 **도입 시점:**
-- 도메인 UI(`ProductCard`, `UserAvatar`)가 2개 이상 page에서 반복
-- `shared/ui`에 도메인 특화 컴포넌트를 두고 싶을 때 → entities가 올바른 위치
+- 도메인 UI(`ProductCard`, `UserAvatar`)가 2개 이상 **page, widget, feature 중 도입된 사용처**에서 반복
 
 **주의:**
 - API 정의는 `shared/api`에 둔다. entities는 API를 소유하지 않는다.
