@@ -197,6 +197,7 @@ app → pages → (widgets → features → entities →) shared
 - **page 간 cross-import 금지.** 같은 레이어 sibling 간 cross-import 금지.
 - `shared`는 다른 레이어를 import하지 않는다.
 - **다른 레이어 접근 시 반드시 path alias를 사용한다.** 상대경로(`../`)는 같은 레이어 내부에서만 허용.
+- **순환 의존 금지.** 레이어/Slice/Segment/모듈 내부 어디에서든 순환 의존을 만들지 않는다.
 
 ---
 

@@ -5,6 +5,7 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import importPlugin from 'eslint-plugin-import';
+import checkFile from 'eslint-plugin-check-file';
 
 // ── 공통 패턴 ──────────────────────────────────────────
 
@@ -52,11 +53,17 @@ export default tseslint.config(
 
   // 기본 규칙 (특정 레이어에 속하지 않는 파일)
   {
-    plugins: { import: importPlugin },
+    plugins: { import: importPlugin, 'check-file': checkFile },
     rules: {
       'no-restricted-imports': ['error', { patterns: basePatterns }],
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
       'import/no-default-export': 'error',
+      'import/no-cycle': ['error', { maxDepth: Infinity }],
+      'check-file/filename-naming-convention': ['error', {
+        '**/*.{ts,tsx,js,jsx}': 'KEBAB_CASE',
+      }, {
+        ignoreMiddleExtensions: true,
+      }],
     },
   },
 
@@ -78,6 +85,14 @@ export default tseslint.config(
     ],
     rules: {
       'import/no-default-export': 'off',
+    },
+  },
+
+  // Next.js Pages Router underscore prefix 파일명 예외 (_app, _document 등)
+  {
+    files: ['pages/_*.{ts,tsx}'],
+    rules: {
+      'check-file/filename-naming-convention': 'off',
     },
   },
 

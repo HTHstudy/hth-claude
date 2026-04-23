@@ -9,19 +9,19 @@
 HTTP 클라이언트는 2계층으로 구성한다.
 
 ```txt
-base/                          # 공통 인프라
-├─ base-http-client.ts         # BaseHttpClient 클래스 (프로젝트 포터블)
-├─ [auth]-http-client.ts       # 중간 클래스 (선택 — 인증 그룹 공유 시)
-├─ errors.ts                   # 에러 클래스
-└─ types.ts                    # 공통 응답 타입
+base/                              # 공통 인프라 (외부 import 금지)
+├─ base-http-client.ts             # BaseHttpClient 클래스 (프로젝트 포터블)
+├─ authenticated-http-client.ts    # 중간 클래스 예 (선택 — 여러 도메인 공유 인터셉터)
+├─ errors.ts                       # 에러 클래스
+└─ types.ts                        # 공통 응답 타입
 
 [domain]/
-└─ [domain]-http-client.ts     # 도메인별 인스턴스 — 상속 또는 그대로 사용
+└─ [domain]-http-client.ts         # 도메인별 인스턴스 — 상속 또는 그대로 사용
 ```
 
 `base/` 폴더에는 두 종류의 파일이 존재할 수 있다:
 - **BaseHttpClient** — 프로젝트를 바꿔도 그대로 쓸 수 있는 포터블 기반 클래스
-- **중간 클래스** — 여러 도메인이 공유하는 프로젝트별 인터셉터 (인증, 모니터링 등). 선택 사항.
+- **중간 클래스** — 여러 도메인이 공유하는 프로젝트별 인터셉터 (인증, 모니터링 등). 선택 사항. 파일명은 **역할 기반**으로 짓는다 (`authenticated-http-client.ts`, `monitored-http-client.ts`, `app-http-client.ts` 등).
 
 ---
 
@@ -252,20 +252,20 @@ export const externalHttpClient = new ExternalHttpClient({
 **모든 도메인이 동일한 인증을 사용하는 경우에도** BaseHttpClient에 직접 넣지 않고 중간 클래스를 만든다. BaseHttpClient는 프로젝트 포터블로 유지한다.
 
 ```txt
-BaseHttpClient                  ← 프로젝트 포터블 (인증 없음)
-└─ AuthHttpClient               ← 인증 로직 중앙화 (base/에 위치)
-   ├─ domain1HttpClient         ← baseURL만 다름
+BaseHttpClient                       ← 프로젝트 포터블 (인증 없음)
+└─ AuthenticatedHttpClient           ← 인증 로직 중앙화 (base/에 위치)
+   ├─ domain1HttpClient              ← baseURL만 다름
    ├─ domain2HttpClient
    ├─ domain3HttpClient
    └─ domain4HttpClient
 ```
 
 ```ts
-// shared/api/base/auth-http-client.ts
+// shared/api/base/authenticated-http-client.ts
 import { BaseHttpClient } from './base-http-client';
 import type { HttpConfig } from './base-http-client';
 
-export class AuthHttpClient extends BaseHttpClient {
+export class AuthenticatedHttpClient extends BaseHttpClient {
   protected onRequest(config: HttpConfig): HttpConfig {
     const token = getAccessToken();
     if (token) {
@@ -284,24 +284,24 @@ export class AuthHttpClient extends BaseHttpClient {
 
 ```ts
 // shared/api/main/main-http-client.ts
-import { AuthHttpClient } from '../base/auth-http-client';
+import { AuthenticatedHttpClient } from '../base/authenticated-http-client';
 import { ENV } from '@shared/config/env';
 
-export const mainHttpClient = new AuthHttpClient({
+export const mainHttpClient = new AuthenticatedHttpClient({
   baseURL: ENV.API_URL,
 });
 ```
 
-**인증 그룹이 2개 이상일 때:**
+**인증 방식이 2개 이상일 때 (역할 기반 네이밍):**
 
 ```txt
 BaseHttpClient
-├─ AuthAHttpClient              ← 인증로직1
-│  ├─ domain1HttpClient
-│  └─ domain2HttpClient
-└─ AuthBHttpClient              ← 인증로직2
-   ├─ domain3HttpClient
-   └─ domain4HttpClient
+├─ UserAuthHttpClient           ← 사용자 인증 (Bearer 토큰)
+│  ├─ productHttpClient
+│  └─ orderHttpClient
+└─ AdminAuthHttpClient          ← 관리자 인증 (API Key)
+   ├─ auditHttpClient
+   └─ cmsHttpClient
 ```
 
 중간 클래스는 모두 `base/`에 위치한다. 여러 도메인이 공유하는 코드이므로 특정 도메인 폴더에 두지 않는다.
@@ -322,6 +322,65 @@ BaseHttpClient
 | 해당 도메인만 고유한 인터셉터 | 5.2 — 도메인에서 직접 override |
 | 여러 도메인이 같은 인터셉터 공유 (인증 포함) | 5.3 — 중간 클래스 (`base/`에 위치) |
 
+### 5.6 도메인 에러 확장
+
+외부(page/feature 등)에서 해당 도메인 에러를 타입으로 참조해 분기해야 할 때 적용하는 패턴.
+
+- `base/errors.ts`의 `HttpError`를 extend
+- `name` 필드에 도메인 이름 포함 — `instanceof` 분기와 로깅 구분용
+- 도메인 http-client의 `onResponseError`에서 도메인 에러로 래핑해 throw
+- `index.ts`에서 re-export
+
+```ts
+// shared/api/order/errors.ts
+import { HttpError } from '../base/errors';
+
+export class OrderHttpError extends HttpError {
+  name = 'OrderHttpError';
+}
+```
+
+```ts
+// shared/api/order/order-http-client.ts
+import type { AxiosError } from 'axios';
+import { AuthenticatedHttpClient } from '../base/authenticated-http-client';
+import { logError } from '../base/errors';
+import { ENV } from '@shared/config/env';
+import { OrderHttpError } from './errors';
+
+class OrderHttpClient extends AuthenticatedHttpClient {
+  protected onResponseError(error: AxiosError): Promise<never> {
+    const orderError = new OrderHttpError(error);
+    logError(orderError);
+    return Promise.reject(orderError);
+  }
+}
+
+export const orderHttpClient = new OrderHttpClient({
+  baseURL: `${ENV.API_URL}/order`,
+});
+```
+
+```ts
+// shared/api/order/index.ts
+export { OrderHttpError } from './errors';
+// ...
+```
+
+외부 사용:
+
+```ts
+try {
+  await ORDER_API.payOrder({ ... });
+} catch (e) {
+  if (e instanceof OrderHttpError && e.status === 409) {
+    // 결제 충돌 처리
+  }
+}
+```
+
+외부 분기 처리가 필요 없으면 `errors.ts`를 만들지 않는다. `BaseHttpClient`(또는 도메인 http-client가 override한 `onResponseError`)가 공통 `HttpError`로 처리하고, 전역 Error Boundary/에러 핸들러가 받아 처리한다.
+
 ---
 
 ## 6. base에 두는 것 / 두지 않는 것
@@ -341,10 +400,11 @@ BaseHttpClient
 **둔다:**
 - `BaseHttpClient` (포터블 기반)
 - `errors.ts`, `types.ts` (공통 인프라)
-- 중간 클래스 (`auth-http-client.ts` 등) — 여러 도메인이 공유하는 인터셉터
+- 중간 클래스 (`authenticated-http-client.ts` 등) — 여러 도메인이 공유하는 인터셉터
 
 **두지 않는다:**
 - 특정 도메인 전용 로직 → 해당 도메인 폴더에
+- 외부에 공개하는 API — base는 외부에서 직접 import하지 않는다 (ESLint `@shared/api/*/*`로 자동 차단). 외부 공개가 필요한 공통 타입(`HttpError` 등)은 각 도메인에서 extend하여 re-export한다.
 
 ---
 

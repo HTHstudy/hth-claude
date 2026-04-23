@@ -40,12 +40,18 @@ function blockSiblings(layer) {
 }
 
 module.exports = {
-  plugins: ['import'],
+  plugins: ['import', 'check-file'],
   rules: {
     // 기본 규칙 (특정 레이어에 속하지 않는 파일)
     'no-restricted-imports': ['error', { patterns: basePatterns }],
     '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
     'import/no-default-export': 'error',
+    'import/no-cycle': ['error', { maxDepth: Infinity }],
+    'check-file/filename-naming-convention': ['error', {
+      '**/*.{ts,tsx,js,jsx}': 'KEBAB_CASE',
+    }, {
+      ignoreMiddleExtensions: true,
+    }],
   },
   overrides: [
     // ── Default Export 예외: 프레임워크가 요구하는 파일 ──
@@ -66,6 +72,14 @@ module.exports = {
       ],
       rules: {
         'import/no-default-export': 'off',
+      },
+    },
+
+    // ── Next.js Pages Router underscore prefix 파일명 예외 (_app, _document 등) ──
+    {
+      files: ['pages/_*.{ts,tsx}'],
+      rules: {
+        'check-file/filename-naming-convention': 'off',
       },
     },
 

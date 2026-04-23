@@ -3,7 +3,6 @@
 > `shared/api`의 내부 구조와 컨벤션 규약이다.
 
 문서에서 `[domain]`은 실제 폴더명으로 치환하는 placeholder이다.
-**도메인은 baseURL 단위로 구분한다.** 같은 서버(같은 baseURL)의 리소스는 하나의 도메인에 속한다. 예: `internal`(API route), `auth`(인증 서버), `main`(메인 백엔드)
 
 ---
 
@@ -11,9 +10,11 @@
 
 `shared/api`는 백엔드와의 연결을 담당하는 API 레이어이다.
 
-- 모든 도메인은 동일한 3계층 구조를 따른다.
+- 각 도메인은 동일한 3계층 구조를 따른다: **(1) http-client / (2) endpoints / (3) public interface(`index.ts`)**
 - 외부는 반드시 `index.ts` entrypoint만 통해 접근한다.
 - Transport 레이어는 서버 응답을 가공하지 않는다.
+
+**도메인 = `[domain]-http-client` 인스턴스 단위 = 공통 처리 그룹 단위.** 분리 기준은 §4.1 참조.
 
 ---
 
@@ -21,8 +22,9 @@
 
 ```txt
 shared/api/
-├─ base/                       # 공통 인프라
+├─ base/                       # 공통 인프라 (외부 import 금지)
 │  ├─ base-http-client.ts
+│  ├─ authenticated-http-client.ts  # 중간 클래스 (선택)
 │  ├─ errors.ts
 │  └─ types.ts
 │
@@ -32,12 +34,20 @@ shared/api/
 │  ├─ main-http-client.ts
 │  └─ endpoints/
 │     ├─ get-product-list.ts
-│     ├─ create-product.ts
-│     └─ get-order.ts
+│     └─ get-user.ts
 │
-└─ auth/                       # 인증 서버 (baseURL: 'https://auth.example.com')
+├─ order/                      # main과 같은 서버, 결제 공통 에러 처리 분리
+│  │                           #   (baseURL: 'https://api.example.com/order')
+│  ├─ index.ts
+│  ├─ errors.ts                # OrderHttpError (외부 분기용)
+│  ├─ order-http-client.ts
+│  └─ endpoints/
+│     ├─ get-order.ts
+│     └─ pay-order.ts
+│
+└─ external/                   # 서드파티 API (baseURL: 'https://api.thirdparty.com')
    ├─ index.ts
-   ├─ auth-http-client.ts
+   ├─ external-http-client.ts
    └─ endpoints/
 ```
 
@@ -45,26 +55,25 @@ shared/api/
 
 ## 3. base — 공통 인프라
 
-`base/`는 모든 도메인이 공유하는 전송 계층 기반 코드를 둔다.
+`base/`는 모든 도메인이 공유하는 전송 계층 기반 코드를 둔다. **외부(`@shared/api/base/*`)에서 직접 import하지 않는다.** ESLint `@shared/api/*/*` 패턴으로 자동 차단되며, 외부에 공개가 필요한 공통 타입(`HttpError` 등)은 각 도메인에서 extend하여 re-export한다 (→ §4.4).
 
 ```txt
 shared/api/base/
-├─ base-http-client.ts      # BaseHttpClient 클래스 (프로젝트 포터블)
-├─ [auth]-http-client.ts    # 중간 클래스 (선택 — 인증 그룹 공유 시)
-├─ errors.ts                # HttpError 클래스, 에러 로깅
-└─ types.ts                 # 공통 응답 타입 (DefaultResponse 등)
+├─ base-http-client.ts              # BaseHttpClient 클래스 (프로젝트 포터블)
+├─ authenticated-http-client.ts     # 중간 클래스 예 (선택 — 인증 공통 인터셉터 공유)
+├─ errors.ts                        # HttpError 클래스, 에러 로깅
+└─ types.ts                         # 공통 응답 타입 (DefaultResponse 등)
 ```
 
 | 파일 | 역할 |
 |------|------|
 | `base-http-client.ts` | 모든 도메인 HTTP 클라이언트의 기반 클래스. 기본 설정, 인터셉터 훅(`protected` — 하위 클래스에서 override), `res.data` 언래핑 HTTP 래퍼 메서드를 제공한다. 프로젝트 종속 로직을 포함하지 않는다. |
-| `[auth]-http-client.ts` | 여러 도메인이 공유하는 인터셉터(인증, 모니터링 등)를 중앙화하는 중간 클래스. 필요할 때만 생성한다. |
+| 중간 클래스 (선택) | 여러 도메인이 공유하는 인터셉터(인증, 모니터링 등)를 중앙화한다. 필요할 때만 생성하며, 파일명은 **역할 기반**으로 짓는다 — 인증 공통이면 `authenticated-http-client.ts`, 모니터링 공통이면 `monitored-http-client.ts`, 여러 관심사 조합이면 `app-http-client.ts` 등. |
 | `errors.ts` | `AxiosError` → `HttpError` 변환. 모든 도메인의 에러를 표준화한다. |
 | `types.ts` | `DefaultResponse<T>` 등 백엔드 공통 응답 래퍼 타입. 프로젝트에 맞게 조정한다. |
 
 **BaseHttpClient에 두는 것:** 프로젝트 포터블 로직 (기본 설정, 에러 정규화, 응답 타입)
 **BaseHttpClient에 두지 않는 것:** 프로젝트 종속 로직 (인증, 세션, 리다이렉트) → 중간 클래스 또는 도메인 http-client에서 override
-**base/ 폴더에는** 중간 클래스(`auth-http-client.ts` 등) 배치 가능 — 여러 도메인이 공유하는 코드이므로
 
 템플릿, 설계 원칙, 확장 패턴 → [http-client.md](../rules/http-client.md)
 
@@ -72,24 +81,62 @@ shared/api/base/
 
 ## 4. 도메인별 구조
 
-모든 도메인은 반드시 아래 구조를 따른다.
+### 4.1 분리 기준
+
+`[domain]-http-client.ts`는 baseURL 하나와 그 그룹의 공통 인터셉터/에러 처리를 소유한다.
+
+**분리 기준 (다음 중 하나 이상):**
+1. **baseURL이 다름** — 서버 주소 또는 경로 prefix가 다른 요청군
+2. **그 그룹만의 공통 처리 필요** — 인터셉터, 에러 처리, 헤더가 하위 리소스 전반에 공통 적용되어야 함
+
+**리소스 수는 분리 기준이 아니다.** 공통 처리가 동일하면 하나의 도메인 아래 `endpoints/` 서브폴더로 조직할 수 있다.
+
+**점진적 분리 예시:**
+
+```txt
+# 초기 — main 하나에서 모두 처리
+shared/api/main/
+├─ main-http-client.ts          # 공통 인증/에러
+└─ endpoints/
+   ├─ get-product-list.ts
+   ├─ get-user.ts
+   └─ get-order.ts
+
+# 확장 — order에 결제 공통 에러 처리가 필요해져 분리
+shared/api/
+├─ main/                        # baseURL: api.example.com
+│  └─ endpoints/
+│     ├─ get-product-list.ts
+│     └─ get-user.ts
+└─ order/                       # baseURL: api.example.com/order
+   ├─ order-http-client.ts      # 결제 에러 공통 처리 override
+   ├─ errors.ts                 # OrderHttpError (외부 분기용)
+   └─ endpoints/
+      ├─ get-order.ts
+      └─ pay-order.ts
+```
+
+---
+
+도메인 폴더 내부는 아래 구조를 따른다.
 
 ```txt
 [domain]/
 ├─ index.ts                    # 공개 인터페이스
-├─ model.ts                    # 도메인 엔티티 (조건부 생성)
+├─ model.ts                    # 도메인 엔티티 (조건부)
+├─ errors.ts                   # 도메인 에러 (선택 — 외부 분기용)
 ├─ [domain]-http-client.ts     # HTTP 클라이언트
 └─ endpoints/                  # Transport 레이어
    └─ *.ts                     # 엔드포인트별 파일
 ```
 
-### 4.1 [domain]-http-client.ts — 도메인 HTTP 클라이언트
+### 4.2 [domain]-http-client.ts — 도메인 HTTP 클라이언트
 
 BaseHttpClient(또는 중간 클래스)를 상속한 도메인별 인스턴스. 파일명은 `[domain]-http-client.ts`.
 
 역할, 설계 원칙, 확장 패턴 → [http-client.md](../rules/http-client.md)
 
-### 4.2 model.ts — 도메인 모델
+### 4.3 model.ts — 도메인 모델
 
 `model.ts`는 여러 endpoint에서 공유되는 도메인 엔티티, 도메인 상태 타입, 도메인 상수를 정의한다.
 
@@ -120,7 +167,20 @@ export type ProductItem = {
 };
 ```
 
-### 4.3 endpoints/*.ts — Transport 레이어
+### 4.4 errors.ts — 도메인 에러 (선택)
+
+외부(page/feature 등)에서 해당 도메인 에러 타입을 참조해 분기 처리할 때만 생성한다. 공통 처리(도메인 http-client의 `onResponseError`, 전역 Error Boundary)로 커버되면 만들지 않는다.
+
+- `base/errors.ts`의 `HttpError`를 extend
+- `name` 필드에 도메인 이름 포함 (`'ProductHttpError'` 등) — `instanceof` 분기와 로깅 구분용
+- 도메인 http-client의 `onResponseError`에서 도메인 에러로 래핑해 throw
+- `index.ts`에서 re-export
+
+`base/errors.ts`의 `HttpError`는 외부에서 직접 import하지 않는다. 필요하면 도메인에서 extend하여 노출한다.
+
+구현 템플릿 → [http-client.md §5.6 도메인 에러 확장](../rules/http-client.md)
+
+### 4.5 endpoints/*.ts — Transport 레이어
 
 엔드포인트별로 API 함수와 요청/응답 타입을 **반드시 한 파일에** 둔다.
 
@@ -161,7 +221,7 @@ export const getProductList = async (params: GetProductListReq) => {
 };
 ```
 
-### 4.4 index.ts — 공개 인터페이스
+### 4.6 index.ts — 공개 인터페이스
 
 `index.ts`는 도메인 외부에 공개되는 **유일한 entrypoint**이다.
 
@@ -265,12 +325,15 @@ import { productHttpClient } from '@shared/api/product/product-http-client';
 
 ## 7. 새 도메인 추가 체크리스트
 
-1. `shared/api/[domain]/` 폴더를 생성한다.
-2. `[domain]-http-client.ts` — `base-http-client.ts`를 확장한 HTTP 클라이언트를 작성한다.
-3. `endpoints/` — 엔드포인트별 파일을 작성한다. 함수와 req/res 타입을 한 파일에 둔다.
-4. `model.ts` — 둘 이상의 endpoint 또는 외부 consumer가 공유하는 도메인 타입이 있을 때만 생성한다.
-5. `index.ts` — `[DOMAIN]_API` 객체를 export하고, 외부 필요 타입만 re-export한다.
-6. ESLint `no-restricted-imports`에 해당 도메인 패턴을 추가한다.
+1. **분리 기준 확인** — baseURL 다름 또는 그룹 공통 처리 필요 (§4.1 참조). 리소스 수로 분리하지 않음.
+2. `shared/api/[domain]/` 폴더를 생성한다.
+3. `[domain]-http-client.ts` — `base-http-client.ts`(또는 중간 클래스)를 확장한 HTTP 클라이언트를 작성한다.
+4. `endpoints/` — 엔드포인트별 파일을 작성한다. 함수와 req/res 타입을 한 파일에 둔다.
+5. `model.ts` — 둘 이상의 endpoint 또는 외부 consumer가 공유하는 도메인 타입이 있을 때만 생성한다.
+6. `errors.ts` — 외부에서 해당 도메인 에러 타입을 참조해 분기해야 할 때만 생성한다. `HttpError` extend + `name` 필드에 도메인 이름 포함.
+7. `index.ts` — `[DOMAIN]_API` 객체를 export하고, 외부 필요 타입/에러만 re-export한다.
+
+ESLint는 공통 패턴(`@shared/api/*/*`)이 내부 직접 접근을 자동 차단하므로 도메인별 추가 설정은 불필요하다.
 
 ### 최소 템플릿
 
@@ -328,6 +391,7 @@ export type { [DomainEntity] } from './model';
 - 새 도메인은 기존 도메인과 동일한 구조로 생성한다.
 - `model.ts`에는 둘 이상의 endpoint 또는 외부 consumer가 공유하는 도메인 엔티티, 상태 타입, 상수를 둔다.
 - `index.ts`에서 endpoint 전용 타입과 domain model을 구분해서 re-export한다.
+- 외부에서 해당 도메인 에러 타입을 분기 처리해야 하면 `errors.ts`에 `HttpError` extend + `name` 필드에 도메인 이름 포함 후 `index.ts`에서 re-export한다.
 
 ### Don't
 
@@ -337,3 +401,5 @@ export type { [DomainEntity] } from './model';
 - `index.ts`에서 `export *`를 사용하지 않는다.
 - endpoint 전용 req/res 타입을 `model.ts`에 두지 않는다. 해당 `endpoints/*.ts`에 둔다.
 - 둘 이상의 endpoint 또는 외부 consumer가 공유하는 도메인 타입이 없는데 `model.ts`를 생성하지 않는다.
+- `base/`의 `HttpError` 등 공통 타입을 외부에서 직접 import하지 않는다. 필요하면 도메인에서 extend하여 re-export한다.
+- 단순히 리소스 수가 많다는 이유로 도메인을 분리하지 않는다. 공통 처리가 같으면 `endpoints/` 서브폴더로 조직한다.

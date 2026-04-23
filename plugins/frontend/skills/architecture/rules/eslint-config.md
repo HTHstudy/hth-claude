@@ -13,6 +13,8 @@
 | 상대경로 레이어 횡단 차단 | 다른 레이어 접근 시 alias 강제 | `import { x } from '../../shared/lib/utils'` |
 | Named Export 강제 | default export 차단 (프레임워크 요구 파일 제외) | `export default function Page()` |
 | 타입 import 강제 | 타입에 `type` 키워드 필수 | `import { Foo } from './types'` (타입인 경우) |
+| 파일명 케밥 케이스 | 파일명을 kebab-case로 강제 | `myComponent.tsx` |
+| 순환 의존 금지 | 순환 import 경로 차단 | `a.ts → b.ts → a.ts` |
 
 > **주의:** ESLint `no-restricted-imports`는 파일별 override 시 기본 규칙을 덮어쓴다(merge가 아닌 replace). 따라서 각 레이어별 설정에 공통 패턴(`basePatterns`)을 반복 포함해야 한다. 아래 템플릿은 헬퍼 함수로 이를 처리한다.
 
@@ -22,7 +24,8 @@
 
 | 패키지 | 용도 | 필요 버전 |
 |--------|------|----------|
-| `eslint-plugin-import` | `import/no-default-export` 규칙 | ^2.29 |
+| `eslint-plugin-import` | `import/no-default-export`, `import/no-cycle` 규칙 | ^2.29 |
+| `eslint-plugin-check-file` | 파일명 네이밍 규칙 (`check-file/filename-naming-convention`) | ^2.0 |
 | `@typescript-eslint/eslint-plugin` | `consistent-type-imports` 규칙 | ^7.0 \|\| ^8.0 |
 | `@typescript-eslint/parser` | TypeScript 파싱 | ^7.0 \|\| ^8.0 |
 | `typescript-eslint` | Flat Config 전용 (9+) — 위 두 패키지를 통합 제공 | ^8.0 |
@@ -30,8 +33,8 @@
 **감지 후 설치:**
 1. `package.json`의 `devDependencies`에서 각 패키지 존재 여부를 확인한다
 2. 미설치 패키지가 있으면 프로젝트의 패키지 매니저로 설치한다:
-   - Flat Config (9+): `typescript-eslint` + `eslint-plugin-import`
-   - Legacy Config (8): `@typescript-eslint/eslint-plugin` + `@typescript-eslint/parser` + `eslint-plugin-import`
+   - Flat Config (9+): `typescript-eslint` + `eslint-plugin-import` + `eslint-plugin-check-file`
+   - Legacy Config (8): `@typescript-eslint/eslint-plugin` + `@typescript-eslint/parser` + `eslint-plugin-import` + `eslint-plugin-check-file`
 3. **플러그인 미설치 상태로 규칙을 건너뛰지 않는다.** 설치 후 규칙을 적용한다.
 
 ## 버전별 템플릿
