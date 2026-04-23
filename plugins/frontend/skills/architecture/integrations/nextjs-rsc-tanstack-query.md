@@ -59,7 +59,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 // src/pages/products/index.tsx — Server Component (FSD page)
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
 import { productQueries } from '@shared/query-factory/product-queries';
-import { ProductsClient } from './products-client';
+import { ProductListWrapper } from './product-list-wrapper';
 
 export async function ProductsPage() {
   const queryClient = new QueryClient();
@@ -67,19 +67,19 @@ export async function ProductsPage() {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <ProductsClient />
+      <ProductListWrapper />
     </HydrationBoundary>
   );
 }
 ```
 
 ```typescript
-// src/pages/products/products-client.tsx
+// src/pages/products/product-list-wrapper.tsx
 'use client';
 
 import { productQueries } from '@shared/query-factory/product-queries';
 
-export function ProductsClient() {
+export function ProductListWrapper() {
   const { data } = useQuery(productQueries.list({ page: 1, size: 20 }));
   return <ProductList products={data} />;
 }

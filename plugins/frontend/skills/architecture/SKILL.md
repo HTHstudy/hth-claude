@@ -64,7 +64,7 @@ Next.js 프로젝트(`package.json`에 `next` 의존성 존재)를 감지하면 
 **필수 구조:**
 - [ ] `src/app/` 생성 — App.tsx, providers.tsx, router.tsx, global.css
 - [ ] `src/pages/` 생성 — 기존 화면을 route별 Slice로 재배치
-- [ ] `src/shared/routes/paths.ts` 생성 — 경로 상수 (경로가 하나라도 필수)
+- [ ] `src/shared/routes/paths.ts` 생성 — 경로 상수 (라우트가 하나라도 정의되면 필수)
 - [ ] `src/shared/config/env.ts` 생성 — 환경변수 관리
 - [ ] `src/main.tsx` — app 바깥 부팅 파일로 유지
 - [ ] 기존 assets → `src/shared/assets/`로 이동
@@ -125,9 +125,9 @@ page는 화면 모듈이며, 전용 상태/훅/컴포넌트/도메인 로직을 
 가장 하위 레이어이며, 다른 레이어를 import하지 않는다.
 내부는 Segment로 구성: `api`, `ui`, `lib`, `hooks`, `config`, `routes`, `i18n`, `query-factory`, `mutation-factory`
 
-**shared 분류 기준:**
-- **기반 모듈** (초기부터 존재): `config`, `routes`, `i18n`, `api`, 디자인 시스템 (TanStack Query 사용 시 `query-factory`, `mutation-factory` 포함)
-- **이동 모듈** (사용처에서 시작 → 공통 시 이동): business-agnostic 코드라도 처음에는 사용처에 둔다. 이동 조건은 [shared.md §4.2](layers/shared.md) 참조.
+**shared에 들어가는 두 경로:**
+- **page-first의 예외로 shared에 바로 생성** — `config`, `routes`, `i18n`, `api`, 디자인 시스템, 정적 리소스(assets) (TanStack Query 사용 시 `query-factory`, `mutation-factory` 포함). 상세는 [shared.md §5.2](layers/shared.md).
+- **사용처에서 시작 → 이동 조건 충족 시 shared로** — business-agnostic 코드라도 처음에는 사용처에 둔다. 이동 조건은 [shared.md §4](layers/shared.md) 참조.
 
 **shared/ui는 business-agnostic만 허용.** 도메인 특화 UI(`ProductCard` 등)는 `pages` 내부 또는 확장 레이어(`widgets`, `features`, `entities`)에 둔다.
 
@@ -222,7 +222,7 @@ app → pages → (widgets → features → entities →) shared
 
 상세 조건·단계·대상 분류:
 - Slice 기반 레이어(pages / widgets / features / entities) → [slice.md §3](rules/slice.md)
-- shared로의 이동 → [shared.md §4.2](layers/shared.md)
+- shared로의 이동 → [shared.md §4](layers/shared.md)
 
 ---
 
@@ -234,7 +234,7 @@ app → pages → (widgets → features → entities →) shared
 2. 특정 하위 모듈 전용인가? → 해당 하위 모듈에 둔다.
 3. 더 작은 범위 안에서 해결할 수 있는가? → 가장 좁은 범위에 둔다.
 4. 공통이 생겼는가? → **가장 가까운 공통 범위로 추출한다.**
-5. 2개 이상의 Slice에서 실제로 사용하고 있는가? → 아니면 현재 범위에 남긴다.
+5. 2개 이상의 사용처에서 실제로 사용하고 있는가? → 아니면 현재 범위에 남긴다.
 6. 사용처 문맥 없이도 의미가 성립하는가? → 적절한 레이어로 추출.
 7. 위 조건에 해당하지 않으면 로컬에 남긴다.
 
@@ -250,4 +250,4 @@ app → pages → (widgets → features → entities →) shared
 - "나중에 전역에서 쓸 수 있으니까" Provider를 app에 미리 올리지 않는다.
 - 도메인 특화 코드를 shared에 두지 않는다. 확장 레이어 도입 여부를 사용자에게 먼저 물어본다.
 - page를 단순 import 후 나열만 하는 빈 조립 레이어로 축소하지 않는다. page는 로직을 직접 소유한다.
-- 입력/출력이 특정 Slice 상태에 결합된 코드를 전역으로 추출하지 않는다. 로컬에 유지한다.
+- 입력/출력이 특정 사용처의 상태에 결합된 코드를 전역으로 추출하지 않는다. 로컬에 유지한다.
