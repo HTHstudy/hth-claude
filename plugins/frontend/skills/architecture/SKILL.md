@@ -32,18 +32,30 @@ Next.js 프로젝트(`package.json`에 `next` 의존성 존재)를 감지하면 
 추가로 App Router + TanStack Query를 함께 사용하는 프로젝트를 감지하면 [nextjs-rsc-tanstack-query.md](integrations/nextjs-rsc-tanstack-query.md)도 **반드시 읽고** 적용한다.
 
 ### 코드 작성 시
-- 모든 코드를 이 규칙에 맞춰 생성한다.
-- 레이어 배치, import 방향, 네이밍 컨벤션을 준수한다.
 - 판단 순서를 따라 코드를 어디에 둘지 결정한다.
-- **기존 파일을 수정할 때**, 해당 파일 안에 아래 컨벤션 위반이 있으면 함께 교정한다:
+- **신규 작성 시** 아래를 처음부터 적용한다:
+  - 가장 좁은 범위에서 시작. 상위 레이어·공통 폴더에 미리 두지 않는다.
+  - Slice 외부 접근은 entrypoint(`index.ts`/`index.tsx`)만 경유. 내부 파일 직접 import, 같은 레이어 sibling 간 cross-import 금지.
+  - 다른 레이어는 path alias(`@app/*`, `@pages/*`, …)로만 접근. 상대경로는 같은 레이어 내부에서만.
+  - Named Export 기본(프레임워크 요구 파일 제외), 타입은 `import type`, 파일명은 케밥 케이스.
+  - `_ui/`, `_hooks/` 같은 private 폴더는 미리 만들지 않는다. 실제 추출이 발생한 뒤 묶는다.
+- **기존 파일 수정 시** 해당 파일 안에 아래 위반이 있으면 함께 교정한다:
   - `export default` → Named Export 전환 (프레임워크 요구 파일 제외)
   - 타입 import에 `type` 키워드 누락 → `import type { Foo }` 형식으로 수정
   - 파일명이 케밥 케이스가 아닌 경우 → `git mv`로 이름 변경, import 경로 수정
   - 수정 범위는 **해당 파일과 직접 관련된 import/export**로 한정한다. 프로젝트 전체를 일괄 교정하지 않는다.
 
 ### 코드 리뷰 시
-- 이 규칙 위반 사항을 탐지하고 리포트한다.
-- 잘못된 레이어 배치, import 역방향, 네이밍 위반을 지적한다.
+아래 위반을 탐지하고 리포트한다:
+- **레이어 배치** — 도메인 특화 코드가 `shared`에 있거나, page 전용 코드가 전역 레이어로 올라간 경우
+- **import 방향** — 하위 레이어가 상위 레이어 import, 같은 레이어 sibling 간 cross-import
+- **Slice 경계** — entrypoint를 건너뛴 내부 파일 직접 import
+- **path alias 미사용** — 다른 레이어를 상대경로로 import
+- **Export/Import 형식** — `export default`, 타입 import에 `type` 키워드 누락
+- **네이밍** — 파일명이 케밥 케이스가 아닌 경우
+- **섣부른 추출** — 1개 Slice만 사용하는 코드가 공통 레이어에 있거나, Slice 문맥에 결합된 코드가 전역화된 경우
+- **page 빈 조립** — page가 로직 없이 import만 나열하는 경우
+- **private 폴더 선제 생성** — 실제 추출 없이 `_ui/`, `_hooks/`를 미리 만든 경우
 
 ### 구조 적용 시 (새 프로젝트 또는 기존 프로젝트)
 프로젝트 src/ 구조를 분석하고 아래 체크리스트를 **모두** 완료한다.
@@ -78,7 +90,7 @@ Next.js 프로젝트(`package.json`에 `next` 의존성 존재)를 감지하면 
 - pages 레이어 상세 → [pages.md](layers/pages.md)
 - shared 레이어 상세 → [shared.md](layers/shared.md)
 - 선택 레이어(entities/features/widgets) 상세 → [optional-layers.md](layers/optional-layers.md)
-- Slice 공통 규칙(인터페이스/분해/추출) → [rules.md](rules/rules.md)
+- Slice 공통 규칙(인터페이스/분해/추출) → [slice.md](rules/slice.md)
 - ESLint 설정 템플릿 → [eslint-config.md](rules/eslint-config.md)
 - Next.js 프로젝트 적용 가이드 → [nextjs.md](integrations/nextjs.md)
 - RSC + TanStack Query 패턴 → [nextjs-rsc-tanstack-query.md](integrations/nextjs-rsc-tanstack-query.md)
@@ -109,22 +121,15 @@ page는 화면 모듈이며, 전용 상태/훅/컴포넌트/도메인 로직을 
 복잡해지면 큰 단위 컴포넌트로 나누고, 그 하위도 필요에 따라 계속 분해한다.
 
 ### shared
-앱의 기본 구성 요소와 기반 도구. page 문맥 없이 독립적으로 성립하는 코드만 둔다.
+앱의 기본 구성 요소와 기반 도구. 특정 사용처 문맥 없이 독립적으로 성립하는 코드만 둔다.
 가장 하위 레이어이며, 다른 레이어를 import하지 않는다.
 내부는 Segment로 구성: `api`, `ui`, `lib`, `hooks`, `config`, `routes`, `i18n`, `query-factory`, `mutation-factory`
 
 **shared 분류 기준:**
-- **기반 모듈** (초기부터 존재): `config`, `routes`, `i18n`, `api`, 디자인 시스템
-- **이동 모듈** (사용처에서 시작 → 공통 시 이동): business-agnostic 코드라도 처음에는 사용처에 둔다
+- **기반 모듈** (초기부터 존재): `config`, `routes`, `i18n`, `api`, 디자인 시스템 (TanStack Query 사용 시 `query-factory`, `mutation-factory` 포함)
+- **이동 모듈** (사용처에서 시작 → 공통 시 이동): business-agnostic 코드라도 처음에는 사용처에 둔다. 이동 조건은 [shared.md §4.2](layers/shared.md) 참조.
 
-이동 모듈 판단 — 아래 조건을 **모두** 만족하지 않으면 이동하지 않는다:
-- 단순히 두 번 이상 사용된다는 이유만으로 전역화하지 않는다
-- 2개 이상의 Slice에서 **실제로** 사용하고 있을 때만 추출 검토
-- 해당 책임이 충분히 안정적인지 판단. 변경 중이면 추출하지 않는다
-- Slice 문맥 없이도 의미가 유지되는지 확인
-- 입력/출력이 특정 Slice 상태에 결합되어 있으면 로컬 유지
-
-**shared/ui는 business-agnostic만 허용.** 도메인 특화 UI(`ProductCard` 등)는 `entities`에 둔다.
+**shared/ui는 business-agnostic만 허용.** 도메인 특화 UI(`ProductCard` 등)는 `pages` 내부 또는 확장 레이어(`widgets`, `features`, `entities`)에 둔다.
 
 ### widgets (optional)
 독립적으로 동작하는 큰 UI 구성 단위. 여러 page에서 재사용되는 복합 UI 블록.
@@ -211,18 +216,12 @@ app → pages → (widgets → features → entities →) shared
 
 ## 추출 이동 기준
 
-아래 조건을 **모두** 만족하지 않으면 이동하지 않는다:
+- **가장 좁은 범위에서 시작**한다. 공통이 생기면 **가장 가까운 공통 범위로 먼저 추출**한다. 바로 전역 레이어로 올리지 않는다.
+- 예측 추출 금지. "나중에 쓸 것 같다"는 이유로 이동하지 않는다.
 
-1. **2개 이상의 Slice에서 실제로 사용** — "나중에 쓸 것 같다"는 예측 금지
-2. **책임이 안정적** — 변경 중이면 추출하지 않는다
-3. **Slice 문맥 없이도 의미가 유지** — 특정 Slice 상태에 결합되어 있으면 로컬 유지
-4. **공통이 생기면 가장 가까운 공통 범위로 먼저 추출** — 바로 전역 레이어로 올리지 않는다
-
-추출 대상 분류:
-- 복합 UI 블록 → `widgets`
-- 사용자 인터랙션 단위 → `features`
-- 도메인 UI / 표시 로직 → `entities`
-- business-agnostic 유틸/훅 → `shared`
+상세 조건·단계·대상 분류:
+- Slice 기반 레이어(pages / widgets / features / entities) → [slice.md §3](rules/slice.md)
+- shared로의 이동 → [shared.md §4.2](layers/shared.md)
 
 ---
 
@@ -235,7 +234,7 @@ app → pages → (widgets → features → entities →) shared
 3. 더 작은 범위 안에서 해결할 수 있는가? → 가장 좁은 범위에 둔다.
 4. 공통이 생겼는가? → **가장 가까운 공통 범위로 추출한다.**
 5. 2개 이상의 Slice에서 실제로 사용하고 있는가? → 아니면 현재 범위에 남긴다.
-6. page 문맥 없이도 의미가 성립하는가? → 적절한 레이어로 추출.
+6. 사용처 문맥 없이도 의미가 성립하는가? → 적절한 레이어로 추출.
 7. 위 조건에 해당하지 않으면 로컬에 남긴다.
 
 ---

@@ -10,24 +10,22 @@
 - 선택 레이어는 필요할 때만 도입한다. 3개를 한꺼번에 도입하지 않는다.
 - 각 레이어는 단독으로 도입할 수 있다. (entities 없이 features만, widgets만 등)
 - 모든 코드는 **page에서 시작**한다. 재사용이 실제로 발생하면 적절한 레이어로 추출한다.
-- "나중에 쓸 것 같아서" 미리 추출하지 않는다.
 
-### 도입 조건 (모두 충족)
-1. **2개 이상의 page에서 실제로 반복**된다.
-2. **page 문맥 없이 독립적으로 동작**한다.
-3. 해당 책임이 충분히 **안정적**이다 — 인터페이스(props/params/return type)가 최근 변경 중이면 이동하지 않는다.
+### 도입 조건
+공통 추출 조건(2개 이상 Slice 실사용 / 책임 안정 / Slice 문맥 무관 / 가장 가까운 공통 범위부터)을 따른다 → [slice.md §3](../rules/slice.md).
+레이어별 고유 시점은 아래 각 섹션(Widgets / Features / Entities)을 참조한다.
 
 ### Slice 구조
 - Slice 단위로 구성한다. 각 Slice의 `index.ts`/`index.tsx`가 유일한 entrypoint.
 - Slice 이름은 케밥 케이스.
 - 내부 구조는 미리 정하지 않고, 필요에 따라 page와 같은 규칙으로 분해한다.
-- 공개 인터페이스, 분해, 추출 규칙 → [rules.md](../rules/rules.md)
+- 공개 인터페이스, 분해, 추출 규칙 → [slice.md](../rules/slice.md)
 
 ### cross-import
 같은 레이어 sibling 간 cross-import 금지. 조합이 필요하면 사용하는 쪽(상위 레이어)에서 조합한다.
 
 ### import 깊이
-Widget은 Feature와 Entity를 모두 직접 import할 수 있다 (계층 규칙상 허용). 깊이 제한은 두지 않는다. 조합이 복잡해지면 Widget 내부에서 분해한다 — [rules.md](../rules/rules.md)의 분해 규칙을 따른다.
+Widget은 Feature와 Entity를 모두 직접 import할 수 있다 (계층 규칙상 허용). 깊이 제한은 두지 않는다. 조합이 복잡해지면 Widget 내부에서 분해한다 — [slice.md](../rules/slice.md)의 분해 규칙을 따른다.
 
 ---
 
