@@ -58,14 +58,13 @@ Slice 하나로 시작
 ```
 
 ```txt
-[slice]/
-├─ component-a/
-│  ├─ child-a/
-│  │  └─ index.tsx
+product-detail/
+├─ product-info/          ← 하위 분해가 필요한 큰 단위 → 폴더
+│  ├─ product-spec.tsx
+│  ├─ product-price.tsx
 │  └─ index.tsx
-├─ component-b/
-│  └─ index.tsx
-└─ index.tsx
+├─ product-reviews.tsx    ← 하위 종속 없는 큰 단위 → 단일 파일
+└─ index.tsx              ← Slice entrypoint
 ```
 
 ---
@@ -121,8 +120,9 @@ Slice 하나로 시작
 Slice 내부에서 여러 개가 생기면 `_ui/`, `_context/`, `_lib/` 같은 private 폴더로 묶는다. 처음부터 만들지 않는다.
 
 ```txt
-[slice]/
-├─ component-a/
+product-detail/
+├─ product-info.tsx
+├─ product-reviews.tsx
 ├─ _ui/
 │  ├─ filter-chip.tsx
 │  └─ summary-badge.tsx

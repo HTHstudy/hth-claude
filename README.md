@@ -141,7 +141,7 @@ hth-claude/
 │       │   │   │   ├── shared-mutation-factory.md
 │       │   │   │   └── optional-layers.md
 │       │   │   └── rules/              # 공통 규칙 및 템플릿
-│       │   │       ├── rules.md
+│       │   │       ├── slice.md
 │       │   │       ├── eslint-config.md
 │       │   │       ├── eslint-flat-config.md
 │       │   │       ├── eslint-legacy-config.md

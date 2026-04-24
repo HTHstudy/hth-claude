@@ -1,55 +1,62 @@
-# Next.js Guide
+# Next.js Integration
 
-How and why the architecture structure changes when applied to Next.js projects.
+This document covers what changes when applying this architecture to a Next.js project. React (Vite) applies the architecture directly without special constraints, but Next.js's file-based routing structure collides by name with this architecture's `app` and `pages` layers.
 
----
-
-## The Core Problem
-
-Next.js defines file-based routing via `app/` or `pages/` folders. These names conflict with FSD's `app` and `pages` layers.
-
-**Solution:** Next.js routing folders stay at the project root, while FSD layers go inside `src/`.
-
-| Location | Role |
-|----------|------|
-| Root `app/` or `pages/` | Next.js routing (re-export only) |
-| `src/app/` | FSD app layer (providers, global style) |
-| `src/pages/` | FSD pages layer (screen modules) |
-| `src/shared/` | FSD shared layer |
-
-Root routing files contain no logic. They serve as thin wrappers that re-export code from FSD layers.
+The document answers one question — **how do Next.js routing folders and this architecture's layer folders coexist?**
 
 ---
 
-## App Router Structure
+## The Core Problem and Solution Principle
 
-```
+Next.js defines routing **by folder name**. With App Router, the root `app/` folder becomes the routing space; with Pages Router, the root `pages/` folder does. Both names clash directly with this architecture's `app` layer (app assembly) and `pages` layer (screen modules).
+
+**The solution is simple.**
+
+- **Next.js routing folders live at the project root** — `<root>/app/`, `<root>/pages/`
+- **Architecture layers live inside `src/`** — `src/app/`, `src/pages/`, `src/shared/`, etc.
+- **Root routing files do not implement logic** — they only serve as thin wrappers that re-export implementations from the architecture layers
+
+Holding this separation keeps one rule consistent: "routing at the root, layers in `src/`."
+
+---
+
+## App Router
+
+### Folder structure
+
+```txt
 ├── app/                        ← Next.js App Router (root)
 │   ├── layout.tsx
 │   ├── page.tsx
-│   └── products/
-│       ├── page.tsx
-│       └── [id]/
-│           └── page.tsx
-├── pages/                      ← Empty folder (prevents Pages Router fallback)
+│   ├── products/
+│   │   ├── page.tsx
+│   │   └── [id]/
+│   │       └── page.tsx
+│   └── api/
+│       └── products/
+│           └── route.ts
+├── pages/                      ← empty folder (prevents Pages Router fallback)
 │   └── README.md
+├── middleware.ts                ← root only
+├── instrumentation.ts           ← root only
 └── src/
-    ├── app/                    ← FSD app layer
+    ├── app/                    ← architecture app layer
     │   ├── providers.tsx
     │   └── global.css
-    ├── pages/                  ← FSD pages layer
+    ├── pages/                  ← architecture pages layer
     │   ├── home.tsx
     │   ├── products.tsx
     │   └── product-detail/
     │       └── index.tsx
+    ├── widgets/                ← optional
+    ├── features/               ← optional
+    ├── entities/               ← optional
     └── shared/
 ```
 
-### Re-export pattern
+### Basic re-export pattern
 
-Root `app/` `page.tsx` files only re-export FSD pages.
-
-**Default: re-export** — when only rendering:
+`page.tsx` files inside the root `app/` **only re-export the architecture page**. No logic is implemented directly.
 
 ```ts
 // app/page.tsx
@@ -59,9 +66,11 @@ export { HomePage as default } from '@pages/home';
 export { ProductsPage as default } from '@pages/products';
 ```
 
-**import + export default** — when Next.js page-level features are needed:
+Keeping the re-export pattern means the routing folder shows only "which route connects to which page," while actual screen implementations stay in `src/pages/`.
 
-Use this pattern when you need dynamic route params, `generateMetadata`, `generateStaticParams`, `searchParams`, or server-side data loading.
+### When Next.js features are needed
+
+Dynamic route params, `generateMetadata`, `generateStaticParams`, `searchParams`, server-side data loading — using these Next.js page-level features is not enough with re-export alone. Use the import-then-export-default pattern.
 
 ```ts
 // app/products/[id]/page.tsx
@@ -73,7 +82,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 }
 ```
 
-When `generateMetadata` needs an API call, importing `@shared/api` directly in root `app/` files is allowed. This is because Next.js forces `generateMetadata` to be exported only from `page.tsx`.
+Handle Next.js hooks and params in the root file and pass the values as props to the architecture page. The architecture page stays free of Next.js dependencies, while the root file holds Next.js-specific concerns only.
+
+### generateMetadata exception
+
+When `generateMetadata` needs to call an API, importing `@shared/api` directly from the root `app/` file is allowed. The exception exists because Next.js enforces that `generateMetadata` be exportable only from `page.tsx`.
 
 ```ts
 // app/products/[id]/page.tsx
@@ -92,9 +105,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 ```
 
+Without this exception, the API call inside `generateMetadata` could not be moved elsewhere. This is the only case where `@shared/api` import from a root routing file is allowed.
+
 ### layout.tsx
 
-Root `app/layout.tsx` assembles providers and global styles from the FSD app layer.
+The root `app/layout.tsx` composes the architecture `app` layer's providers and global style.
 
 ```ts
 // app/layout.tsx
@@ -103,7 +118,7 @@ import { Providers } from '@app/providers';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko">
+    <html lang="en">
       <body>
         <Providers>{children}</Providers>
       </body>
@@ -112,34 +127,47 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
+The root `layout.tsx` owns Next.js's HTML shell, while actual provider composition and global style definitions remain in the architecture `app` layer. Maintaining this boundary keeps `src/app/` as portable assembly logic that works outside Next.js.
+
 ### Empty pages folder
 
-An empty `pages/` folder is created at the root. This prevents Next.js from falling back to the Pages Router.
+When using App Router, **a root `pages/` folder must be created empty.** It prevents Next.js from falling back to Pages Router. Leave a README inside stating why it must remain empty.
+
+```markdown
+<!-- pages/README.md -->
+This folder must remain empty.
+It exists to prevent Next.js from falling back to Pages Router.
+The architecture pages layer lives in src/pages/.
+```
 
 ---
 
-## Pages Router Structure
+## Pages Router
 
-```
-├── app/                        ← Empty folder (prevents App Router detection)
+### Folder structure
+
+```txt
+├── app/                        ← empty folder (prevents App Router detection)
 │   └── README.md
 ├── pages/                      ← Next.js Pages Router (root)
 │   ├── _app.tsx
+│   ├── api/
+│   │   └── example.ts
 │   └── example/
 │       └── index.tsx
 └── src/
-    ├── app/                    ← FSD app layer
+    ├── app/                    ← architecture app layer
     │   ├── custom-app.tsx
     │   ├── providers.tsx
     │   └── global.css
-    ├── pages/                  ← FSD pages layer
-    │   ├── home.tsx
-    │   └── product-detail/
-    │       └── index.tsx
+    ├── pages/                  ← architecture pages layer
+    ├── widgets/                ← optional
+    ├── features/               ← optional
+    ├── entities/               ← optional
     └── shared/
 ```
 
-### Re-export pattern
+### re-export pattern
 
 ```ts
 // pages/example/index.tsx
@@ -148,7 +176,7 @@ export { ExamplePage as default } from '@pages/example';
 
 ### Custom App
 
-The actual `_app.tsx` implementation lives in the FSD app layer.
+Place `_app.tsx`'s actual implementation in the architecture `app` layer. The root `pages/_app.tsx` only re-exports.
 
 ```ts
 // src/app/custom-app.tsx
@@ -170,48 +198,124 @@ export { CustomApp as default } from '@app/custom-app';
 
 ### Empty app folder
 
-An empty `app/` folder is created at the root. This prevents Next.js from detecting `src/app/` as an App Router directory and causing a build error.
+When using Pages Router, **a root `app/` folder must be created empty.** If Next.js detects `src/app/` as an App Router directory, the build fails with "pages and app directories should be under the same folder." The empty root `app/` becomes the detection target and avoids that error.
+
+```markdown
+<!-- app/README.md -->
+This folder must remain empty.
+It exists to prevent Next.js from detecting src/app/ as App Router and triggering build errors.
+The architecture app layer lives in src/app/.
+```
 
 ---
 
-## Route to Slice Mapping
+## Route ↔ Slice Mapping
 
-Next.js nested routing structure and FSD pages layer Slices do not map 1:1. In FSD, each route is an independent Slice. Next.js folder nesting is not replicated in FSD Slices.
+**Next.js's nested routing does not map 1:1 to architecture Slices.** Routing's folder nesting does not imply Slice folder nesting.
 
-| Next.js route | Root `app/` structure | FSD `src/pages/` Slice |
-|---------------|----------------------|----------------------|
+| Next.js route | Root `app/` structure | Architecture `src/pages/` Slice |
+|---------------|----------------------|-------------------------------|
 | `/` | `app/page.tsx` | `pages/home.tsx` |
 | `/products` | `app/products/page.tsx` | `pages/products.tsx` |
 | `/products/[id]` | `app/products/[id]/page.tsx` | `pages/product-detail.tsx` |
 | `/settings` | `app/settings/page.tsx` | `pages/settings.tsx` |
 | `/settings/profile` | `app/settings/profile/page.tsx` | `pages/settings-profile.tsx` |
 
-- **Root routing folders** follow Next.js routing structure (nested folders).
-- **`src/pages/`** follows FSD rules (flat Slice structure).
-- Even within the same domain (`/products` and `/products/[id]`), each is a separate Slice.
+The root routing folder follows Next.js's nested structure; `src/pages/` follows the architecture's rules (flat Slice structure). Even within the same domain, `/products` and `/products/[id]` are separate Slices. They do not share a folder.
+
+Slice names are kebab-case reflecting the route's meaning: `products`, `product-detail`, `settings-profile`. When internals grow complex, promote to a folder Slice following the pages layer's general rules.
 
 ---
 
 ## API Routes
 
-API Routes are a **server-side concern**, independent of FSD layers. Treat them as a standalone backend server.
+API routes are a **server area unrelated to this architecture's layers**. Treat them as a single backend server living outside `src/`.
+
+### Core rules
+
+- **API routes are self-contained.** They do not import architecture layers (`src/`). Implement needed logic inside the route file.
+- **Access API routes only via `shared/api`.** Do not call `fetch('/api/...')` directly from a page. Define it as a domain in `shared/api` and let that domain's endpoint call it over HTTP.
+- **Apply the [shared-api](shared-api.md) three-layer structure as-is.** Only the baseURL differs (`/api/...`).
 
 ### Import direction
 
+```txt
+app/api/  →  src/            ❌  API routes do not import architecture layers
+src/      →  app/api/        ❌  direct import forbidden
+src/shared/api  →  fetch('/api/...')   ✅  HTTP call only
 ```
-app/api/  →  src/  ❌  API routes do not import FSD layers
-src/      →  app/api/  ❌  Direct import forbidden
-src/shared/api  →  fetch('/api/...')  ✅  Access via HTTP calls only
+
+### shared/api domain composition example
+
+When API routes coexist with external backends, each is a separate domain. Callers (pages, query-factory) do not need to distinguish whether the destination is an API route or an external BE — they look only at `shared/api`.
+
+```txt
+shared/api/
+├─ base/
+├─ internal/                       # API route — baseURL: '/api'
+│  ├─ internal-http-client.ts
+│  ├─ index.ts
+│  └─ endpoints/
+│     ├─ get-product-list.ts       #   /api/products
+│     └─ get-cart.ts               #   /api/cart
+├─ main/                           # external main BE — baseURL: 'https://api.example.com'
+│  ├─ main-http-client.ts
+│  ├─ index.ts
+│  └─ endpoints/
+│     └─ get-user.ts
 ```
 
-- API routes are self-contained. All logic is handled within the route file itself.
-- Frontend accesses API routes through `shared/api` via HTTP calls. Code is never directly imported.
-- The same `shared/api` 3-tier structure applies. Only the baseURL differs (`/api/...`).
+### When API routes are needed
 
-### When to use
+Use API routes only when the logic can exist only on the server.
 
-Use API routes only when server-side logic is required:
-- Protecting API keys, auth tokens, or other secrets from the client
-- Direct database access (full-stack without a separate backend)
-- Server-only logic (email sending, file processing, etc.)
-- Webhook receivers, composing multiple external APIs server-side (BFF)
+- Protecting API keys, auth tokens — values that must not be exposed to the client
+- Direct DB access (full-stack setup without a separate backend)
+- Server-only logic (email sending, file processing, PDF generation)
+- Webhook receivers
+- Composing several external APIs on the server (BFF)
+
+Using API routes as a proxy just for frontend convenience is not recommended. If the external BE can be called directly, connect as a `shared/api` domain.
+
+---
+
+## Special File Locations
+
+Next.js requires certain files at the project root. These cannot be moved to `src/`.
+
+| File | Location | Note |
+|------|----------|------|
+| `middleware.ts` | project root | Next.js requirement |
+| `instrumentation.ts` | project root | Next.js requirement |
+| `next.config.js` | project root | — |
+| Empty `pages/` | project root | Required with App Router |
+| Empty `app/` | project root | Required with Pages Router |
+
+---
+
+## Differences from the Base Rules
+
+### path alias
+
+Configure tsconfig path aliases based on `src/`. Allow only per-layer aliases — `@app/*`, `@pages/*`, `@shared/*`, etc. A blanket alias (`@/*`) that covers all source is not used. If Next.js's default template creates a `@/*` alias, remove it.
+
+### Default Export
+
+The base rule is Named Export, with Default Export allowed only when a framework demands it. Next.js requires Default Export for `page.tsx`, `layout.tsx`, `route.ts`, `_app.tsx`, etc. These files are thin wrappers that re-export architecture pages, so Default Export is used.
+
+Inside the architecture layers (within `src/`), Named Export remains the default.
+
+### Entrypoint
+
+React (Vite) has `src/main.tsx` as the boot file. Next.js has no `main.tsx`. The root `app/layout.tsx` or `pages/_app.tsx` plays the entry role, while the actual assembly implementation lives in `src/app/`.
+
+---
+
+## Summary
+
+- Routing at the root, layers in `src/`. The two spaces do not mix.
+- Root routing files are re-export only. When Next.js features are needed, import-then-export-default.
+- `generateMetadata` is an exception — direct `@shared/api` import in the root is allowed.
+- Do not replicate Next.js routing nesting in the Slice structure. Slices remain flat.
+- API routes are a server area. They do not import `src/`, and `shared/api` calls them over HTTP.
+- With App Router, keep an empty root `pages/`; with Pages Router, keep an empty root `app/`.
