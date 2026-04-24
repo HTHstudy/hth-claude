@@ -179,7 +179,7 @@ process.stdin.on('end', () => {
   line1 += ` ${SEP} ${CYAN}${MODEL}${RESET} ${SEP} ⏱️  ${WHITE}${NOW}${RESET}`;
 
   // Line 2: CTX | 토큰 | 비용 (세션 지표)
-  let line2 = `${GRAY}CTX${RESET} ${usageColor(ctxN)}${bar(ctxN)}${RESET} ${WHITE}${CTX}%${RESET}`;
+  let line2 = `${GRAY}CTX${RESET} ${usageColor(ctxN)}${bar(ctxN)}${RESET} ${usageColor(ctxN)}${CTX}%${RESET}`;
   line2 += ` ${SEP} 📈 ${WHITE}${formatTokens(TOTAL_TOKENS)} tokens${RESET}`;
   line2 += ` ${SEP} 💰 ${GREEN}$${COST.toFixed(2)}${RESET}`;
 
