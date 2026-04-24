@@ -1,6 +1,7 @@
 # Shared Mutation Factory Segment
 
 > `shared/mutation-factory`의 내부 구조와 컨벤션 규약이다.
+> **요구 버전:** TanStack Query v5+ (`mutationOptions`, `MutationCache` API 사용)
 
 ---
 

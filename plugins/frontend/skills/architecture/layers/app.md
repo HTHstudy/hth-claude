@@ -47,9 +47,9 @@ app/                      app/                       app/
 
 ## app과 shared의 경계
 
-| 관심사      | app (조립·실행)                               | shared (값·도구 정의)                             |
+| 관심사      | app (앱 수준 실행 환경 정의·조립)             | shared (범용 도구·값 정의)                        |
 | ----------- | --------------------------------------------- | ------------------------------------------------- |
-| 라우팅      | 라우터 설정, route-page 연결, guard           | 경로 상수 (`shared/routes`)                       |
-| 설정        | Provider 구성, 초기화                         | 환경변수, Feature Flag (`shared/config`)          |
+| 라우팅      | 라우터 설정, route-page 연결, guard           | 경로 상수/패턴 (`shared/routes`)                  |
+| 설정        | Provider 구성, 초기화 로직                    | 환경변수, Feature Flag 값 (`shared/config`)       |
 | 백엔드 연결 | 초기화 시 호출 (인증 복원, 원격 설정 로드 등) | API 클라이언트, 도메인별 요청 함수 (`shared/api`) |
-| 스타일      | 전역 스타일 적용                              | 범용 UI (`shared/ui`)                             |
+| 스타일      | 전역 스타일 적용 (`global.css`)               | 범용 UI 컴포넌트 (`shared/ui`)                    |

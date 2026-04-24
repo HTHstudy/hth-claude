@@ -1,6 +1,7 @@
 # RSC + TanStack Query 패턴
 
 > Next.js App Router에서 Server Components와 TanStack Query를 함께 사용할 때의 규칙이다.
+> **요구 버전:** Next.js 13+, TanStack Query v5+ (`environmentManager.isServer()` API 사용), React 18+
 
 ---
 
