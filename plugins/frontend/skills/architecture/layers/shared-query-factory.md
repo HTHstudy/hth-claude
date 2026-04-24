@@ -94,7 +94,7 @@ detail(id)   → [...detailKeys(), id]                  # 개별 쿼리
 - queryFn은 `shared/api`의 `[DOMAIN]_API` 객체를 통해 호출한다. API를 직접 호출하지 않는다.
 - 팩토리 함수는 `queryOptions()`를 반환한다. `useQuery`를 내부에서 호출하지 않는다.
 - staleTime 등 쿼리 옵션의 기본값을 팩토리에서 설정할 수 있다.
-- 비즈니스 로직을 팩토리에 두지 않는다. 데이터 변환이 필요하면 사용처에서 `select` 옵션으로 지정한다.
+- 비즈니스 로직을 팩토리에 두지 않는다. 데이터 변환이 필요하면 호출부에서 `select` 옵션으로 지정한다.
 - 팩토리 객체명은 camelCase를 사용한다: `productQueries`, `authQueries`
 
 ### 4.4 네이밍

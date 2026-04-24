@@ -7,7 +7,7 @@
 ## 두는 것 / 두지 않는 것
 
 **둔다:** 루트 컴포넌트(`App.tsx`), 라우팅 설정, 전역 Provider, 전역 스타일, 전역 레이아웃, 초기화 로직(환경변수 검증, i18n 언어 탐지, 테마 복원, 인증 토큰 복원 등)
-**두지 않는다:** 비즈니스 로직, 특정 사용처 전용 컴포넌트/상태, 재사용 유틸(`shared`에), 특정 사용처 전용 Provider(해당 레이어에), `main.tsx`(app 바깥 `src/` 루트의 부팅 파일)
+**두지 않는다:** 비즈니스 로직, 특정 Slice 전용 컴포넌트/상태, 재사용 유틸(`shared`에), 특정 Slice 전용 Provider(해당 Slice에), `main.tsx`(app 바깥 `src/` 루트의 부팅 파일)
 
 ---
 
@@ -28,7 +28,7 @@ app/                      app/                       app/
 
 ## Provider 규칙
 
-- **전역 Provider만** app에 둔다. 특정 사용처 전용 Provider는 해당 레이어에.
+- **전역 Provider만** app에 둔다. 특정 Slice 전용 Provider는 해당 Slice에.
 - Provider 2개 이상 시 `providers.tsx`에서 합성.
 - 전역 Provider 예시: Theme / Design System, i18n, Auth, QueryClient(TanStack Query), Toast·Dialog, Error Boundary, Suspense boundary
 

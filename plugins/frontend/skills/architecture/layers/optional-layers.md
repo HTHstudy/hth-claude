@@ -12,12 +12,13 @@
 - 모든 코드는 **page에서 시작**한다. 재사용이 실제로 발생하면 적절한 레이어로 추출한다.
 
 ### 도입 조건
-다음 조건을 **모두** 만족할 때 도입한다 — 상세는 [slice.md §3](../rules/slice.md):
-1. 2개 이상의 사용처에서 실제 사용 (사용처 = page, 그리고 도입되어 있는 상위 레이어)
-2. 책임 안정성
-3. 문맥 독립성
+다음 조건을 **모두** 만족할 때 도입한다:
 
-원칙: 가장 가까운 공통 범위로 먼저 추출. 레이어별 고유 시점은 아래 각 섹션 참조.
+1. **2개 이상의 상위 Slice에서 실제 사용** — 레이어별 허용 상위는 [SKILL.md 레이어 계급 표](../SKILL.md) 참조. 상위 optional 레이어가 미도입이면 해당 항목은 조건에서 제외된다 (예: widgets 미도입 시 features 조건은 "2개 이상 page"로 축소).
+2. **책임 안정성** — 인터페이스가 최근 변경되었거나 변경 예정이면 이동하지 않는다.
+3. **문맥 독립성** — 특정 Slice 상태·context에 결합되지 않아야 한다.
+
+상세 추출 규칙은 [slice.md §3](../rules/slice.md). 원칙: 가장 가까운 공통 범위로 먼저 추출. 레이어별 고유 시점은 아래 각 섹션 참조.
 
 ### Slice 구조
 공통 Slice 규칙(entrypoint, 네이밍, 분해, 추출)을 따른다 — [slice.md](../rules/slice.md).
@@ -39,7 +40,7 @@ Widget은 Feature와 Entity를 모두 직접 import할 수 있다 (계층 규칙
 **Slice 이름:** UI 블록 역할 — `header`, `sidebar`, `product-list-section`
 
 **도입 시점:**
-- 동일한 복합 UI 블록이 2개 이상 page에서 반복
+- 동일한 복합 UI 블록이 **2개 이상 page**에서 반복
 - page가 widget 배치만으로 구성될 수 있을 정도로 자족적일 때
 
 **주의:**
@@ -57,7 +58,7 @@ Widget은 Feature와 Entity를 모두 직접 import할 수 있다 (계층 규칙
 **Slice 이름:** 동작 명사구 — `add-to-cart`, `auth-form`, `product-search`
 
 **도입 시점:**
-- 동일한 인터랙션이 2개 이상 **page 또는 widget(도입돼 있으면)** 에서 반복
+- 동일한 인터랙션이 **2개 이상 page 또는 widget**에서 반복 (widgets 미도입 시: 2개 이상 page)
 - 인터랙션 로직과 UI가 함께 이동해야 할 때
 
 **주의:**
@@ -76,7 +77,7 @@ Widget은 Feature와 Entity를 모두 직접 import할 수 있다 (계층 규칙
 **Slice 이름:** 도메인 명사 — `product`, `user`, `order`
 
 **도입 시점:**
-- 도메인 UI(`ProductCard`, `UserAvatar`)가 2개 이상 **page, widget, feature 중 도입된 사용처**에서 반복
+- 도메인 UI(`ProductCard`, `UserAvatar`)가 **2개 이상 page, widget, feature 중에서** 반복 (미도입 레이어는 조건에서 제외)
 
 **주의:**
 - API 정의는 `shared/api`에 둔다. entities는 API를 소유하지 않는다.
