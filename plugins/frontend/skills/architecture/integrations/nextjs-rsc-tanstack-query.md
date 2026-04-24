@@ -7,7 +7,7 @@
 
 ## 1. `'use client'` 경계
 
-re-export되는 FSD page는 Server Component일 수도, Client Component일 수도 있다. `'use client'`는 실제로 필요한 곳에 선언한다.
+re-export되는 아키텍처 page는 Server Component일 수도, Client Component일 수도 있다. `'use client'`는 실제로 필요한 곳에 선언한다.
 
 - page 전체가 훅을 사용하면 page 최상단에 `'use client'` 선언
 - page 일부만 클라이언트 기능이 필요하면 해당 컴포넌트에만 선언하고 page는 Server Component로 유지
@@ -54,10 +54,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
 ## 3. Prefetch / Dehydrate 패턴
 
-`queryOptions()`는 `useQuery`와 `prefetchQuery` 모두에서 사용할 수 있다. prefetch 로직은 FSD page 안에서 소유하고, 루트 `app/`은 re-export 전용 원칙을 유지한다.
+`queryOptions()`는 `useQuery`와 `prefetchQuery` 모두에서 사용할 수 있다. prefetch 로직은 아키텍처 page 안에서 소유하고, 루트 `app/`은 re-export 전용 원칙을 유지한다.
 
 ```typescript
-// src/pages/products/index.tsx — Server Component (FSD page)
+// src/pages/products/index.tsx — Server Component (아키텍처 page)
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
 import { productQueries } from '@shared/query-factory/product-queries';
 import { ProductListWrapper } from './product-list-wrapper';

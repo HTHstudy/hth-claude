@@ -1,15 +1,15 @@
-# Next.js + FSD 적용 가이드
+# Next.js 적용 가이드
 
 Next.js 프로젝트에서 이 아키텍처를 적용할 때의 추가 규칙.
-**기본 원칙은 SKILL.md와 동일하다.** 이 문서는 Next.js 파일 기반 라우팅과 FSD 레이어 구조 간의 충돌을 해결하는 방법만 다룬다.
+**기본 원칙은 SKILL.md와 동일하다.** 이 문서는 Next.js 파일 기반 라우팅과 아키텍처 레이어 구조 간의 충돌을 해결하는 방법만 다룬다.
 
 ---
 
 ## 핵심 차이점
 
-Next.js는 `app/` 또는 `pages/` 폴더로 라우팅을 정의한다. 이는 FSD의 `app`, `pages` 레이어와 이름이 충돌한다.
+Next.js는 `app/` 또는 `pages/` 폴더로 라우팅을 정의한다. 이는 이 아키텍처의 `app`, `pages` 레이어와 이름이 충돌한다.
 
-**해결 원칙:** Next.js 라우팅 폴더는 프로젝트 루트에, FSD 레이어는 `src/` 안에 배치한다.
+**해결 원칙:** Next.js 라우팅 폴더는 프로젝트 루트에, 아키텍처 레이어는 `src/` 안에 배치한다.
 
 ---
 
@@ -35,10 +35,10 @@ Next.js는 `app/` 또는 `pages/` 폴더로 라우팅을 정의한다. 이는 FS
 ├── middleware.ts                ← 루트에 위치
 ├── instrumentation.ts          ← 루트에 위치
 └── src/
-    ├── app/                    ← FSD app 레이어
+    ├── app/                    ← 아키텍처 app 레이어
     │   ├── providers.tsx
     │   └── global.css
-    ├── pages/                  ← FSD pages 레이어
+    ├── pages/                  ← 아키텍처 pages 레이어
     │   ├── home.tsx               ← 단순한 page
     │   ├── products.tsx           ← 상품 목록
     │   └── product-detail/        ← 복잡해지면 폴더로 분해
@@ -56,7 +56,7 @@ Next.js는 `app/` 또는 `pages/` 폴더로 라우팅을 정의한다. 이는 FS
 
 ### re-export 패턴
 
-Next.js `app/` 폴더의 `page.tsx`는 FSD page를 re-export만 한다. 로직을 직접 구현하지 않는다.
+Next.js `app/` 폴더의 `page.tsx`는 아키텍처 page를 re-export만 한다. 로직을 직접 구현하지 않는다.
 
 **기본: re-export** — 단순 렌더링만 하는 경우:
 
@@ -103,7 +103,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 ### layout.tsx
 
-루트 `app/layout.tsx`에서 FSD app 레이어의 providers와 global style을 조립한다.
+루트 `app/layout.tsx`에서 아키텍처 app 레이어의 providers와 global style을 조립한다.
 
 ```typescript
 // app/layout.tsx
@@ -130,19 +130,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 <!-- pages/README.md -->
 이 폴더는 비어 있어야 합니다.
 Next.js가 Pages Router로 폴백하는 것을 방지하기 위해 존재합니다.
-FSD pages 레이어는 src/pages/에 위치합니다.
+아키텍처 pages 레이어는 src/pages/에 위치합니다.
 ```
 
 ---
 
-## Next.js route와 FSD Slice 매핑
+## Next.js route와 아키텍처 Slice 매핑
 
-Next.js의 중첩 라우팅 구조와 FSD pages 레이어의 Slice는 1:1로 대응하지 않는다.
-**FSD에서 각 route는 독립된 Slice다.** Next.js의 폴더 중첩이 FSD Slice의 폴더 중첩을 의미하지 않는다.
+Next.js의 중첩 라우팅 구조와 아키텍처 pages 레이어의 Slice는 1:1로 대응하지 않는다.
+**이 아키텍처에서 각 route는 독립된 Slice다.** Next.js의 폴더 중첩이 아키텍처 Slice의 폴더 중첩을 의미하지 않는다.
 
 ### 매핑 원칙
 
-| Next.js route | 루트 `app/` 구조 | FSD `src/pages/` Slice |
+| Next.js route | 루트 `app/` 구조 | 아키텍처 `src/pages/` Slice |
 |---------------|-----------------|----------------------|
 | `/` | `app/page.tsx` | `pages/home.tsx` |
 | `/products` | `app/products/page.tsx` | `pages/products.tsx` |
@@ -151,7 +151,7 @@ Next.js의 중첩 라우팅 구조와 FSD pages 레이어의 Slice는 1:1로 대
 | `/settings/profile` | `app/settings/profile/page.tsx` | `pages/settings-profile.tsx` |
 
 - **루트 `app/`은 Next.js 라우팅 구조를 따른다** (중첩 폴더).
-- **`src/pages/`는 FSD 규칙을 따른다** (플랫한 Slice 구조). 각 Slice는 독립적이며, route의 폴더 중첩을 그대로 복제하지 않는다.
+- **`src/pages/`는 아키텍처 규칙을 따른다** (플랫한 Slice 구조). 각 Slice는 독립적이며, route의 폴더 중첩을 그대로 복제하지 않는다.
 - Slice 이름은 route의 의미를 나타내는 kebab-case: `products`, `product-detail`, `settings-profile`
 - 동일 도메인이라도 (`/products`와 `/products/[id]`) 각각 별도의 Slice로 관리한다. 같은 폴더에 넣지 않는다.
 
@@ -185,11 +185,11 @@ src/pages/
 │   └── example/
 │       └── index.tsx
 └── src/
-    ├── app/                    ← FSD app 레이어
+    ├── app/                    ← 아키텍처 app 레이어
     │   ├── custom-app.tsx
     │   ├── providers.tsx
     │   └── global.css
-    ├── pages/                  ← FSD pages 레이어
+    ├── pages/                  ← 아키텍처 pages 레이어
     │   ├── home.tsx
     │   └── product-detail/
     │       ├── product-info.tsx
@@ -213,7 +213,7 @@ export { ExamplePage as default } from '@pages/example';
 
 ### Custom App
 
-`_app.tsx`의 실제 구현은 FSD app 레이어에 둔다.
+`_app.tsx`의 실제 구현은 아키텍처 app 레이어에 둔다.
 
 ```typescript
 // src/app/custom-app.tsx
@@ -242,18 +242,18 @@ export { CustomApp as default } from '@app/custom-app';
 <!-- app/README.md -->
 이 폴더는 비어 있어야 합니다.
 Next.js가 src/app/을 App Router로 감지하여 빌드 에러를 일으키는 것을 방지하기 위해 존재합니다.
-FSD app 레이어는 src/app/에 위치합니다.
+아키텍처 app 레이어는 src/app/에 위치합니다.
 ```
 
 ---
 
 ## API Routes
 
-API route는 **하나의 BE 서버로 취급**한다. FSD 레이어(`src/`) 바깥의 서버 영역이다.
+API route는 **하나의 BE 서버로 취급**한다. 아키텍처 레이어(`src/`) 바깥의 서버 영역이다.
 
 ### 핵심 규칙
 
-- **API route는 자체 완결** — FSD 레이어(`src/`)를 import하지 않는다. 필요한 로직은 route 파일 안에서 처리한다.
+- **API route는 자체 완결** — 아키텍처 레이어(`src/`)를 import하지 않는다. 필요한 로직은 route 파일 안에서 처리한다.
 - **API route 접근은 `shared/api`를 통해서만** — page 등에서 직접 fetch하지 않는다. `shared/api`에 도메인으로 정의하고 endpoint를 통해 HTTP로 호출한다.
 - **기존 shared/api 3계층 구조 그대로 적용** — 도메인별 http-client의 baseURL만 다름 (`/api/...`).
 
@@ -295,7 +295,7 @@ shared/api/
 ### import 방향
 
 ```
-app/api/  →  src/  ❌  (API route는 FSD 레이어를 import하지 않음)
+app/api/  →  src/  ❌  (API route는 아키텍처 레이어를 import하지 않음)
 src/      →  app/api/  ❌  (직접 import 금지, HTTP 호출로만 접근)
 src/shared/api  →  fetch('/api/...')  ✅  (shared/api endpoint에서 HTTP 호출)
 ```
@@ -344,14 +344,14 @@ SKILL.md의 기본 체크리스트 대신 아래를 따른다:
 ### Default Export
 
 - SKILL.md 기본 규칙: Named Export 기본, Default Export는 프레임워크 요구 시만
-- **Next.js에서는 `page.tsx`, `layout.tsx`, `route.ts`, `_app.tsx` 등이 Default Export를 요구한다.** 이 파일들은 FSD page를 re-export하는 얇은 래퍼이므로 Default Export를 사용한다.
-- FSD 레이어 내부(`src/` 안)에서는 여전히 Named Export를 기본으로 한다.
+- **Next.js에서는 `page.tsx`, `layout.tsx`, `route.ts`, `_app.tsx` 등이 Default Export를 요구한다.** 이 파일들은 아키텍처 page를 re-export하는 얇은 래퍼이므로 Default Export를 사용한다.
+- 아키텍처 레이어 내부(`src/` 안)에서는 여전히 Named Export를 기본으로 한다.
 
 ---
 
 ## 주의사항
 
-- **루트 `app/`과 `src/app/`을 혼동하지 않는다.** 루트는 Next.js 라우팅, `src/app/`은 FSD 레이어.
+- **루트 `app/`과 `src/app/`을 혼동하지 않는다.** 루트는 Next.js 라우팅, `src/app/`은 아키텍처 레이어.
 - **루트 라우트 파일에 로직을 구현하지 않는다.** re-export만 수행한다.
-- FSD가 프론트엔드 아키텍처이므로, 복잡한 백엔드 로직은 별도 패키지(모노레포)로 분리를 권장한다.
+- 이 아키텍처는 프론트엔드 영역이므로, 복잡한 백엔드 로직은 별도 패키지(모노레포)로 분리를 권장한다.
 - `shared/api`의 3계층 패턴은 동일하게 적용한다. Next.js의 서버 컴포넌트에서도 `shared/api`를 통해 데이터를 가져온다.
