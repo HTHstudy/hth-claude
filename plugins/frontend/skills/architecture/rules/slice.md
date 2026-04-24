@@ -73,7 +73,7 @@ Slice 하나로 시작
 ## 3. 추출 규칙
 
 > Slice 기반 레이어(pages, widgets, features, entities)의 추출·이동 기준이다.
-> shared로의 이동은 성격이 달라 별도 규칙을 따른다 → [shared.md §4.2](../layers/shared.md)
+> shared로의 이동은 성격이 달라 별도 규칙을 따른다 → [shared.md §4](../layers/shared.md#4-shared로-이동하는-조건)
 
 ### 원칙
 - **가장 좁은 범위에서 시작**한다. 상위 레이어·공통 폴더에 미리 두지 않는다.
@@ -112,7 +112,7 @@ Slice 하나로 시작
 | 복합 UI 블록 (여러 하위 조합) | `widgets` |
 | 사용자 인터랙션 단위 (UI + 로직) | `features` |
 | 도메인 UI / 표시 로직 (label/color 매핑, 검증) | `entities` |
-| business-agnostic 유틸/훅/UI | `shared` → [shared.md §4.2](../layers/shared.md) |
+| business-agnostic 유틸/훅/UI | `shared` → [shared.md §4](../layers/shared.md#4-shared로-이동하는-조건) |
 
 레이어별 도입 시점 상세는 [optional-layers.md](../layers/optional-layers.md).
 

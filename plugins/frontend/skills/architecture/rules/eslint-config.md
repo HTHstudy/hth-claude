@@ -46,7 +46,7 @@ ESLint 버전을 감지한 후 **해당 템플릿만** 읽는다. 두 파일을 
 
 ## Next.js 프로젝트 추가 규칙
 
-Next.js 프로젝트에서는 API route ↔ FSD 레이어 간 import도 차단해야 한다. 위 템플릿의 레이어별 설정에 아래 override를 추가한다. 상세 배경은 [nextjs.md](../integrations/nextjs.md)의 "SKILL.md 규칙과의 차이" 섹션을 참조.
+Next.js 프로젝트에서는 API route ↔ FSD 레이어 간 import도 차단해야 한다. 위 템플릿의 레이어별 설정에 아래 override를 추가한다. 상세 배경은 [nextjs.md의 SKILL.md 규칙과의 차이 섹션](../integrations/nextjs.md#skillmd-규칙과의-차이)을 참조.
 
 ```js
 // API route 파일에서 FSD 레이어 import 차단

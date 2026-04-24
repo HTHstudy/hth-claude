@@ -324,14 +324,15 @@ SKILL.md의 기본 체크리스트 대신 아래를 따른다:
 - [ ] 루트 `app/` (App Router) 또는 루트 `pages/` (Pages Router) 생성 — re-export 전용
 - [ ] `src/app/` 생성 — providers.tsx, global.css
 - [ ] `src/pages/` 생성 — 기존 화면을 route별 Slice로 재배치
-- [ ] `src/shared/routes/paths.ts` 생성 — 경로 상수
+- [ ] `src/shared/routes/paths.ts` 생성 — 경로 상수 (라우트가 하나라도 정의되면 필수)
 - [ ] `src/shared/config/env.ts` 생성 — 환경변수 관리
+- [ ] 기존 assets → `src/shared/assets/`로 이동
 - [ ] App Router 사용 시: 루트에 빈 `pages/` 폴더 + README.md 생성
 - [ ] Pages Router 사용 시: 루트에 빈 `app/` 폴더 + README.md 생성
 
 **필수 설정:**
 - [ ] tsconfig path alias — 레이어별 alias만 허용(`@app/*`, `@pages/*`, `@shared/*` 등, `src/` 기준). 전체 소스를 잡는 포괄적 alias(`@/*` 등)는 사용하지 않는다. Next.js 기본 `@/*` alias가 있으면 제거한다.
-- [ ] ESLint `no-restricted-imports` — [eslint-config.md](../rules/eslint-config.md)의 기본 템플릿 + "Next.js 프로젝트 추가 규칙" 섹션의 API route 차단 설정을 함께 적용한다
+- [ ] ESLint `no-restricted-imports` — [eslint-config.md](../rules/eslint-config.md)의 기본 템플릿 + [Next.js 프로젝트 추가 규칙](../rules/eslint-config.md#nextjs-프로젝트-추가-규칙) 섹션의 API route 차단 설정을 함께 적용한다
 
 - [ ] `next.config.js` 설정
 

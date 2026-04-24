@@ -1,6 +1,6 @@
 ---
 name: architecture
-description: 프론트엔드 아키텍처 규칙. React, Next.js 프로젝트에서 페이지 추가, 컴포넌트 생성, API 연동, 라우팅, 폴더 구조 변경 등 프론트엔드 코드를 작성·리뷰·리팩토링할 때 자동 적용한다. 레이어 배치(app/pages/shared), import 방향, 네이밍, Slice 분해·추출을 강제한다.
+description: Use when React/Next.js 프로젝트에서 페이지 추가, 컴포넌트 생성, API 연동, 라우팅, 폴더 구조 변경 등 프론트엔드 코드를 작성·리뷰·리팩토링할 때. 레이어 배치(app/pages/shared), import 방향, 네이밍, Slice 분해·추출 판단이 필요한 상황.
 ---
 
 # Frontend Layered Architecture
@@ -88,7 +88,7 @@ Slice 분해·추출 등 공통 규칙 상세 → [slice.md](rules/slice.md).
 | `shared`    | 모든 상위 레이어               | 2개 이상 Slice에서 사용 (레이어 구분 없음) |
 
 - 상위 optional 레이어가 미도입이면 해당 항목은 무효. 예: `widgets` 미도입 상태에서 `features` 도입 조건은 "2개 이상 page에서 반복"으로 축소된다.
-- 레이어별 도입 시점 상세는 [optional-layers.md](layers/optional-layers.md), shared 이동 조건 상세는 [shared.md §4](layers/shared.md) 참조.
+- 레이어별 도입 시점 상세는 [optional-layers.md](layers/optional-layers.md), shared 이동 조건 상세는 [shared.md §4](layers/shared.md#4-shared로-이동하는-조건) 참조.
 
 ---
 
@@ -133,10 +133,10 @@ app → pages → (widgets → features → entities →) shared
 ## 6. 핵심 원칙
 
 - **pages 레이어가 중심이다.** 모든 구조는 page에서 시작하여 필요에 따라 확장한다.
-- **가장 좁은 범위에서 시작.** 공통이 생기면 가장 가까운 공통 범위로 먼저 추출. 바로 전역 레이어로 올리지 않는다. "나중에 쓸 것 같다"는 예측 추출 금지. 상세 조건은 [slice.md §3](rules/slice.md), shared 이동은 [shared.md §4](layers/shared.md).
+- **가장 좁은 범위에서 시작.** 공통이 생기면 가장 가까운 공통 범위로 먼저 추출. 바로 전역 레이어로 올리지 않는다. "나중에 쓸 것 같다"는 예측 추출 금지. 상세 조건은 [slice.md §3](rules/slice.md#3-추출-규칙), shared 이동은 [shared.md §4](layers/shared.md#4-shared로-이동하는-조건).
 - **섣불리 다른 레이어로 이동하지 않는다.** [계급 표(§3)](#3-레이어-계급과-도입이동-조건)의 도입/이동 조건을 만족하고 책임이 안정적이며 Slice 문맥과 무관함이 확인된 뒤에만 이동.
 - **page는 단순 엔트리가 아닌 화면 단위 모듈이다.** 전용 상태·훅·컴포넌트·도메인 로직을 직접 소유한다.
-- **shared 이동은 최종 단계다.** 사용하는 Slice에서 시작해서 이동 조건 충족 시 shared로. 단, page-first를 거치지 않고 shared에 바로 생성하는 예외 Segment가 있다 — 목록·상세는 [shared.md §5.2](layers/shared.md).
+- **shared 이동은 최종 단계다.** 사용하는 Slice에서 시작해서 이동 조건 충족 시 shared로. 단, page-first를 거치지 않고 shared에 바로 생성하는 예외 Segment가 있다 — 목록·상세는 [shared.md §5.2](layers/shared.md#52-예외--page-first의-예외-segment).
 - **`shared/ui`는 business-agnostic만.** 도메인 특화 UI(`ProductCard` 등)는 `pages` 또는 확장 레이어(`widgets`, `features`, `entities`)에 둔다.
 
 ---
@@ -163,7 +163,7 @@ app → pages → (widgets → features → entities →) shared
 **ESLint 아키텍처 규칙 감지:**
 ESLint 설정에 아키텍처 필수 규칙(`no-restricted-imports`, `import/no-default-export`, `@typescript-eslint/consistent-type-imports`)이 있는지 확인한다.
 - **규칙이 있으면**: 추가 행동 없이 진행한다.
-- **규칙이 없으면**: 사용자에게 "아키텍처 ESLint 규칙이 설정되어 있지 않습니다. [eslint-config.md](rules/eslint-config.md) 템플릿을 적용할까요?"라고 안내하고, 동의 시 eslint-config.md의 "기존 ESLint 설정이 있는 프로젝트" 병합 절차에 따라 기존 규칙을 유지하면서 아키텍처 규칙만 추가한다. 거부 시 규칙 없이 진행하되, 코드 리뷰 시 ESLint로 잡을 수 없는 위반은 수동으로 지적한다.
+- **규칙이 없으면**: 사용자에게 "아키텍처 ESLint 규칙이 설정되어 있지 않습니다. [eslint-config.md](rules/eslint-config.md) 템플릿을 적용할까요?"라고 안내하고, 동의 시 [eslint-config.md의 기존 ESLint 설정이 있는 프로젝트](rules/eslint-config.md#기존-eslint-설정이-있는-프로젝트) 병합 절차에 따라 기존 규칙을 유지하면서 아키텍처 규칙만 추가한다. 거부 시 규칙 없이 진행하되, 코드 리뷰 시 ESLint로 잡을 수 없는 위반은 수동으로 지적한다.
 
 **경로 상수 파일 감지:**
 `src/shared/routes/paths.ts`(경로 상수)가 존재하는지 확인한다.

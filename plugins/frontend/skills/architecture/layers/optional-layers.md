@@ -14,11 +14,11 @@
 ### 도입 조건
 다음 조건을 **모두** 만족할 때 도입한다:
 
-1. **2개 이상의 상위 Slice에서 실제 사용** — 레이어별 허용 상위는 [SKILL.md 레이어 계급 표](../SKILL.md) 참조. 상위 optional 레이어가 미도입이면 해당 항목은 조건에서 제외된다 (예: widgets 미도입 시 features 조건은 "2개 이상 page"로 축소).
+1. **2개 이상의 상위 Slice에서 실제 사용** — 레이어별 허용 상위는 [SKILL.md §3 레이어 계급](../SKILL.md#3-레이어-계급과-도입이동-조건) 참조. 상위 optional 레이어가 미도입이면 해당 항목은 조건에서 제외된다 (예: widgets 미도입 시 features 조건은 "2개 이상 page"로 축소).
 2. **책임 안정성** — 인터페이스가 최근 변경되었거나 변경 예정이면 이동하지 않는다.
 3. **문맥 독립성** — 특정 Slice 상태·context에 결합되지 않아야 한다.
 
-상세 추출 규칙은 [slice.md §3](../rules/slice.md). 원칙: 가장 가까운 공통 범위로 먼저 추출. 레이어별 고유 시점은 아래 각 섹션 참조.
+상세 추출 규칙은 [slice.md §3](../rules/slice.md#3-추출-규칙). 원칙: 가장 가까운 공통 범위로 먼저 추출. 레이어별 고유 시점은 아래 각 섹션 참조.
 
 ### Slice 구조
 공통 Slice 규칙(entrypoint, 네이밍, 분해, 추출)을 따른다 — [slice.md](../rules/slice.md).
@@ -27,7 +27,7 @@
 같은 레이어 sibling 간 cross-import 금지. 조합이 필요하면 사용하는 쪽(상위 레이어)에서 조합한다.
 
 ### import 깊이
-Widget은 Feature와 Entity를 모두 직접 import할 수 있다 (계층 규칙상 허용). 깊이 제한은 두지 않는다. 조합이 복잡해지면 Widget 내부에서 분해한다 — [slice.md](../rules/slice.md)의 분해 규칙을 따른다.
+Widget은 Feature와 Entity를 모두 직접 import할 수 있다 (계층 규칙상 허용). 깊이 제한은 두지 않는다. 조합이 복잡해지면 Widget 내부에서 분해한다 — [slice.md §2 분해 규칙](../rules/slice.md#2-분해-규칙)을 따른다.
 
 ---
 
