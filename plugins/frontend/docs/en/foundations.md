@@ -126,7 +126,7 @@ The hierarchy, Slices, and Segments combine into import rules.
 
 ---
 
-## Entrypoint and Path Alias
+## Boundaries and Access
 
 ### Entrypoint
 
@@ -167,6 +167,10 @@ export const PRODUCT_API = { getProductList, createProduct };
 export type { ProductItem } from './model';
 ```
 
+### Private folders
+
+When multiple extracted files appear inside a Slice, group them into **private folders** like `_ui/`, `_hooks/`, `_context/`, `_lib/`. The underscore marks "not accessed from outside the Slice." Private folders are not created upfront — they appear only after actual extraction produces files worth grouping.
+
 ### Path alias
 
 Imports between layers go through path aliases only. Relative paths (`../`) are allowed only inside the same layer.
@@ -177,10 +181,6 @@ Imports between layers go through path aliases only. Relative paths (`../`) are 
 ```
 
 A blanket alias that covers all source (`@/*`, etc.) is not used. A blanket alias makes the direction rule unverifiable by static analysis.
-
-### Private folders
-
-When multiple extracted files appear inside a Slice, group them into **private folders** like `_ui/`, `_hooks/`, `_context/`, `_lib/`. The underscore marks "not accessed from outside the Slice." Private folders are not created upfront — they appear only after actual extraction produces files worth grouping.
 
 ---
 
