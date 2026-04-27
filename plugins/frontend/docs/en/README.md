@@ -61,4 +61,4 @@ Read `foundations` and `principles` first; the rest can be read in any order.
 
 ## Applying to a Project
 
-The architecture's import direction, entrypoint, and naming constraints can be enforced automatically with ESLint rules (`no-restricted-imports`, `import/no-default-export`, `consistent-type-imports`, `import/no-cycle`, file-name kebab-case, etc.). Concrete config templates and auto-application tools are provided by the `hth-claude` plugin (the `architecture`, `create`, and `migrate` skills in the `frontend` plugin).
+This docs focuses on **architecture-specific rules** (layers, Slices, import direction, entrypoint, path alias, etc.). General TS/JS code conventions (kebab-case file names, Named Export, `type` imports, `index.tsx`/`index.ts` extensions, no-cycle, etc.) are a separate concern, applied and verified automatically by the `hth-claude` plugin's ESLint template (`no-restricted-imports`, `import/no-default-export`, `consistent-type-imports`, `import/no-cycle`, kebab-case enforcement, etc.) and its `architecture`, `create`, and `migrate` skills.

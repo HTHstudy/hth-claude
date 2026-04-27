@@ -61,4 +61,4 @@ app → pages → (widgets → features → entities →) shared
 
 ## 프로젝트 적용 시
 
-이 아키텍처는 ESLint 규칙(`no-restricted-imports`, `import/no-default-export`, `consistent-type-imports`, `import/no-cycle`, 파일명 kebab-case 강제 등)으로 import 방향·entrypoint·네이밍을 자동 차단할 수 있다. 구체 설정 템플릿과 자동 적용 도구는 `hth-claude` 플러그인(`frontend` 플러그인의 `architecture`·`create`·`migrate` 스킬)이 제공한다.
+이 docs는 **아키텍처 고유 규칙**(레이어·Slice·import 방향·entrypoint·path alias 등)에 집중한다. 일반 TS/JS 코드 컨벤션(파일명 kebab-case, Named Export, `type` import, `index.tsx`/`index.ts` 확장자, 순환 의존 금지 등)은 별도 영역이며, `hth-claude` 플러그인의 ESLint 템플릿(`no-restricted-imports`, `import/no-default-export`, `consistent-type-imports`, `import/no-cycle`, kebab-case 강제 등)과 `architecture`·`create`·`migrate` 스킬이 자동으로 적용·검증한다.

@@ -124,8 +124,6 @@ The hierarchy, Slices, and Segments combine into import rules.
 
 **No same-layer cross-import.** A Slice cannot import another Slice of the same layer. When sharing is needed, extract to a wider scope.
 
-**No cycles.** Cyclic dependencies are prohibited at any level — layer, Slice, Segment, or module.
-
 ---
 
 ## Entrypoint and Path Alias
@@ -136,8 +134,6 @@ The hierarchy, Slices, and Segments combine into import rules.
 
 - **Single-file Slice** — the file itself is the entrypoint (`pages/home.tsx`).
 - **Folder Slice** — the `index.*` inside the folder is the entrypoint (`pages/product-detail/index.tsx`).
-
-The choice between `index.tsx` and `index.ts` is determined by **whether JSX is present**. Use `.tsx` if JSX appears (whether you write JSX directly or re-export modules that contain JSX); use `.ts` if there is no JSX at all.
 
 Folder entrypoints fall into two shapes by purpose.
 
@@ -185,27 +181,6 @@ A blanket alias that covers all source (`@/*`, etc.) is not used. A blanket alia
 ### Private folders
 
 When multiple extracted files appear inside a Slice, group them into **private folders** like `_ui/`, `_hooks/`, `_context/`, `_lib/`. The underscore marks "not accessed from outside the Slice." Private folders are not created upfront — they appear only after actual extraction produces files worth grouping.
-
----
-
-## Naming
-
-| Item | Rule |
-|------|------|
-| File names | kebab-case (`page-header.tsx`, `use-page-filters.ts`) |
-| Component unit | File if no sub-dependencies; folder + `index.tsx` if there are |
-| Export | Named Export by default. Default Export only when a framework demands it |
-| Import | Types must use `type` import (`import type { Foo }`) |
-
-### Why These Rules
-
-**Why enforce kebab-case file names.** macOS's default filesystem is case-insensitive, but Linux is case-sensitive. PascalCase or camelCase file names can work fine in development and then fail `import` resolution in CI or production. Fixing on kebab-case eliminates that risk at the source. It also keeps file names readable under the same convention used for URLs.
-
-**Why Named Export by default.** IDE refactoring becomes safe. Rename and find-references operate reliably, avoiding the Default Export symptom where every call site invents its own name. When the same function is imported under different names across a project, rename refactors fail to propagate as expected. Imports also become explicit — the symbol being imported is visible at the import line, without opening the file.
-
-**Why `type` imports are required.** Type references are completely eliminated from the runtime bundle. Build tools can drop type-only imports deterministically regardless of value/type distinction, reducing bundle size and cutting the risk that a type-only path is treated like a runtime dependency and creates a cycle. For readers, "is this a type or a value?" is obvious at the import line.
-
-**Why cycles are forbidden.** Module initialization order becomes undecidable. When one side is referenced before it has been evaluated, you get `undefined` exports — a class of bug that reproduces inconsistently depending on build environment, import order, and lazy-evaluation. Tracing the dependency graph during testing and refactoring becomes costly as well. Cycles are forbidden at every level — layer, Slice, Segment, module.
 
 ---
 
