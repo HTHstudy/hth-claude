@@ -75,41 +75,11 @@ src/
 
 ### 4단계: 설정
 
-**경로 별칭** — `tsconfig.app.json`의 `compilerOptions`에 `paths`만 추가한다. `baseUrl`은 TypeScript 7.0에서 제거 예정이므로 사용하지 않는다. 기존 옵션은 수정하지 않는다:
-
-```json
-{
-  "compilerOptions": {
-    "paths": {
-      "@app/*": ["./src/app/*"],
-      "@pages/*": ["./src/pages/*"],
-      "@shared/*": ["./src/shared/*"],
-      "@widgets/*": ["./src/widgets/*"],
-      "@features/*": ["./src/features/*"],
-      "@entities/*": ["./src/entities/*"]
-    }
-  }
-}
-```
+**경로 별칭** — [project-config.md#tsconfig-paths](../../architecture/rules/project-config.md#tsconfig-paths)를 따라 `tsconfig.app.json`에 `paths`를 추가한다.
 
 **ESLint** — [eslint-config.md](../../architecture/rules/eslint-config.md)를 읽고, 스캐폴딩이 생성한 기존 ESLint 설정에 아키텍처 규칙을 **병합**한다. 병합 절차는 eslint-config.md의 "기존 ESLint 설정이 있는 프로젝트" 섹션을 따른다.
 
-**Prettier** — `.prettierrc` 생성:
-
-```json
-{
-  "singleQuote": true,
-  "trailingComma": "all",
-  "tabWidth": 2,
-  "semi": true,
-  "printWidth": 120,
-  "useTabs": false,
-  "arrowParens": "always",
-  "endOfLine": "lf"
-}
-```
-
-ESLint 설정에 `eslint-config-prettier`를 추가하여 충돌을 방지한다.
+**Prettier** — [project-config.md#prettier](../../architecture/rules/project-config.md#prettier)를 따라 `.prettierrc`를 생성하고 `eslint-config-prettier`를 ESLint 설정에 연동한다. 신규 프로젝트이므로 항상 생성한다.
 
 **환경변수** — `.env` 생성:
 
@@ -118,13 +88,9 @@ ESLint 설정에 `eslint-config-prettier`를 추가하여 충돌을 방지한다
 # VITE_API_URL=http://localhost:5174/api
 ```
 
-**`shared/config/env.ts`** — 환경변수 접근을 중앙화:
+**`shared/config/env.ts`** — [project-config.md#envts](../../architecture/rules/project-config.md#envts)의 Vite 템플릿을 따라 환경변수 중앙화 모듈을 생성한다.
 
-```ts
-export const ENV = {
-  API_URL: import.meta.env.VITE_API_URL as string,
-} as const;
-```
+**`shared/routes/paths.ts`** — [project-config.md#pathsts](../../architecture/rules/project-config.md#pathsts)를 따라 라우트 경로 모듈을 생성한다. 신규 프로젝트이므로 빈 `PATHS` 객체로 scaffold한다.
 
 ### 5단계: 검증
 

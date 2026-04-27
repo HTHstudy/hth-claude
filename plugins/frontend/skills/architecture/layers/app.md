@@ -34,7 +34,7 @@ app/                      app/                       app/
 
 ## 라우팅 규칙
 
-- 경로 상수는 `shared/routes`에 정의 (라우트가 하나라도 정의되면 필수). app은 가져와서 page 컴포넌트와 연결.
+- 경로 상수는 `shared/routes`에 정의 (라우트가 하나라도 정의되면 필수). 모듈 형태는 [project-config.md#pathsts](../rules/project-config.md#pathsts) 참조. app은 가져와서 page 컴포넌트와 연결.
 - **route guard/redirect는 app에.** 예: 비로그인 시 `/login`으로 리디렉트, 권한 부족 시 `/403` 라우트 렌더링.
 - **page 내부 조건부 렌더링은 page가 처리.** 예: 로그인 유저의 역할에 따라 메뉴 항목 다르게 표시, 상태에 따른 UI 분기.
 

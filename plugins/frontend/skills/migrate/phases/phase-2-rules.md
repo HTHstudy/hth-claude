@@ -4,7 +4,7 @@
 
 > **timing.log 기록:** 각 단계(4~5) 시작 시 `echo "step_N: $(date +%s)" >> .architecture-migration/timing.log` 실행. tsc/eslint 실패 시 `echo "phase_2_[tsc|eslint]_fail" >>`, 빌드 시 `echo "phase_2_build" >>`.
 
-### 4단계: ESLint 규칙 설정
+### 4단계: ESLint 규칙 + Prettier 설정
 
 [eslint-config.md](../../architecture/rules/eslint-config.md)를 읽고 프로젝트에 적용한다:
 
@@ -13,7 +13,8 @@
 2. **해당 버전의 템플릿 파일만 읽기** — [eslint-flat-config.md](../../architecture/rules/eslint-flat-config.md) 또는 [eslint-legacy-config.md](../../architecture/rules/eslint-legacy-config.md) 중 하나만 로드
 3. **Next.js 프로젝트:** eslint-config.md의 "Next.js 프로젝트 추가 규칙" 섹션도 적용
 4. **기존 설정 병합:** eslint-config.md의 병합 절차를 따른다
-5. **검증:** `yarn lint` (또는 프로젝트의 lint 명령)을 실행
+5. **Prettier 정착:** [project-config.md#prettier](../../architecture/rules/project-config.md#prettier)를 따른다. 기존 Prettier 설정이 감지되면 `.prettierrc` 생성은 건너뛰고, `eslint-config-prettier` 연동만 수행한다 (미설치면 설치)
+6. **검증:** `yarn lint` (또는 프로젝트의 lint 명령)을 실행
 
 ### 5단계: Named Export 전환 + import type 전환
 

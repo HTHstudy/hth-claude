@@ -12,9 +12,12 @@
 
 migration-plan.md의 Phase 1 섹션에 명시된 구조를 생성하고, mapping.tsv에 따라 파일을 이동한다.
 
-#### 경로 상수 파일 생성
+#### 공유 모듈 초기 생성
 
-기본 구조 생성 시 `src/shared/routes/paths.ts`를 함께 생성한다. 기존 프로젝트에 라우트 경로 문자열이 하드코딩되어 있으면 상수로 추출하고, 없으면 빈 상수 객체로 scaffold한다.
+기본 구조 생성 시 다음 두 파일을 함께 생성한다:
+
+- `src/shared/routes/paths.ts` — 라우트 경로 상수. [project-config.md#pathsts](../../architecture/rules/project-config.md#pathsts)를 따른다. 기존 프로젝트에 라우트 경로 문자열이 하드코딩되어 있으면 상수로 추출하고, 없으면 빈 객체로 scaffold한다.
+- `src/shared/config/env.ts` — 환경변수 중앙화 모듈. [project-config.md#envts](../../architecture/rules/project-config.md#envts)의 Vite/Next.js 템플릿을 따른다. 프로젝트가 사용하는 환경변수 키가 있으면 `ENV` 객체에 정의하고, 없으면 빈 객체로 scaffold한다. 기존 코드의 `import.meta.env`/`process.env` 직접 참조를 ENV로 일괄 리팩토링하지는 않는다 — 본 Phase는 모듈 생성까지만.
 
 #### 일괄 처리 전략
 
@@ -112,7 +115,7 @@ mapping.tsv 기반으로 import 경로를 일괄 치환한다.
 
 #### tsconfig paths 설정
 
-migration-plan.md의 path alias 목록에 따라 `tsconfig.json`에 경로 별칭을 설정한다.
+migration-plan.md의 path alias 목록에 따라 경로 별칭을 설정한다. 적용 규칙(대상 파일, baseUrl 미사용, 기존 옵션 보존)은 [project-config.md#tsconfig-paths](../../architecture/rules/project-config.md#tsconfig-paths)를 따른다.
 
 ### 사전 점검 (빌드 전)
 

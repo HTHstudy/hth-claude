@@ -95,8 +95,8 @@ business-agnostic 코드라도 처음에는 사용하는 Slice에 둔다. 다른
 | `ui/`               | 공통 UI 컴포넌트. 비즈니스 로직은 포함하지 않는다. 브랜드 테마 적용 가능. 로고, 레이아웃, 자동완성/검색창 등 UI 자체 로직을 포함하는 컴포넌트는 허용                                   |
 | `lib/`              | 응집도 높은 내부 라이브러리. 날짜, 색상, 텍스트 등 **하나의 주제에 집중**한다. 단순 utils/helpers 모음이 아니다                                                                        |
 | `hooks/`            | 범용 커스텀 훅. 특정 Slice 상태에 결합하지 않는 인프라 수준 훅만 둔다                                                                                                                  |
-| `config/`           | 환경변수, 전역 Feature Flag **값 정의**. 이 값을 사용한 초기화/Provider 구성은 `app`이 담당한다                                                                                        |
-| `routes/`           | 라우트 경로 상수/패턴 **정의**. 이 상수를 사용한 라우터 설정과 route-page 연결은 `app`이 담당한다                                                                                      |
+| `config/`           | 환경변수, 전역 Feature Flag **값 정의**. 이 값을 사용한 초기화/Provider 구성은 `app`이 담당한다. 환경변수 모듈 형태는 [project-config.md#envts](../rules/project-config.md#envts) 참조 |
+| `routes/`           | 라우트 경로 상수/패턴 **정의**. 이 상수를 사용한 라우터 설정과 route-page 연결은 `app`이 담당한다. 모듈 형태는 [project-config.md#pathsts](../rules/project-config.md#pathsts) 참조      |
 | `i18n/`             | 번역 설정, 전역 문자열                                                                                                                                                                 |
 | `assets/`           | 정적 리소스 (이미지, 폰트 등)                                                                                                                                                          |
 | `query-factory/`    | TanStack Query 기반 query factory. queryKey와 queryOptions를 도메인별로 중앙 관리한다. [상세 규칙](shared-query-factory.md)                                                             |
