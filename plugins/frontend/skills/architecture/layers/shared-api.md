@@ -178,7 +178,7 @@ export type ProductItem = {
 
 `base/errors.ts`의 `HttpError`는 외부에서 직접 import하지 않는다. 필요하면 도메인에서 extend하여 노출한다.
 
-구현 템플릿 → [http-client.md §5.6 도메인 에러 확장](../rules/http-client.md#56-도메인-에러-확장)
+구현 템플릿 → [http-client.md §5.5 도메인 에러 확장](../rules/http-client.md#55-도메인-에러-확장)
 
 ### 4.5 endpoints/*.ts — Transport 레이어
 
