@@ -76,13 +76,13 @@ Next.js 프로젝트에서는 API route ↔ 아키텍처 레이어 간 import도
 
 ### 병합 절차
 
-1. **기존 설정 확인**: ESLint 설정 파일(`eslint.config.*` 또는 `.eslintrc.*`)을 읽고, 기존 rules/extends/plugins/overrides를 파악한다. **이미 아키텍처 marker(`no-restricted-imports`에 `@app`/`@pages`/`@shared` 패턴이 포함됨)가 있으면 작업 종료** — 이미 적용된 프로젝트로 간주한다.
+1. **기존 설정 확인**: ESLint 설정 파일(`eslint.config.*` 또는 `.eslintrc.*`)을 읽고, 기존 rules/extends/plugins/overrides를 파악한다.
 2. **아키텍처 규칙만 추가**: 아래 3가지를 기존 설정에 병합한다. 기존 rules/extends/plugins는 그대로 유지한다.
    - `no-restricted-imports` — 레이어별 override (Flat Config: 별도 config 객체 추가, Legacy: overrides 배열에 추가)
    - `import/no-default-export` + default export 예외 파일 override
    - `@typescript-eslint/consistent-type-imports`
 3. **충돌 처리**:
-   - 기존 `no-restricted-imports`가 있으면 기존 patterns에 아키텍처 patterns를 **합친다** (replace 아님)
+   - 기존 `no-restricted-imports`가 있으면 기존 patterns에 아키텍처 patterns를 **합친다** (replace 아님). **이미 동일한 pattern이 있으면 다시 추가하지 않는다 (dedup).**
    - `import/no-default-export`와 `consistent-type-imports`는 아키텍처 필수 규칙이다. 기존 설정이 `off`나 `warn`이면 `error`로 **덮어쓴다**
    - 기존 extends(`airbnb`, `next/core-web-vitals` 등)나 아키텍처와 무관한 플러그인/규칙은 그대로 유지한다. 단, 아키텍처 규칙이 extends보다 **뒤에** 위치하도록 배치하여 우선순위를 보장한다
 4. **검증**: `yarn lint` (또는 프로젝트의 lint 명령)으로 기존 규칙과 아키텍처 규칙이 모두 동작하는지 확인한다.
