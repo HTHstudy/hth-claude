@@ -76,7 +76,7 @@ Next.js 프로젝트에서는 API route ↔ 아키텍처 레이어 간 import도
 
 ### 병합 절차
 
-1. **기존 설정 확인**: ESLint 설정 파일(`eslint.config.*` 또는 `.eslintrc.*`)을 읽고, 기존 rules/extends/plugins/overrides를 파악한다.
+1. **기존 설정 확인**: ESLint 설정 파일(`eslint.config.*` 또는 `.eslintrc.*`)을 읽고, 기존 rules/extends/plugins/overrides를 파악한다. **이미 아키텍처 marker(`no-restricted-imports`에 `@app`/`@pages`/`@shared` 패턴이 포함됨)가 있으면 작업 종료** — 이미 적용된 프로젝트로 간주한다.
 2. **아키텍처 규칙만 추가**: 아래 3가지를 기존 설정에 병합한다. 기존 rules/extends/plugins는 그대로 유지한다.
    - `no-restricted-imports` — 레이어별 override (Flat Config: 별도 config 객체 추가, Legacy: overrides 배열에 추가)
    - `import/no-default-export` + default export 예외 파일 override

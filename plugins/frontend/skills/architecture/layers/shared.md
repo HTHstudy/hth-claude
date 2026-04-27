@@ -285,6 +285,7 @@ shared는 비즈니스 slice 경계가 없을 뿐, **책임 경계까지 없는 
 - 도메인 특화 UI를 `shared/ui/`에 두지 않는다. `pages` 또는 확장 레이어에 둔다.
 - 도메인 엔티티 타입을 props로 받는 컴포넌트를 `shared/ui/`에 두지 않는다.
 - `shared/ui/`에서 `shared/api/`를 import하지 않는다.
+- `shared/ui/`에서 `shared/routes/`를 import하지 않는다. 경로가 필요한 컴포넌트(예: 링크 버튼)는 path를 props로 받는다.
 - shared 내부에서 다른 레이어의 모듈을 import하지 않는다.
 - `lib/`에 잡다한 유틸리티를 주제 구분 없이 모아두지 않는다.
 - `components`, `types`처럼 모호한 Segment 이름을 사용하지 않는다.

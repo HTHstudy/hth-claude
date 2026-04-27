@@ -71,7 +71,7 @@ product-detail/
 
 ## 3. 추출 규칙
 
-> Slice 기반 레이어(pages, widgets, features, entities)의 추출·이동 기준이다.
+> Slice 기반 레이어(pages, widgets, features, entities)의 추출·이동 기준이다.  
 > shared로의 이동은 성격이 달라 별도 규칙을 따른다 → [shared.md §4](../layers/shared.md#4-shared로-이동하는-조건)
 
 ### 원칙

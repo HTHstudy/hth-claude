@@ -324,7 +324,7 @@ SKILL.md의 기본 체크리스트 대신 아래를 따른다:
 - [ ] 루트 `app/` (App Router) 또는 루트 `pages/` (Pages Router) 생성 — re-export 전용
 - [ ] `src/app/` 생성 — providers.tsx, global.css
 - [ ] `src/pages/` 생성 — 기존 화면을 route별 Slice로 재배치
-- [ ] `src/shared/routes/paths.ts` 생성 — 경로 상수 (라우트가 하나라도 정의되면 필수)
+- [ ] `src/shared/routes/` 생성 — 경로 상수 (라우트가 하나라도 정의되면 필수). 내부 파일 구조는 자유 — 단일 `paths.ts`, 도메인별 분리(`paths/auth.ts`, `paths/admin.ts` 등) 모두 허용
 - [ ] `src/shared/config/env.ts` 생성 — 환경변수 관리
 - [ ] 기존 assets → `src/shared/assets/`로 이동
 - [ ] App Router 사용 시: 루트에 빈 `pages/` 폴더 + README.md 생성

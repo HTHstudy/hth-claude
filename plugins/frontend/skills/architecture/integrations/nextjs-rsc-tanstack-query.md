@@ -1,7 +1,7 @@
 # RSC + TanStack Query 패턴
 
-> Next.js App Router에서 Server Components와 TanStack Query를 함께 사용할 때의 규칙이다.
-> **요구 버전:** Next.js 13+, TanStack Query v5+ (`environmentManager.isServer()` API 사용), React 18+
+> **App Router 전용.** Next.js App Router에서 Server Components와 TanStack Query를 함께 사용할 때의 규칙이다. Pages Router는 표준 SSR 패턴(`getStaticProps` / `getServerSideProps` + `dehydrate` + `HydrationBoundary`)을 그대로 사용하면 되므로 별도 가이드가 필요 없다.  
+> **요구 버전:** Next.js 13+ App Router, TanStack Query v5+ (`environmentManager.isServer()` API 사용), React 18+
 
 ---
 
@@ -88,7 +88,7 @@ export function ProductListWrapper() {
 
 ```typescript
 // app/products/page.tsx — re-export 유지
-export { ProductsPage as default } from '@pages/products';
+export { ProductsPage as default } from "@pages/products";
 ```
 
 ---
