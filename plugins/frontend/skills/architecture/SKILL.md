@@ -121,12 +121,15 @@ app → pages → (widgets → features → entities →) shared
 | 컴포넌트     | 하위 종속 없으면 파일, 있으면 폴더 + `index.tsx`         | `button.tsx` vs `modal/index.tsx`                                                  |
 | export       | Named Export 기본. Default Export는 프레임워크 요구 시만 | `export function Button()`                                                         |
 | import       | 타입은 반드시 `type` import                              | `import type { Foo }`                                                              |
-| `index.tsx`  | 종속 컴포넌트를 조합하는 실제 구현 파일 (단순 래퍼 아님) | —                                                                                  |
-| `index.ts`   | export 정리용 entrypoint                                 | —                                                                                  |
+| `index.tsx` / `index.ts` | **JSX 포함 여부**로 확장자 결정. JSX가 포함되면(직접 작성하든 re-export 대상에 포함되든) `.tsx`, 없으면 `.ts` | JSX 조합 구현 → `.tsx` / API barrel, query-factory 재노출 등 → `.ts` |
 | private 폴더 | `_` prefix. 처음부터 만들지 않고 필요 시만               | `_ui/`, `_hooks/`                                                                  |
 | path alias   | 레이어별 alias만 허용                                    | `@app/*`, `@pages/*`, `@shared/*`, `@widgets/*`, `@features/*`, `@entities/*`      |
 
-**entrypoint 규칙:** Slice 외부에서는 반드시 entrypoint(`index.ts` 또는 `index.tsx`)만 통해 접근한다. Slice 내부 파일 직접 import 금지.
+**entrypoint 규칙:** entrypoint는 "Slice 외부 접근의 공개 지점" 개념이다. 실제 형태는 다음과 같다.
+- **단일 파일 Slice** — 그 파일 자체가 entrypoint (예: `pages/home.tsx`)
+- **폴더 Slice** — 폴더 안의 `index.tsx`(JSX 포함) 또는 `index.ts`(barrel, JSX 없음)
+
+Slice 외부에서는 반드시 entrypoint를 통해서만 접근한다. Slice 내부 파일 직접 import 금지.
 
 ---
 
@@ -160,19 +163,11 @@ app → pages → (widgets → features → entities →) shared
 
 ### 스킬 로드 시 감지 (1회)
 
-**ESLint 아키텍처 규칙 감지:**
-ESLint 설정에 아키텍처 필수 규칙(`no-restricted-imports`, `import/no-default-export`, `@typescript-eslint/consistent-type-imports`)이 있는지 확인한다.
-- **규칙이 있으면**: 추가 행동 없이 진행한다.
-- **규칙이 없으면**: 사용자에게 "아키텍처 ESLint 규칙이 설정되어 있지 않습니다. [eslint-config.md](rules/eslint-config.md) 템플릿을 적용할까요?"라고 안내하고, 동의 시 [eslint-config.md의 기존 ESLint 설정이 있는 프로젝트](rules/eslint-config.md#기존-eslint-설정이-있는-프로젝트) 병합 절차에 따라 기존 규칙을 유지하면서 아키텍처 규칙만 추가한다. 거부 시 규칙 없이 진행하되, 코드 리뷰 시 ESLint로 잡을 수 없는 위반은 수동으로 지적한다.
-
-**경로 상수 파일 감지:**
-`src/shared/routes/paths.ts`(경로 상수)가 존재하는지 확인한다.
-- **파일이 있으면**: 추가 행동 없이 진행한다.
-- **파일이 없으면**: 사용자에게 "`shared/routes/paths.ts`가 누락되어 있습니다. 생성할까요?"라고 안내한다. 동의 시 프로젝트의 기존 라우트를 분석하여 경로 상수 파일을 scaffold한다. 거부 시 진행하되, 라우트 관련 코드 작성 시 누락을 지적한다.
-
-**Next.js 프로젝트 감지:**
-Next.js 프로젝트(`package.json`에 `next` 의존성 존재)를 감지하면 [nextjs.md](integrations/nextjs.md)를 **반드시 읽고** 해당 규칙을 적용한다. 이 단계를 건너뛰지 않는다.
-추가로 App Router + TanStack Query를 함께 사용하는 프로젝트를 감지하면 [nextjs-rsc-tanstack-query.md](integrations/nextjs-rsc-tanstack-query.md)도 **반드시 읽고** 적용한다.
+| 감지 대상 | 조건 | 동의 시 조치 | 거부 시 조치 |
+|---|---|---|---|
+| ESLint 아키텍처 규칙 | 필수 규칙(`no-restricted-imports`, `import/no-default-export`, `@typescript-eslint/consistent-type-imports`) 누락 시 사용자에게 적용 여부 확인 | [eslint-config.md](rules/eslint-config.md) [병합 절차](rules/eslint-config.md#기존-eslint-설정이-있는-프로젝트)로 기존 규칙 유지하며 아키텍처 규칙 추가 | 규칙 없이 진행. 코드 리뷰 시 ESLint로 잡을 수 없는 위반은 수동 지적 |
+| 경로 상수 파일 | `src/shared/routes/paths.ts` 부재 시 생성 여부 확인 | 기존 라우트 분석해 경로 상수 파일 scaffold | 진행하되 라우트 관련 코드 작성 시 누락 지적 |
+| Next.js 프로젝트 | `package.json`에 `next` 의존성 존재 | [nextjs.md](integrations/nextjs.md)를 **반드시** 읽고 적용. App Router + TanStack Query 조합이면 [nextjs-rsc-tanstack-query.md](integrations/nextjs-rsc-tanstack-query.md)도 반드시 읽고 적용 | — (Next.js 감지 시 강제, 건너뛰지 않음) |
 
 ### 코드 작성 시
 
@@ -185,12 +180,14 @@ Next.js 프로젝트(`package.json`에 `next` 의존성 존재)를 감지하면 
 
 ### 코드 리뷰 시
 
-ESLint로 이미 자동 차단되는 규칙은 Agent가 별도로 탐지할 필요 없다. 아래 **수동 리뷰 전용** 항목에 집중한다:
+ESLint로 이미 자동 차단되는 규칙은 Agent가 별도로 탐지할 필요 없다. 아래 **수동 리뷰 전용** 항목에 집중한다.
 
-- **레이어 배치 (의미)** — 도메인 특화 코드가 `shared`에 있거나, page 전용 코드가 전역 레이어로 올라간 경우 (ESLint는 파일 위치는 모르며 의미적 판단이 필요)
-- **섣부른 추출** — 1개 Slice만 사용하는 코드가 공통 레이어에 있거나, Slice 문맥에 결합된 코드가 전역화된 경우
-- **page 빈 조립** — page가 로직 없이 import만 나열하는 경우
-- **private 폴더 선제 생성** — 실제 추출 없이 `_ui/`, `_hooks/`를 미리 만든 경우
+| 위반 유형 | 감지 포인트 |
+|---|---|
+| 레이어 배치 (의미) | 도메인 특화 코드가 `shared`에 있거나 page 전용 코드가 전역 레이어로 올라감. ESLint는 파일 위치만 보므로 의미적 판단은 수동 필요 |
+| 섣부른 추출 | 1개 Slice만 사용하는 코드가 공통 레이어에 있거나, Slice 문맥에 결합된 코드가 전역화됨 |
+| page 빈 조립 | page가 로직 없이 import만 나열 |
+| private 폴더 선제 생성 | 실제 추출 없이 `_ui/`, `_hooks/`를 미리 생성 |
 
 참고 — 아래는 [eslint-config.md](rules/eslint-config.md)가 자동 차단하므로 Agent 수동 탐지 불필요:
 - import 방향 (`no-restricted-imports`)

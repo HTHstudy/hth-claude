@@ -132,12 +132,16 @@ The hierarchy, Slices, and Segments combine into import rules.
 
 ### Entrypoint
 
-**Code outside a Slice does not directly import the Slice's internal files.** Access goes through the Slice's entrypoint.
+**Code outside a Slice does not directly import the Slice's internal files.** Access goes through the Slice's entrypoint. "Entrypoint" is not a specific file name — it is the **concept of "the single public access point"**, realized in different shapes depending on the Slice's form.
 
-- A single-file Slice is its own entrypoint (`pages/home.tsx`).
-- A folder Slice uses `index.tsx` (if it contains UI) or `index.ts` (types/functions only) as its entrypoint (`pages/product-detail/index.tsx`).
+- **Single-file Slice** — the file itself is the entrypoint (`pages/home.tsx`).
+- **Folder Slice** — the `index.*` inside the folder is the entrypoint (`pages/product-detail/index.tsx`).
 
-`index.tsx` is the **actual implementation file that composes sub-components**. It is not a thin wrapper that only re-exports.
+The choice between `index.tsx` and `index.ts` is determined by **whether JSX is present**. Use `.tsx` if JSX appears (whether you write JSX directly or re-export modules that contain JSX); use `.ts` if there is no JSX at all.
+
+Folder entrypoints fall into two shapes by purpose.
+
+**Composition form (`index.tsx`)** — composes sub-components into a complete screen unit. Not used as a thin re-export wrapper.
 
 ```tsx
 // ❌ product-detail/index.tsx — thin re-export wrapper
@@ -156,7 +160,16 @@ export function ProductDetailPage() {
 }
 ```
 
-`index.ts` serves as an export-organizing entrypoint for Slices that contain only types or functions.
+**Barrel form (`index.ts`)** — exposes modules that contain no JSX (API objects, types, factory functions, etc.) in an organized way. The canonical example is `shared/api/[domain]/index.ts` — endpoint functions are grouped into a `[DOMAIN]_API` object and needed types are re-exported.
+
+```ts
+// ✓ shared/api/product/index.ts — barrel
+import { getProductList } from './endpoints/get-product-list';
+import { createProduct } from './endpoints/create-product';
+
+export const PRODUCT_API = { getProductList, createProduct };
+export type { ProductItem } from './model';
+```
 
 ### Path alias
 
