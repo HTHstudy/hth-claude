@@ -51,7 +51,7 @@ curl -fsSL https://claude.ai/install.sh | bash
 
 ### 1. frontend (프론트엔드 아키텍처)
 
-레이어드 아키텍처 규칙을 자동 적용하고, 표준 프로젝트를 초기 세팅합니다. React(Vite)와 Next.js(App Router / Pages Router) 모두 지원합니다.
+레이어드 아키텍처 규칙을 자동 적용하고, 표준 프로젝트를 초기 세팅합니다. React(Vite)와 Next.js를 지원합니다.
 
 - **Skills**:
   - `architecture` — 프론트엔드 코드 작성·리뷰·리팩토링 시 레이어 아키텍처 규칙 자동 적용 (Next.js 감지 시 추가 규칙 자동 로드)

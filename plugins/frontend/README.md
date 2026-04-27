@@ -1,6 +1,6 @@
 # Frontend Plugin
 
-> 프론트엔드 코드 작성 시 일관된 레이어드 아키텍처를 자동 적용하는 Claude Code 플러그인. React(Vite)와 Next.js(App Router / Pages Router)를 지원합니다.
+> 프론트엔드 코드 작성 시 일관된 레이어드 아키텍처를 자동 적용하는 Claude Code 플러그인. React(Vite)와 Next.js를 지원합니다.
 
 ## 설치
 
@@ -25,7 +25,7 @@
 
 | 스킬 | 유형 | 설명 |
 |------|------|------|
-| `architecture` | 자동 적용 | 프론트엔드 코드 작성·리뷰·리팩토링 시 레이어 아키텍처 규칙을 자동 적용. Next.js 프로젝트 감지 시 추가 규칙 자동 로드 |
+| `architecture` | 자동 적용 | 프론트엔드 코드 작성·리뷰·리팩토링 시 레이어 아키텍처 규칙을 자동 적용. Next.js 감지 시 추가 규칙, App Router + TanStack Query 조합 감지 시 RSC 가이드까지 자동 로드 |
 | `create` | 사용자 호출 | 레이어드 아키텍처 기반 새 프로젝트 생성 |
 | `migrate` | 사용자 호출 | 기존 프로젝트를 레이어드 아키텍처로 단계별 전환 |
 
@@ -35,7 +35,7 @@
 - import 방향 규칙 (역방향 금지)
 - Slice 분해·추출 원칙
 - 네이밍 컨벤션 (kebab-case, Named Export)
-- ESLint 엔트리포인트 강제
+- ESLint 아키텍처 규칙 항상 강제 적용 (설정 부재 시 신규 생성, 존재 시 병합)
 - Next.js 프로젝트 감지 시 라우팅 폴더/아키텍처 레이어 분리 규칙 자동 적용
 
 ### 사용자 호출 스킬
