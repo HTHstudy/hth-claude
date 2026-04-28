@@ -109,7 +109,7 @@ app → pages → (widgets → features → entities →) shared
 
 기타 제약:
 - **다른 레이어 접근 시 반드시 path alias를 사용한다.** 상대경로(`../`)는 같은 레이어 내부에서만 허용.
-- 순환 의존 금지는 일반 컨벤션 — [conventions.md §6](rules/conventions.md) 참조.
+- 순환 의존 금지는 일반 컨벤션 — [conventions.md §6](rules/conventions.md#6-순환-의존-금지) 참조.
 
 ---
 
