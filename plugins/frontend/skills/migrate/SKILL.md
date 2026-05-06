@@ -22,7 +22,7 @@ allowed-tools: Bash(npx tsc *) Bash(npx eslint *) Bash(echo *>> .architecture-mi
 | Phase 0 | `frontend:architecture` SKILL.md 전체 + Next.js면 [nextjs.md](../architecture/integrations/nextjs.md) |
 | Phase 1 | [project-config.md](../architecture/rules/project-config.md) (`#tsconfig-paths`, `#envts` 섹션). 그 외는 Phase 0의 migration-plan.md + mapping.tsv를 따른다. |
 | Phase 2 | [eslint-config.md](../architecture/rules/eslint-config.md), [project-config.md](../architecture/rules/project-config.md) (`#prettier` 섹션) |
-| Phase 3 | [shared-api.md](../architecture/layers/shared-api.md)만 |
+| Phase 3 | [shared-api.md](../architecture/layers/shared-api.md) + [http-client.md](../architecture/rules/http-client.md) |
 | Phase 4 | [shared-query-factory.md](../architecture/layers/shared-query-factory.md), [shared-mutation-factory.md](../architecture/layers/shared-mutation-factory.md) |
 | Phase 5 | `frontend:architecture` SKILL.md 전체 (Phase 0과 동일) |
 

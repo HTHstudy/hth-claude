@@ -8,7 +8,7 @@
 
 ### 6단계: 기존 API 코드 분석
 
-**migration-plan.md와 [shared-api.md](../../architecture/layers/shared-api.md)를 병렬로 동시에 읽는다.**
+**migration-plan.md와 [shared-api.md](../../architecture/layers/shared-api.md), [http-client.md](../../architecture/rules/http-client.md)를 병렬로 동시에 읽는다.**
 
 현재 API 관련 코드를 파악한다:
 - API 호출 함수 위치와 패턴
@@ -18,16 +18,27 @@
 
 분석 결과를 사용자에게 보고하고, 도메인 분류 계획을 **확인받은 후** 진행한다.
 
-### 7단계: base 인프라 + 도메인 구조 생성
+### 7단계: base 인프라 → 도메인 구조 생성
 
-[shared-api.md](../../architecture/layers/shared-api.md)의 구조와 [http-client.md](../../architecture/rules/http-client.md)의 BaseHttpClient 템플릿을 따라 생성한다.
+base는 모든 도메인이 import하므로 **base를 먼저 완성한 후 도메인 작업을 시작한다.** base 미완성 상태에서 도메인 sub-agent를 시작하면 sub-agent가 BaseHttpClient를 자체 생성하거나 시그니처를 추측해버릴 위험이 있다.
 
-**병렬화:** base/ 생성과 각 도메인 구조 생성은 독립적이므로 **도메인별 Agent + base Agent를 동시에** 생성할 수 있다:
+#### 7-1단계: base 인프라 (orchestrator가 직접 작업)
 
-- **Agent 1 (base):** `shared/api/base/` 생성 — http-client.md의 BaseHttpClient 템플릿 + errors.ts + types.ts. 기존 HTTP 클라이언트 설정(인터셉터, 인증 등)이 있으면 중간 클래스로 분리
-- **Agent 2+ (도메인):** 각 도메인의 3계층 구조 생성 — shared-api.md 규칙에 따라 index.ts, http-client.ts, endpoints/ 구성
+[http-client.md](../../architecture/rules/http-client.md)의 §2 BaseHttpClient, §3 errors.ts, §4 types.ts 템플릿을 출발점으로 `shared/api/base/`를 생성한다.
 
-각 Agent에게 shared-api.md + http-client.md의 구조 규칙과 해당 도메인의 기존 API 코드 위치를 전달한다.
+- **인터페이스는 유지한다** — 클래스명, `protected` 인터셉터 훅 4개(`onRequest`/`onRequestError`/`onResponse`/`onResponseError`), HTTP 래퍼 메서드 시그니처는 변경하지 않는다.
+- **프로젝트에 맞게 조정 가능** — 기본값(timeout, headers), `HttpError` 필드, 공통 응답 타입은 기존 코드/요구사항에 맞게 확장·조정한다.
+- 기존 axios 설정에 모든 도메인이 공유하는 인터셉터(인증, 모니터링, 세션 핸들링 등)가 있으면 [http-client.md §5.3](../../architecture/rules/http-client.md#53-중간-클래스--여러-도메인이-같은-인터셉터를-공유) 패턴으로 중간 클래스(`base/authenticated-http-client.ts` 등)로 분리한다.
+
+#### 7-2단계: 도메인 구조 (도메인별 sub-agent 병렬)
+
+7-1이 완성되어 base의 export 시그니처가 확정된 후, 도메인별로 Agent를 동시에 생성한다.
+
+각 Agent prompt에 다음을 **명시 전달**한다:
+1. **반드시 Read tool로 [shared-api.md](../../architecture/layers/shared-api.md)를 직접 읽고** §4 도메인별 구조와 §6 컨벤션을 따라 작성한다 (자체 추측 금지).
+2. 7-1에서 완성한 base의 export 목록 — 상속 대상 클래스명(`BaseHttpClient` 또는 중간 클래스), `HttpError`, `DefaultResponse` 등과 import 경로(`../base/...`).
+3. 해당 도메인이 담당하는 기존 API 코드 위치와 endpoints 매핑.
+4. 작성할 파일: `[domain]-http-client.ts`, `endpoints/*.ts`, 필요 시 `model.ts`/`errors.ts`, `index.ts`.
 
 ### 8단계: 기존 API 호출부 수정
 
