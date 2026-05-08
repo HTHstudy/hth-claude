@@ -9,7 +9,7 @@
 |------|------|-----------|
 | Slice 내부 접근 차단 | `@[layer]/*/*` 패턴 차단 | `import { x } from '@pages/home/utils'` |
 | 레이어 방향 강제 | 하위 → 상위 레이어 import 차단 | shared에서 `import { x } from '@pages/home'` |
-| 같은 레이어 cross-import 차단 | sibling Slice 간 import 차단 | pages/home에서 `import { x } from '@pages/products'` |
+| 같은 레이어 alias 차단 | 같은 레이어 내부는 상대경로 강제 (sibling Slice cross-import 포함). **`shared`는 예외** — segment 분산 구조라 자기 alias 허용 | `src/app/client-layout.tsx`에서 `import { x } from '@app/_ui/footer'` |
 | 상대경로 레이어 횡단 차단 | 다른 레이어 접근 시 alias 강제 | `import { x } from '../../shared/lib/utils'` |
 | Named Export 강제 | default export 차단 (프레임워크 요구 파일 제외) | `export default function Page()` |
 | 타입 import 강제 | 타입에 `type` 키워드 필수 | `import { Foo } from './types'` (타입인 경우) |

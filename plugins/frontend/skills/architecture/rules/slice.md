@@ -30,8 +30,8 @@ import { NavMenu } from '@widgets/header/nav-menu';
 
 ### import 규칙
 - Slice 내부: 상대경로
-- Slice 외부: `@[layer]/[slice]`에서만 import
-- **같은 레이어 Slice 간 cross-import 금지** — 필요하면 상위 레이어에서 조합
+- 다른 레이어 Slice: `@[layer]/[slice]` (entrypoint)
+- **같은 레이어로의 path alias 사용 금지** — 자기 Slice 내부든 sibling Slice든 같은 레이어는 path alias로 import하지 않는다. 같은 Slice 내부는 상대경로, sibling Slice는 cross-import 금지(필요하면 상위 레이어에서 조합)
 
 ---
 

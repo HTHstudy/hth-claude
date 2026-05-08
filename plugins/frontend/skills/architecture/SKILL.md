@@ -109,6 +109,7 @@ app → pages → (widgets → features → entities →) shared
 
 기타 제약:
 - **다른 레이어 접근 시 반드시 path alias를 사용한다.** 상대경로(`../`)는 같은 레이어 내부에서만 허용.
+- **같은 레이어 내부에서는 path alias를 사용하지 않는다.** 같은 Slice 내부든 sibling Slice든 자기 레이어로의 import는 상대경로로만 한다. 예: `src/app/client-layout.tsx`에서 `@app/_ui/footer`(✗) → `./_ui/footer`(✓). **예외 — `shared`**: segment(`lib`·`api`·`ui`·`config` 등)가 분산되어 있어 자기 alias(`@shared/...`) 사용이 허용된다. 단 도메인 내부(`@shared/api/[domain]/...` 직접 접근)는 entrypoint를 통해야 한다.
 - 순환 의존 금지는 일반 컨벤션 — [conventions.md §6](rules/conventions.md#6-순환-의존-금지) 참조.
 
 ---

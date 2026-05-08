@@ -37,11 +37,11 @@ function blockLayers(...layers) {
   }];
 }
 
-/** 같은 레이어 cross-import 차단 패턴 생성 */
-function blockSiblings(layer) {
+/** 같은 레이어 alias 차단 패턴 생성 (자기 Slice·sibling Slice 모두) */
+function blockSelfAlias(layer) {
   return [{
     group: [`@${layer}`, `@${layer}/*`],
-    message: '같은 레이어의 다른 Slice를 import할 수 없습니다.',
+    message: '같은 레이어 내부에서는 상대경로를 사용하세요. path alias는 다른 레이어 import 전용입니다.',
   }];
 }
 
@@ -98,7 +98,7 @@ export default tseslint.config(
 
   // ── 레이어별 import 방향 규칙 ────────────────────────
 
-  // shared: 모든 상위 레이어 import 금지
+  // shared: 모든 상위 레이어 import 금지 (자기 alias는 허용 — segment 분산 구조)
   {
     files: ['src/shared/**/*.{ts,tsx,js,jsx}'],
     rules: {
@@ -111,7 +111,7 @@ export default tseslint.config(
     },
   },
 
-  // entities: shared만 import 가능
+  // entities: shared만 import 가능 + 자기 alias 차단
   {
     files: ['src/entities/**/*.{ts,tsx,js,jsx}'],
     rules: {
@@ -119,13 +119,13 @@ export default tseslint.config(
         patterns: [
           ...basePatterns,
           ...blockLayers('app', 'pages', 'widgets', 'features'),
-          ...blockSiblings('entities'),
+          ...blockSelfAlias('entities'),
         ],
       }],
     },
   },
 
-  // features: entities, shared만 import 가능
+  // features: entities, shared만 import 가능 + 자기 alias 차단
   {
     files: ['src/features/**/*.{ts,tsx,js,jsx}'],
     rules: {
@@ -133,13 +133,13 @@ export default tseslint.config(
         patterns: [
           ...basePatterns,
           ...blockLayers('app', 'pages', 'widgets'),
-          ...blockSiblings('features'),
+          ...blockSelfAlias('features'),
         ],
       }],
     },
   },
 
-  // widgets: features, entities, shared만 import 가능
+  // widgets: features, entities, shared만 import 가능 + 자기 alias 차단
   {
     files: ['src/widgets/**/*.{ts,tsx,js,jsx}'],
     rules: {
@@ -147,13 +147,13 @@ export default tseslint.config(
         patterns: [
           ...basePatterns,
           ...blockLayers('app', 'pages'),
-          ...blockSiblings('widgets'),
+          ...blockSelfAlias('widgets'),
         ],
       }],
     },
   },
 
-  // pages: app import 금지 + cross-page 금지
+  // pages: app import 금지 + 자기 alias 차단
   {
     files: ['src/pages/**/*.{ts,tsx,js,jsx}'],
     rules: {
@@ -161,7 +161,20 @@ export default tseslint.config(
         patterns: [
           ...basePatterns,
           ...blockLayers('app'),
-          ...blockSiblings('pages'),
+          ...blockSelfAlias('pages'),
+        ],
+      }],
+    },
+  },
+
+  // app: 모든 레이어 import 가능 + 자기 alias 차단
+  {
+    files: ['src/app/**/*.{ts,tsx,js,jsx}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          ...basePatterns,
+          ...blockSelfAlias('app'),
         ],
       }],
     },
