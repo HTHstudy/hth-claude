@@ -126,11 +126,40 @@ prefetch 로직은 `src/pages/` 안에 둔다. 루트 `app/products/page.tsx`는
 
 `generateMetadata` 예외(`@shared/api` 직접 import)는 이 원칙에 포함되지 않는다. `generateMetadata`는 Next.js가 `page.tsx`에서만 export하도록 강제해서 생긴 예외이고, prefetch는 그런 강제가 없다.
 
+### 런타임 분리 도메인의 prefetch
+
+같은 백엔드를 브라우저와 서버 양쪽에서 부르는 도메인(→ [shared-api](shared-api.md))은 위 패턴이 그대로 통하지 않는다. 전송이 브라우저용·서버용으로 갈리기 때문에, `queryOptions()` 하나의 `queryFn`이 이번엔 어느 런타임을 부를지를 정해줘야 한다.
+
+여기서 제약이 하나 생긴다. **`queryFn`을 가진 모듈은 런타임을 하나만 가질 수 있다.** `server-only` 표시는 그 모듈을 import하는 모든 모듈로 전염되는데, `[domain]-queries.ts`는 다름 아닌 Client Component가 `useQuery`로 import하는 파일이다. 여기에 `server-only`를 붙이면 클라이언트가 그 즉시 빌드 에러를 맞는다.
+
+그래서 바꾸는 건 전송 하나, `queryFn`뿐이다. 키는 여전히 팩토리가 만든다.
+
+```typescript
+// src/pages/products/index.tsx — Server Component
+export async function ProductsPage({ region }: { region: RequestContext }) {
+  const queryClient = new QueryClient();
+  await queryClient.prefetchQuery({
+    ...productQueries.list(region),                                 // 키는 팩토리에서
+    queryFn: () => PRODUCT_SERVER_API.getProductsOnServer(region),  // 전송만 교체
+  });
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <ProductListWrapper />
+    </HydrationBoundary>
+  );
+}
+```
+
+교체해도 되는지는 응답이 유저 상태를 나르는지로 가른다. 무인증 진열처럼 **유저 상태를 나르지 않는** 응답이면 이렇게 `queryFn`을 교체해 캐시에 심어도 된다. 잔여 수량·잔액처럼 **유저별 값을 나르는** 응답이면 캐시에 심지 않는다 — 서버 호출은 `generateMetadata`나 리다이렉트 판정처럼 화면에 직접 보여주지 않는 용도로만 쓰고, 화면 데이터는 클라이언트가 직접 받는다. 이유는 간단하다. 서버 전송은 보통 세션 쿠키를 싣지 않으므로 비로그인 상태의 값을 받아오는데, 그 값을 그대로 캐시에 심으면 하이드레이션 직후 그 값이 화면에 잠깐 노출된다 — 이미 못 사는 수량인데 결제 버튼이 잠깐 열려 있는 식으로.
+
+`queryFn` 교체를 빠뜨리면 더 조용히 틀린다. 서버 컴포넌트 안에서 브라우저용 transport가 그대로 돌면, 상대 `baseURL` 때문에 요청 자체가 실패한다. 그런데 `prefetchQuery`는 `fetchQuery`와 달리 **에러를 삼킨다.** 그래서 화면에는 아무 티도 안 나고, 그저 SSR로 채워졌어야 할 데이터가 비어 있을 뿐이다 — 눈에 보이는 장애가 아니라 SEO만 조용히 죽는다. 서버 endpoint 함수명에 `...OnServer`처럼 런타임 접미사를 붙이는 이유가 이것이다 — 교체를 빠뜨리면 diff에서 바로 드러난다.
+
 ---
 
 ## Server Component에서의 API 호출
 
-Server Component에서도 [shared-api](shared-api.md)의 `[DOMAIN]_API`를 직접 호출할 수 있다. 서버 환경에서 axios 기반 클라이언트를 그대로 쓸 수 있으며, prefetch 없이 서버에서 데이터를 가져와 props로 내려주는 단순한 패턴도 가능하다.
+Server Component에서도 [shared-api](shared-api.md)의 `[DOMAIN]_API`를 직접 호출할 수 있다. 서버 환경에서 axios 기반 클라이언트를 그대로 쓸 수 있으며, prefetch 없이 서버에서 데이터를 가져와 props로 내려주는 단순한 패턴도 가능하다. **단 이는 실행 환경이 하나뿐인 도메인 이야기다.** 같은 백엔드를 브라우저와 서버 양쪽에서 부르는 도메인은 전송이 갈리므로, 여기서도 브라우저용 `[DOMAIN]_API`가 아니라 [`[domain]/server` entrypoint](#런타임-분리-도메인의-prefetch)를 쓴다.
 
 ```ts
 // src/pages/about.tsx — Server Component
@@ -150,6 +179,6 @@ export async function AboutPage() {
 
 - page는 기본 Server Component. 훅이 필요한 곳에만 `'use client'`.
 - `QueryClient`는 서버에서 요청별 생성, 브라우저에서 싱글톤 재사용.
-- 같은 `queryOptions()`를 서버(prefetch)와 클라이언트(useQuery)가 공유해 키 일치를 보장한다.
+- 키의 출처는 query-factory 하나다. 서버(prefetch)와 클라이언트(useQuery)가 같은 곳에서 키를 받아 키 일치를 보장한다. 런타임 분리 도메인에서는 `queryFn`만 교체한다.
 - prefetch 로직은 `src/pages/` 안에 둔다. 루트 라우팅 파일은 re-export 유지.
-- Server Component에서 `[DOMAIN]_API`를 직접 호출할 수 있다. 클라이언트 재사용이 필요 없을 때 유용한 단순 패턴.
+- Server Component에서 `[DOMAIN]_API`를 직접 호출할 수 있다. 클라이언트 재사용이 필요 없을 때 유용한 단순 패턴. 런타임 분리 도메인은 `[domain]/server` entrypoint를 쓴다.

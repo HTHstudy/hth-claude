@@ -279,6 +279,45 @@ shared/api/
 
 ---
 
+## 서버 전용 모듈 — `server-only`
+
+서버에서만 실행돼야 하는 모듈(비공개 백엔드를 부르는 endpoint, 서버 전용 자격증명을 다루는 헬퍼 등)에는 파일 최상단에 `import 'server-only'`를 둔다. 이 표시가 있으면 클라이언트 컴포넌트가 그 모듈을 import하는 순간 런타임 경고가 아니라 **빌드 자체가 실패한다** — Next.js가 공식으로 권장하는 방식이다.
+
+```ts
+// src/shared/api/[domain]/server/index.ts
+import 'server-only';
+
+export const [DOMAIN]_SERVER_API = { /* ... */ };
+```
+
+표시를 빠뜨리면 무슨 일이 생기는지는 감이 아니라 실측으로 확인할 수 있다. 표시 없는 서버 모듈을 클라이언트 컴포넌트가 import하게 두고 빌드해 보면, 오류 클래스 정의부터 `fetch` 호출부, `cache()` 래핑, 서버 전용 경로 문자열까지 클라이언트 번들에 통째로 들어간다. 코드가 실행되지 않는다고 안전한 게 아니라, 코드가 **거기 있다는 사실** 자체가 문제다.
+
+환경변수 하나는 예외적으로 안전하다 — 서버 전용 환경변수의 **값**은 클라이언트 번들에서 `undefined`로 치환되어 새지 않는다. 하지만 이 안전장치를 딛고 위험한 선택을 하기 쉽다. 번들에서 `undefined`가 찍히는 걸 보고 "그럼 `NEXT_PUBLIC_`을 붙이면 되겠다"고 판단하는 순간, 원래는 안 새던 비공개 게이트웨이 주소가 번들에 그대로 박힌다. `server-only` 표시는 애초에 그 판단을 할 필요조차 없게 만든다.
+
+테스트에서는 사정이 다르다. vitest는 Next.js가 `server-only`에 부여하는 `react-server` export 조건을 모른다. 그래서 이 패키지는 vitest 환경에서는 import되는 순간 그냥 throw하도록 만들어져 있고, 표시를 둔 모듈을 테스트가 import하면 테스트 전체가 죽는다. 해결책은 vitest 설정에서 `server-only`를 빈 모듈로 별칭을 거는 것이다.
+
+```ts
+// vitest.config.mts
+resolve: {
+  alias: {
+    'server-only': path.resolve(__dirname, 'src/shared/lib/test/server-only-stub.ts'),
+  },
+},
+```
+
+**이건 가드를 끄는 게 아니다.** 우회하는 건 vitest라는 테스트 환경 하나뿐이고, 클라이언트 번들에 서버 코드가 새지 않게 막는 효력은 여전히 실제 빌드가 지킨다.
+
+빌드가 지킨다는 말을 직접 확인하고 싶으면, 구조를 바꾼 뒤 클라이언트 번들을 검사하면 된다.
+
+```bash
+# 빌드 후 — 0이어야 한다
+grep -rl "server-only\|<서버 전용 환경변수명>" .next/static/chunks/*.js | wc -l
+```
+
+숫자가 0이 아니면 어딘가에서 `server-only` 표시가 빠진 채로 서버 코드가 클라이언트 컴포넌트에 흘러들어 갔다는 뜻이다.
+
+---
+
 ## 특수 파일 위치
 
 Next.js가 프로젝트 루트에 두기를 요구하는 파일이 있다. 이들은 `src/`로 옮길 수 없다.

@@ -31,6 +31,14 @@ Split by at least one of the following.
 
 Number of resources is not a criterion. If common processing is the same, organize under one domain using `endpoints/` sub-folders. Do not split a domain just because it has many resources.
 
+The premise of a single transport instance can break down. It happens when the same backend is called from both the browser and the server (RSC, etc.).
+
+**Why transport splits in two.** Two assumptions the browser transport makes do not hold on the server. Browser transport typically uses a relative `baseURL` pointing at a BFF, and injects things like auth headers through a module-level interceptor. Those assumptions hold in the browser, where "one tab = one user," but break on the server, where a single process handles many requests concurrently. If an interceptor touches module-level state, one request can overwrite that value while another is still in flight — not a crash, but a silently wrong response.
+
+**The domain is still one domain.** If the backend and the contract (paths, types, errors) are the same, having two execution environments is not by itself a reason to split the domain. The same litmus test applies — *"if a genuinely different domain shows up later, would it use this contract?"* If not, this is one domain's contract being called from two execution environments. A domain like this keeps its contract (shared path constants, types, errors, protocol resolution) at the domain root, and splits only the transport into `browser/` and `server/` sub-folders.
+
+This split is made only once both execution environments are **already** calling the domain. Do not create `browser/`·`server/` ahead of time because "SSR might happen later" — splitting for a runtime that hasn't arrived yet leaves a structure in place before anyone knows where the real boundary belongs.
+
 ---
 
 ## Full Structure
@@ -308,7 +316,7 @@ try {
 
 ### index.ts
 
-`index.ts` is the **single entrypoint** the domain exposes externally.
+`index.ts` is the **single entrypoint** the domain exposes externally. A domain with a runtime split grows this to two entrypoints, `browser` and `server` — see [Accessing from Outside a Domain](#accessing-from-outside-a-domain).
 
 - API functions are not individually exported. They are grouped as a `[DOMAIN]_API` object.
 - Types and constants exposed externally are **explicitly** re-exported. `export *` is not used.
@@ -352,6 +360,16 @@ Code outside a domain imports only `@shared/api/[domain]`. Internal files are no
 ```
 
 This constraint can be enforced statically (`no-restricted-imports` with the `@shared/api/*/*` pattern).
+
+A domain with a runtime split widens this access rule slightly. Instead of a single `index.ts` entrypoint, it exposes two — `@shared/api/[domain]/browser` and `@shared/api/[domain]/server` — and only these two paths additionally become public faces. Internal paths beneath them, such as `model` or `browser/[domain]-http-client`, are still blocked.
+
+```txt
+✅ @shared/api/webshop/browser · /server     # runtime entrypoints
+❌ @shared/api/webshop/browser/webshop-http-client
+❌ @shared/api/webshop/server/endpoints/get-products
+```
+
+Expressing this with ESLint's `no-restricted-imports` has two pitfalls. Its `group` option uses gitignore syntax, so trying to express the negation with an extglob like `'@shared/api/*/!(browser|server)'` does not work — the negation must be a **separate entry**, like `'!@shared/api/*/browser'` and `'!@shared/api/*/server'`. And that negative pattern opens not just the path it names but **everything beneath it**. With only `'@shared/api/*/*'` and the two negations, an internal file such as `@shared/api/webshop/browser/webshop-http-client` becomes reachable too. `'@shared/api/*/*/**'` has to be added as a positive pattern alongside them to re-block that subtree.
 
 Inside a domain, use relative paths. Even when referencing shared types in `base/` or the same domain's `model.ts`, use relative paths.
 

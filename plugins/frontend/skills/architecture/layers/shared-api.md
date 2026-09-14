@@ -91,6 +91,17 @@ shared/api/base/
 
 **리소스 수는 분리 기준이 아니다.** 공통 처리가 동일하면 하나의 도메인 아래 `endpoints/` 서브폴더로 조직할 수 있다.
 
+**같은 백엔드를 여러 런타임에서 부를 때는 도메인을 나누지 않는다.**
+
+| 상황 | |
+|---|---|
+| 서버·리소스가 다르다 | **별도 도메인** — 위 기준 그대로 |
+| 같은 백엔드·같은 계약인데 실행 환경이 다르다 (브라우저 · 서버/RSC) | **한 도메인 안에서 런타임 분리** |
+
+판별 질문: *"나중에 진짜 다른 도메인이 생기면 그게 이 계약을 쓸까?"* 안 쓰면 그건 한 도메인의 계약이다.
+
+런타임 분리는 **조건 셋을 모두 만족할 때만** 적용한다. 조건·구조·체크리스트 → [shared-api-runtime-split.md](shared-api-runtime-split.md)
+
 **점진적 분리 예시:**
 
 ```txt
@@ -225,6 +236,8 @@ export const getProductList = async (params: GetProductListReq) => {
 
 `index.ts`는 도메인 외부에 공개되는 **유일한 entrypoint**이다.
 
+> **예외 — 런타임 분리:** 같은 계약을 여러 실행 환경에서 부르는 도메인은 런타임별 entrypoint를 갖는다(`[domain]/browser` · `[domain]/server`). 그 외 하위 경로는 여전히 내부다. → [shared-api-runtime-split.md](shared-api-runtime-split.md)
+
 - API 함수는 개별 export하지 않고 `[DOMAIN]_API` 객체로 묶어 export한다.
 - 외부에 공개할 타입과 상수는 `index.ts`에서 명시적으로만 re-export한다.
 - `export *`는 사용하지 않는다.
@@ -293,6 +306,8 @@ import { productHttpClient } from '@shared/api/product/product-http-client';
 
 `@shared/api/product` → 허용 (index.ts entrypoint)
 `@shared/api/product/endpoints/*`, `@shared/api/product/model` 등 → 차단
+
+런타임 분리 도메인은 `@shared/api/[domain]/browser` · `/server` 두 경로가 예외로 열린다. 내부 경로는 그대로 막힌다 → [eslint-config.md](../rules/eslint-config.md)
 
 프로젝트에 ESLint `no-restricted-imports` 규칙이 아직 없으면, [eslint-config.md](../rules/eslint-config.md)를 참조하여 추가한다.
 
@@ -403,3 +418,4 @@ export type { [DomainEntity] } from './model';
 - 둘 이상의 endpoint 또는 외부 consumer가 공유하는 도메인 타입이 없는데 `model.ts`를 생성하지 않는다.
 - `base/`의 `HttpError` 등 공통 타입을 외부에서 직접 import하지 않는다. 필요하면 도메인에서 extend하여 re-export한다.
 - 단순히 리소스 수가 많다는 이유로 도메인을 분리하지 않는다. 공통 처리가 같으면 `endpoints/` 서브폴더로 조직한다.
+- 런타임이 하나인 도메인에 `browser/`·`server/` 폴더를 만들지 않는다. 두 번째 런타임이 실제로 생길 때 나눈다.

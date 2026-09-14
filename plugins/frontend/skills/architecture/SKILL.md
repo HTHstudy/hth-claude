@@ -197,6 +197,7 @@ ESLint가 적용된 프로젝트는 자동 차단 항목을 Agent가 별도로 �
 | 섣부른 추출 | 1개 Slice만 사용하는 코드가 공통 레이어에 있거나, Slice 문맥에 결합된 코드가 전역화됨 |
 | page 빈 조립 | page가 로직 없이 import만 나열 |
 | private 폴더 선제 생성 | 실제 추출 없이 `_ui/`, `_hooks/`를 미리 생성 |
+| prefetch `queryFn` 미교체 | 런타임 분리 도메인에서 `prefetchQuery`가 브라우저 transport를 그대로 씀. `prefetchQuery`는 에러를 삼켜 화면에 티가 안 나고 SSR 데이터만 빈다 |
 
 참고 — 아래는 [eslint-config.md](rules/eslint-config.md)가 자동 차단하므로 Agent 수동 탐지 불필요:
 - import 방향 (`no-restricted-imports`)
@@ -252,6 +253,7 @@ ESLint가 적용된 프로젝트는 자동 차단 항목을 Agent가 별도로 �
 아래 파일을 참조한다. 일반적인 작업에서는 이 SKILL.md만으로 충분하다.
 
 - shared/api 3계층 패턴 → [shared-api.md](layers/shared-api.md)
+- 한 백엔드를 여러 런타임에서 부를 때 (브라우저·RSC) → [shared-api-runtime-split.md](layers/shared-api-runtime-split.md)
 - HTTP 클라이언트 (base + 도메인) → [http-client.md](rules/http-client.md)
 - query-factory 패턴 → [shared-query-factory.md](layers/shared-query-factory.md)
 - mutation-factory 패턴 → [shared-mutation-factory.md](layers/shared-mutation-factory.md)

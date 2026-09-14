@@ -31,6 +31,14 @@ API 호출 코드는 프로젝트 어디에서든 필요해진다. page에서, f
 
 리소스 수는 분리 기준이 아니다. 공통 처리가 같으면 하나의 도메인 안에서 `endpoints/` 서브폴더로 조직해도 된다. 리소스가 많다는 이유만으로 도메인을 쪼개지 않는다.
 
+전송(http-client) 인스턴스 하나라는 전제가 흔들리는 경우가 있다. 같은 백엔드를 브라우저와 서버(RSC 등) 양쪽에서 부를 때다.
+
+**전송이 둘로 갈리는 이유**는 브라우저 전송의 두 가지 전제가 서버에서 깨지기 때문이다. 브라우저 전송은 보통 BFF를 향하는 상대 `baseURL`을 쓰고, 인증 헤더 같은 값을 모듈 전역 인터셉터로 주입한다. 이 전제는 "탭 하나 = 사용자 하나"인 브라우저에서는 맞지만, 서버는 한 프로세스가 여러 요청을 동시에 처리하므로 성립하지 않는다. 인터셉터가 모듈 전역을 건드리면 한 요청이 처리되는 사이 다른 요청이 그 값을 덮어쓸 수 있고, 이는 크래시가 아니라 조용히 틀린 응답으로 나타난다.
+
+**그래도 도메인은 하나다.** 백엔드와 계약(경로·타입·오류)이 같다면, 실행 환경이 둘이라는 사실만으로 도메인을 쪼개지 않는다. 판별 질문은 같다 — *"나중에 진짜 다른 도메인이 생기면 그게 이 계약을 쓸까?"* 쓰지 않는다면 그건 한 도메인의 계약이 실행 환경만 다르게 호출되는 것뿐이다. 이런 도메인은 계약(경로 상수·타입·오류·프로토콜 판정)을 도메인 루트에 두고, 전송만 `browser/`·`server/` 서브폴더로 나눈다.
+
+이 분리는 두 실행 환경에서 **이미** 호출하고 있을 때만 한다. "나중에 SSR을 할 수도 있으니" 미리 `browser/`·`server/`를 만들어 두지 않는다 — 아직 오지 않은 두 번째 런타임을 예측해서 미리 나누면, 실제로 그 런타임이 왔을 때 어떤 경계가 맞는지 알 수 없는 채로 구조만 남는다.
+
 ---
 
 ## 전체 구조
@@ -308,7 +316,7 @@ try {
 
 ### index.ts
 
-`index.ts`는 도메인 외부에 공개되는 **유일한 entrypoint**다.
+`index.ts`는 도메인 외부에 공개되는 **유일한 entrypoint**다. 런타임 분리를 적용한 도메인은 이 entrypoint가 `browser`·`server` 둘로 늘어난다 — [도메인 외부에서의 접근](#도메인-외부에서의-접근) 참고.
 
 - API 함수는 개별 export하지 않고 `[DOMAIN]_API` 객체로 묶어 export한다.
 - 외부에 공개할 타입과 상수는 `index.ts`에서 **명시적으로** re-export한다. `export *`는 쓰지 않는다.
@@ -352,6 +360,16 @@ export { PRODUCT_STATUS } from './model';
 ```
 
 이 제약은 정적 분석(`no-restricted-imports`의 `@shared/api/*/*` 패턴)으로 자동 차단할 수 있다.
+
+런타임 분리를 적용한 도메인은 이 접근 규칙이 조금 넓어진다. entrypoint가 `index.ts` 하나가 아니라 `@shared/api/[domain]/browser`·`@shared/api/[domain]/server` 둘이 되고, 이 두 경로만 추가로 공개 얼굴이 된다. `model`이나 `browser/[domain]-http-client`처럼 그 아래 내부 경로는 여전히 막힌다.
+
+```txt
+✅ @shared/api/webshop/browser · /server     # 런타임 entrypoint
+❌ @shared/api/webshop/browser/webshop-http-client
+❌ @shared/api/webshop/server/endpoints/get-products
+```
+
+이걸 ESLint `no-restricted-imports`로 표현할 때 함정이 둘 있다. `no-restricted-imports`의 `group`은 gitignore 문법을 쓰므로, `'@shared/api/*/!(browser|server)'`처럼 extglob으로 부정을 표현하려 해도 동작하지 않는다 — 부정은 `'!@shared/api/*/browser'`, `'!@shared/api/*/server'`처럼 **별도 항목**으로 넣어야 한다. 그리고 이 부정 패턴은 지정한 경로만이 아니라 **그 하위 전체**를 함께 열어버린다. `'@shared/api/*/*'`와 부정 두 항목만 두면 `@shared/api/webshop/browser/webshop-http-client` 같은 내부 파일까지 허용돼 버린다. `'@shared/api/*/*/**'`를 긍정 패턴으로 함께 둬야 그 하위가 다시 막힌다.
 
 도메인 내부에서는 상대경로로 import한다. `base/`의 공통 타입이나 같은 도메인의 `model.ts`를 참조할 때도 상대경로를 쓴다.
 

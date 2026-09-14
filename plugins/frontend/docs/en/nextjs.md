@@ -279,6 +279,45 @@ Using API routes as a proxy just for frontend convenience is not recommended. If
 
 ---
 
+## Server-Only Modules — `server-only`
+
+For modules that must run only on the server (endpoints calling a private backend, helpers handling server-only credentials, and the like), put `import 'server-only'` at the top of the file. With this marker in place, the moment a Client Component imports that module, the **build itself fails** instead of producing a runtime warning — this is Next.js's own recommended approach.
+
+```ts
+// src/shared/api/[domain]/server/index.ts
+import 'server-only';
+
+export const [DOMAIN]_SERVER_API = { /* ... */ };
+```
+
+What happens when the marker is missing isn't a matter of guessing — it's been measured directly. Let a Client Component import an unmarked server module and build the project, and error class definitions, the `fetch` call site, the `cache()` wrapper, and server-only path strings all end up in the client bundle whole. The problem isn't that the code runs — it's that the code is **there** at all.
+
+One thing is safe by exception — the **value** of a server-only environment variable is replaced with `undefined` in the client bundle and doesn't leak. But it's easy to turn that safety net into a dangerous choice. The moment you see `undefined` printed in the bundle and reason "so I'll just add `NEXT_PUBLIC_`," a private gateway address that was never leaking gets baked straight into the bundle. The `server-only` marker removes the need to even make that call.
+
+Testing is a different story. vitest doesn't know about the `react-server` export condition Next.js attaches to `server-only`. So the package is built to throw the instant it's imported under vitest, and any test that imports a marked module takes the whole suite down with it. The fix is to alias `server-only` to an empty module in the vitest config.
+
+```ts
+// vitest.config.mts
+resolve: {
+  alias: {
+    'server-only': path.resolve(__dirname, 'src/shared/lib/test/server-only-stub.ts'),
+  },
+},
+```
+
+**This isn't turning the guard off.** Only the vitest test environment is being worked around — the actual build still enforces that server code never leaks into the client bundle.
+
+To confirm the build actually enforces it, inspect the client bundle after changing the structure.
+
+```bash
+# After a build — should be 0
+grep -rl "server-only\|<server-only env var name>" .next/static/chunks/*.js | wc -l
+```
+
+A nonzero count means server code reached a Client Component somewhere without the `server-only` marker catching it.
+
+---
+
 ## Special File Locations
 
 Next.js requires certain files at the project root. These cannot be moved to `src/`.

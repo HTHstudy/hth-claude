@@ -5,7 +5,17 @@
 
 /** Slice 내부 직접 접근 차단 */
 const sliceInternalPatterns = [
-  { group: ['@shared/api/*/*'], message: '@shared/api/[domain] entrypoint를 통해 접근하세요.' },
+  // 런타임 분리 도메인은 browser·server 두 entrypoint를 갖는다 (rules/eslint-config.md 참조).
+  // 부정 패턴은 별도 항목이어야 하고, '*/*/**' 를 빼면 깊은 경로가 뚫린다.
+  {
+    group: [
+      '@shared/api/*/*',
+      '@shared/api/*/*/**',
+      '!@shared/api/*/browser',
+      '!@shared/api/*/server',
+    ],
+    message: '@shared/api/[domain] entrypoint(또는 browser·server)를 통해 접근하세요.',
+  },
   { group: ['@pages/*/*'], message: '@pages/[page] entrypoint를 통해 접근하세요.' },
   { group: ['@widgets/*/*'], message: '@widgets/[widget] entrypoint를 통해 접근하세요.' },
   { group: ['@features/*/*'], message: '@features/[feature] entrypoint를 통해 접근하세요.' },

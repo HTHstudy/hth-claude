@@ -302,6 +302,52 @@ src/shared/api  →  fetch('/api/...')  ✅  (shared/api endpoint에서 HTTP 호
 
 ---
 
+## 서버 전용 모듈 — `server-only`
+
+서버에서만 실행되어야 하는 모듈은 최상단에 `import 'server-only'`를 둔다. 클라이언트 컴포넌트가 import하면 **빌드가 실패한다.** Next.js 공식 권장 방식이다.
+
+```ts
+// src/shared/api/[domain]/server/index.ts
+import 'server-only';
+
+export const [DOMAIN]_SERVER_API = { /* ... */ };
+```
+
+**왜 필요한가 —** 표시가 없으면 서버 코드가 클라이언트 번들에 통째로 들어간다. 실측 사례에서 오류 클래스, `fetch` 호출부, `cache()` 래핑, 경로 문자열이 사용자에게 전송됐다. 환경변수 값 자체는 `undefined`로 치환돼 새지 않지만, **그 `undefined`를 보고 `NEXT_PUBLIC_`으로 승격하는 순간 비공개 게이트웨이 주소가 번들에 박힌다.**
+
+### vitest 우회
+
+vitest는 Next.js의 `react-server` export 조건을 모르므로 `server-only`가 **import만으로 throw**한다. 테스트가 통째로 죽으므로 빈 모듈로 별칭을 건다.
+
+```ts
+// vitest.config.mts
+resolve: {
+  alias: {
+    'server-only': path.resolve(__dirname, 'src/shared/lib/test/server-only-stub.ts'),
+  },
+},
+```
+
+```ts
+// src/shared/lib/test/server-only-stub.ts
+export {};
+```
+
+**가드를 끄는 게 아니라 테스트 환경만 우회하는 것이다.** 효력은 빌드와 아래 검사가 지킨다.
+
+### 회귀 검사
+
+구조를 바꾼 뒤에는 클라이언트 번들에 서버 코드가 새지 않았는지 확인한다.
+
+```bash
+# 빌드 후 — 0이어야 한다
+grep -rl "server-only\|<서버 전용 환경변수명>" .next/static/chunks/*.js | wc -l
+```
+
+런타임 분리 도메인의 전체 구조 → [shared-api-runtime-split.md](../layers/shared-api-runtime-split.md)
+
+---
+
 ## 특수 파일 위치
 
 | 파일 | 위치 | 비고 |

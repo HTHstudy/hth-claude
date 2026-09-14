@@ -44,6 +44,43 @@ ESLint 버전을 감지한 후 **해당 템플릿만** 읽는다. 두 파일을 
 - `eslint.config.*` 존재 (`.js`, `.mjs`, `.cjs`, `.ts`, `.mts`, `.cts`) → **Flat Config (9+)**: [eslint-flat-config.md](eslint-flat-config.md)
 - `.eslintrc.*` 존재 (`.js`, `.cjs`, `.json`, `.yml`, `.yaml`) → **Legacy Config (8)**: [eslint-legacy-config.md](eslint-legacy-config.md)
 
+## 런타임 분리 도메인 (`shared/api`)
+
+같은 백엔드를 브라우저와 서버(RSC)에서 부르는 도메인은 entrypoint가 둘이다(→ [shared-api-runtime-split.md](../layers/shared-api-runtime-split.md)). 기본 템플릿(`eslint-flat-config.md`·`eslint-legacy-config.md`)은 **이미 이 패턴을 쓴다.** 아래는 그 내용과 근거다.
+
+```js
+{
+  group: [
+    '@shared/api/*/*',
+    '@shared/api/*/*/**',
+    '!@shared/api/*/browser',
+    '!@shared/api/*/server',
+  ],
+  message: '@shared/api/[domain] entrypoint(또는 browser·server)를 통해 접근하세요.',
+}
+```
+
+**두 번째 공개 얼굴만 열고 내부는 그대로 막힌다.**
+
+| 경로 | |
+|---|---|
+| `@shared/api/webshop` | 허용 |
+| `@shared/api/webshop/browser` · `/server` | 허용 |
+| `@shared/api/webshop/model` | 차단 |
+| `@shared/api/webshop/browser/webshop-http-client` | 차단 |
+| `@shared/api/webshop/server/endpoints/get-products` | 차단 |
+| `@shared/api/base/errors` | 차단 |
+
+> **함정 둘 — `no-restricted-imports`의 `group`은 gitignore 문법을 쓴다.**
+>
+> **① extglob이 동작하지 않는다.** `'@shared/api/*/!(browser|server)'`로 쓰면 `model`도 `base/errors`도 막히지 않는다. 부정은 **별도 항목**(`'!...'`)으로 넣어야 한다.
+>
+> **② 부정 패턴은 그 경로만이 아니라 하위 전체를 함께 연다.** `'@shared/api/*/*'`와 부정 둘만 두면 `@shared/api/webshop/browser/webshop-http-client`까지 허용된다. `'@shared/api/*/*/**'`를 함께 둬야 하위가 다시 막힌다. 두 positive 패턴의 순서는 결과에 영향이 없다.
+>
+> 둘 다 실제 ESLint로 확인했다(2026-09-14).
+
+런타임 폴더명은 `browser`·`server`로 고정한다 — 이 패턴이 두 이름을 하드코딩한다.
+
 ## Next.js 프로젝트 추가 규칙
 
 Next.js 프로젝트에서는 API route ↔ 아키텍처 레이어 간 import도 차단해야 한다. 위 템플릿의 레이어별 설정에 아래 override를 추가한다. 상세 배경은 [nextjs.md의 SKILL.md 규칙과의 차이 섹션](../integrations/nextjs.md#skillmd-규칙과의-차이)을 참조.

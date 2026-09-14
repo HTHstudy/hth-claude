@@ -126,11 +126,40 @@ prefetch logic stays in `src/pages/`. The root `app/products/page.tsx` remains r
 
 The `generateMetadata` exception (direct `@shared/api` import) does not apply here. That exception exists because Next.js forces `generateMetadata` to be exported from `page.tsx`; prefetch has no such constraint.
 
+### Prefetch in Runtime-Split Domains
+
+For a domain that calls the same backend from both browser and server (→ [shared-api](shared-api.md)), the pattern above doesn't carry over as-is. Because transport splits into a browser version and a server version, a single `queryOptions()`'s `queryFn` now has to decide which runtime it calls.
+
+That creates one constraint. **A module that holds a `queryFn` can only belong to one runtime.** The `server-only` marker is contagious — it propagates to every module that imports the marked one — and `[domain]-queries.ts` is exactly the file a Client Component imports via `useQuery`. Put `server-only` there and the client hits a build error immediately.
+
+So the only thing that changes is the transport, the `queryFn`. The key still comes from the factory.
+
+```typescript
+// src/pages/products/index.tsx — Server Component
+export async function ProductsPage({ region }: { region: RequestContext }) {
+  const queryClient = new QueryClient();
+  await queryClient.prefetchQuery({
+    ...productQueries.list(region),                                 // key from the factory
+    queryFn: () => PRODUCT_SERVER_API.getProductsOnServer(region),  // only the transport changes
+  });
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <ProductListWrapper />
+    </HydrationBoundary>
+  );
+}
+```
+
+Whether that swap is safe depends on whether the response carries user state. If the response **doesn't carry user state** (an unauthenticated listing, say), swapping in the `queryFn` and seeding the cache is fine. If it **carries a per-user value** (remaining stock, a balance), don't seed the cache — use the server call only for things the screen never shows directly, like `generateMetadata` or a redirect decision, and let the client fetch the screen data itself. The reason is simple: server transport usually doesn't carry the session cookie, so it gets back the logged-out value, and seeding the cache with that value means the wrong value is briefly visible right after hydration — a checkout button open for a quantity that's already sold out, for instance.
+
+Skipping the `queryFn` swap fails more quietly. The browser transport keeps running inside the Server Component, and the request itself fails because of its relative `baseURL`. But unlike `fetchQuery`, **`prefetchQuery` swallows the error.** So nothing shows on screen — the data that SSR should have filled in is simply empty. It isn't a visible failure; it's SEO dying silently. This is why server endpoint function names carry a runtime suffix like `...OnServer` — a missed swap then stands out in the diff.
+
 ---
 
 ## Direct API Calls from Server Components
 
-Server Components can also call [shared-api](shared-api.md)'s `[DOMAIN]_API` directly. The axios-based client works in the server environment, enabling a simpler pattern where the server fetches data and passes it as props without prefetching.
+Server Components can also call [shared-api](shared-api.md)'s `[DOMAIN]_API` directly. The axios-based client works in the server environment, enabling a simpler pattern where the server fetches data and passes it as props without prefetching. **This holds only for a domain with a single execution environment, though.** A domain that calls the same backend from both browser and server splits transport, so here too the call goes through the [`[domain]/server` entrypoint](#prefetch-in-runtime-split-domains), not the browser-facing `[DOMAIN]_API`.
 
 ```ts
 // src/pages/about.tsx — Server Component
@@ -150,6 +179,6 @@ This pattern fits when **the data does not need to enter a client cache**. Use i
 
 - Pages are Server Components by default. Declare `'use client'` only where hooks are needed.
 - Create `QueryClient` per request on the server; reuse as a singleton on the browser.
-- The same `queryOptions()` is shared between server (prefetch) and client (useQuery), guaranteeing key alignment.
+- The key comes from one place, the query-factory. Server (prefetch) and client (useQuery) draw from the same factory, guaranteeing key alignment. A runtime-split domain swaps only the `queryFn`.
 - prefetch logic lives in `src/pages/`. Root routing files stay re-export only.
-- Server Components may call `[DOMAIN]_API` directly — a simple pattern when client reuse is not needed.
+- Server Components may call `[DOMAIN]_API` directly — a simple pattern when client reuse is not needed. A runtime-split domain uses the `[domain]/server` entrypoint instead.

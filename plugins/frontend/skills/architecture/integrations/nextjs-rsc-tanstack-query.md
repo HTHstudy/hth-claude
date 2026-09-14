@@ -95,7 +95,53 @@ export { ProductsPage as default } from "@pages/products";
 
 ## 4. 규칙
 
-- 같은 query-factory를 서버(prefetchQuery)와 클라이언트(useQuery)에서 공유한다. 키 불일치가 발생하지 않는다.
+- **키의 출처는 query-factory 하나다.** 서버(`prefetchQuery`)와 클라이언트(`useQuery`)가 같은 팩토리에서 키를 받으므로 키 불일치가 발생하지 않는다. 런타임 분리 도메인에서는 `queryFn`만 교체한다 (→ §5).
 - prefetch/dehydrate 패턴 사용 시에도 루트 `app/page.tsx`는 re-export만 수행한다. prefetch 로직은 `src/pages/` 안에 둔다.
 - `staleTime`을 설정하여 SSR 직후 불필요한 refetch를 방지한다.
-- Server Component에서도 `shared/api`의 `[DOMAIN]_API`를 직접 호출할 수 있다.
+- Server Component에서도 `shared/api`의 `[DOMAIN]_API`를 직접 호출할 수 있다. **단 런타임 분리 도메인은 `[domain]/server` entrypoint를 쓴다 (→ §5).**
+
+---
+
+## 5. 런타임 분리 도메인에서의 prefetch
+
+같은 백엔드를 브라우저와 서버에서 각각 부르는 도메인(→ [shared-api-runtime-split.md](../layers/shared-api-runtime-split.md))은 전송이 둘이다. `queryOptions` 하나의 `queryFn`이 어느 런타임을 부를지 정해야 한다.
+
+**`queryFn`을 가진 모듈은 런타임을 하나만 가질 수 있다.** `server-only`는 그 모듈을 import하는 모든 모듈로 전염되는데, `[domain]-queries.ts`는 클라이언트 컴포넌트가 `useQuery`로 import하는 파일이기 때문이다.
+
+### 5.1 판별 — 서버가 받은 값을 클라이언트 캐시에 심어도 되는가
+
+| 응답 | |
+|---|---|
+| **유저 상태를 나르지 않는다** (무인증 진열 등) | `prefetchQuery` + **`queryFn` 교체** (§5.2) |
+| **유저별 값을 나른다** (잔여 수량·잔액 등) | **캐시에 심지 않는다.** 서버 호출은 `generateMetadata`·판정 등에만 쓰고 화면 데이터는 클라이언트가 받는다 |
+
+서버 전송이 세션 쿠키를 싣지 않으면 비로그인 값을 받는다. 그 값을 캐시에 심으면 하이드레이션 직후 잘못된 값이 노출된다 — 예컨대 이미 못 사는 수량의 결제 버튼이 잠깐 열린다.
+
+### 5.2 `queryFn` 교체
+
+```typescript
+// src/pages/products/index.tsx — Server Component
+export async function ProductsPage({ region }: { region: RequestContext }) {
+  const queryClient = new QueryClient();
+  await queryClient.prefetchQuery({
+    ...productQueries.list(region),                                 // 키는 팩토리에서
+    queryFn: () => PRODUCT_SERVER_API.getProductsOnServer(region),  // 전송만 교체
+  });
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <ProductListWrapper />
+    </HydrationBoundary>
+  );
+}
+```
+
+**키를 여기서 다시 조립하지 않는다.** 팩토리 하나가 양쪽 키의 출처다 — 다시 조립하면 클라이언트와 갈릴 여지가 생긴다. 바꾸는 것은 `queryFn` 하나뿐이다.
+
+`[domain]-queries.ts`는 그대로 브라우저 entrypoint를 import한다. query-factory의 구조 규칙(→ [shared-query-factory.md](../layers/shared-query-factory.md))은 바뀌지 않는다.
+
+### 5.3 교체를 빠뜨리면
+
+서버에서 브라우저 transport가 돈다. 상대 `baseURL`이라 요청이 실패하는데 **`prefetchQuery`는 에러를 삼키므로**(`fetchQuery`와 다르다) 페이지는 그대로 뜨고 SSR 데이터만 빈다. **화면으로는 티가 나지 않고 SEO만 조용히 죽는다.**
+
+서버 endpoint 함수명에 런타임 접미사(`...OnServer`)를 붙이는 이유가 이것이다 — 교체 누락이 diff에서 보인다.
