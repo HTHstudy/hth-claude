@@ -64,18 +64,18 @@ ESLint 버전을 감지한 후 **해당 템플릿만** 읽는다. 두 파일을 
 
 | 경로 | |
 |---|---|
-| `@shared/api/webshop` | 허용 |
-| `@shared/api/webshop/browser` · `/server` | 허용 |
-| `@shared/api/webshop/model` | 차단 |
-| `@shared/api/webshop/browser/webshop-http-client` | 차단 |
-| `@shared/api/webshop/server/endpoints/get-products` | 차단 |
+| `@shared/api/product` | 허용 |
+| `@shared/api/product/browser` · `/server` | 허용 |
+| `@shared/api/product/model` | 차단 |
+| `@shared/api/product/browser/product-http-client` | 차단 |
+| `@shared/api/product/server/endpoints/get-products` | 차단 |
 | `@shared/api/base/errors` | 차단 |
 
 > **함정 둘 — `no-restricted-imports`의 `group`은 gitignore 문법을 쓴다.**
 >
 > **① extglob이 동작하지 않는다.** `'@shared/api/*/!(browser|server)'`로 쓰면 `model`도 `base/errors`도 막히지 않는다. 부정은 **별도 항목**(`'!...'`)으로 넣어야 한다.
 >
-> **② 부정 패턴은 그 경로만이 아니라 하위 전체를 함께 연다.** `'@shared/api/*/*'`와 부정 둘만 두면 `@shared/api/webshop/browser/webshop-http-client`까지 허용된다. `'@shared/api/*/*/**'`를 함께 둬야 하위가 다시 막힌다. 두 positive 패턴의 순서는 결과에 영향이 없다.
+> **② 부정 패턴은 그 경로만이 아니라 하위 전체를 함께 연다.** `'@shared/api/*/*'`와 부정 둘만 두면 `@shared/api/product/browser/product-http-client`까지 허용된다. `'@shared/api/*/*/**'`를 함께 둬야 하위가 다시 막힌다. 두 positive 패턴의 순서는 결과에 영향이 없다.
 >
 > 둘 다 실제 ESLint로 확인했다(2026-09-14).
 

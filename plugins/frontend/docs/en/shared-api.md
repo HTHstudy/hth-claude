@@ -364,12 +364,12 @@ This constraint can be enforced statically (`no-restricted-imports` with the `@s
 A domain with a runtime split widens this access rule slightly. Instead of a single `index.ts` entrypoint, it exposes two — `@shared/api/[domain]/browser` and `@shared/api/[domain]/server` — and only these two paths additionally become public faces. Internal paths beneath them, such as `model` or `browser/[domain]-http-client`, are still blocked.
 
 ```txt
-✅ @shared/api/webshop/browser · /server     # runtime entrypoints
-❌ @shared/api/webshop/browser/webshop-http-client
-❌ @shared/api/webshop/server/endpoints/get-products
+✅ @shared/api/product/browser · /server     # runtime entrypoints
+❌ @shared/api/product/browser/product-http-client
+❌ @shared/api/product/server/endpoints/get-products
 ```
 
-Expressing this with ESLint's `no-restricted-imports` has two pitfalls. Its `group` option uses gitignore syntax, so trying to express the negation with an extglob like `'@shared/api/*/!(browser|server)'` does not work — the negation must be a **separate entry**, like `'!@shared/api/*/browser'` and `'!@shared/api/*/server'`. And that negative pattern opens not just the path it names but **everything beneath it**. With only `'@shared/api/*/*'` and the two negations, an internal file such as `@shared/api/webshop/browser/webshop-http-client` becomes reachable too. `'@shared/api/*/*/**'` has to be added as a positive pattern alongside them to re-block that subtree.
+Expressing this with ESLint's `no-restricted-imports` has two pitfalls. Its `group` option uses gitignore syntax, so trying to express the negation with an extglob like `'@shared/api/*/!(browser|server)'` does not work — the negation must be a **separate entry**, like `'!@shared/api/*/browser'` and `'!@shared/api/*/server'`. And that negative pattern opens not just the path it names but **everything beneath it**. With only `'@shared/api/*/*'` and the two negations, an internal file such as `@shared/api/product/browser/product-http-client` becomes reachable too. `'@shared/api/*/*/**'` has to be added as a positive pattern alongside them to re-block that subtree.
 
 Inside a domain, use relative paths. Even when referencing shared types in `base/` or the same domain's `model.ts`, use relative paths.
 

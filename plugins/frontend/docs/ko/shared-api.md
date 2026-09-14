@@ -364,12 +364,12 @@ export { PRODUCT_STATUS } from './model';
 런타임 분리를 적용한 도메인은 이 접근 규칙이 조금 넓어진다. entrypoint가 `index.ts` 하나가 아니라 `@shared/api/[domain]/browser`·`@shared/api/[domain]/server` 둘이 되고, 이 두 경로만 추가로 공개 얼굴이 된다. `model`이나 `browser/[domain]-http-client`처럼 그 아래 내부 경로는 여전히 막힌다.
 
 ```txt
-✅ @shared/api/webshop/browser · /server     # 런타임 entrypoint
-❌ @shared/api/webshop/browser/webshop-http-client
-❌ @shared/api/webshop/server/endpoints/get-products
+✅ @shared/api/product/browser · /server     # 런타임 entrypoint
+❌ @shared/api/product/browser/product-http-client
+❌ @shared/api/product/server/endpoints/get-products
 ```
 
-이걸 ESLint `no-restricted-imports`로 표현할 때 함정이 둘 있다. `no-restricted-imports`의 `group`은 gitignore 문법을 쓰므로, `'@shared/api/*/!(browser|server)'`처럼 extglob으로 부정을 표현하려 해도 동작하지 않는다 — 부정은 `'!@shared/api/*/browser'`, `'!@shared/api/*/server'`처럼 **별도 항목**으로 넣어야 한다. 그리고 이 부정 패턴은 지정한 경로만이 아니라 **그 하위 전체**를 함께 열어버린다. `'@shared/api/*/*'`와 부정 두 항목만 두면 `@shared/api/webshop/browser/webshop-http-client` 같은 내부 파일까지 허용돼 버린다. `'@shared/api/*/*/**'`를 긍정 패턴으로 함께 둬야 그 하위가 다시 막힌다.
+이걸 ESLint `no-restricted-imports`로 표현할 때 함정이 둘 있다. `no-restricted-imports`의 `group`은 gitignore 문법을 쓰므로, `'@shared/api/*/!(browser|server)'`처럼 extglob으로 부정을 표현하려 해도 동작하지 않는다 — 부정은 `'!@shared/api/*/browser'`, `'!@shared/api/*/server'`처럼 **별도 항목**으로 넣어야 한다. 그리고 이 부정 패턴은 지정한 경로만이 아니라 **그 하위 전체**를 함께 열어버린다. `'@shared/api/*/*'`와 부정 두 항목만 두면 `@shared/api/product/browser/product-http-client` 같은 내부 파일까지 허용돼 버린다. `'@shared/api/*/*/**'`를 긍정 패턴으로 함께 둬야 그 하위가 다시 막힌다.
 
 도메인 내부에서는 상대경로로 import한다. `base/`의 공통 타입이나 같은 도메인의 `model.ts`를 참조할 때도 상대경로를 쓴다.
 

@@ -137,11 +137,14 @@ hth-claude/
 │       │   │   │   ├── pages.md
 │       │   │   │   ├── shared.md
 │       │   │   │   ├── shared-api.md
+│       │   │   │   ├── shared-api-runtime-split.md
 │       │   │   │   ├── shared-query-factory.md
 │       │   │   │   ├── shared-mutation-factory.md
 │       │   │   │   └── optional-layers.md
 │       │   │   └── rules/              # 공통 규칙 및 템플릿
 │       │   │       ├── slice.md
+│       │   │       ├── conventions.md
+│       │   │       ├── project-config.md
 │       │   │       ├── eslint-config.md
 │       │   │       ├── eslint-flat-config.md
 │       │   │       ├── eslint-legacy-config.md
