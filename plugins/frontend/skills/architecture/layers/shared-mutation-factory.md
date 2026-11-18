@@ -1,7 +1,7 @@
 # Shared Mutation Factory Segment
 
 > `shared/mutation-factory`의 내부 구조와 컨벤션 규약이다.  
-> **요구 버전:** TanStack Query v5+ (`mutationOptions`, `MutationCache` API 사용)
+> **요구 버전:** TanStack Query v5+ (`mutationOptions`, `MutationCache` API 사용). 핸들러 마지막 인자 `context`(`context.client` = QueryClient)는 v5.89.0+
 
 ---
 
@@ -10,8 +10,12 @@
 `shared/mutation-factory`는 TanStack Query의 mutationKey와 mutationOptions를 factory 패턴으로 중앙 관리한다.
 
 - mutation 호출 시 mutationKey 일관성을 보장한다.
-- 도메인별로 mutation 옵션을 한 곳에서 관리한다.
+- 리소스별로 mutation 옵션을 한 곳에서 관리한다.
 - `shared/api`의 `[DOMAIN]_API` 객체를 mutationFn으로 연결한다.
+
+> **리소스** — 서버가 다루는 데이터 단위(`product` · `order` 등)로, 키 루트(`allKeys()`) · 팩토리 파일을 나누는 단위다. 대개 API 리소스(`shared/api` 의 `endpoints/get-[resource].ts`)와 같다. `shared/api`의 **도메인**(baseURL · 공통 처리로 나누는 전송 단위, [shared-api.md §4.1](shared-api.md#41-분리-기준))과는 다른 층위다 — API 도메인 하나(`main`) 아래 리소스가 여럿이고, 팩토리는 리소스마다 둔다. 여러 리소스를 모은 화면용 데이터(대시보드 요약 등)도 하나의 리소스로 이름을 붙여 둔다.
+>
+> **호출부** — 팩토리가 돌려준 옵션을 받아 `useMutation` 을(그리고 `useQueryClient().invalidateQueries` 등을) 부르는 곳. 레이어 import 규칙상 팩토리를 쓸 수 있는 곳이면 어디든이다(page · widget · feature · entity 의 컴포넌트, 그 안의 훅, `app`). 컴포넌트 · 훅 같은 특정 형태를 가리키지 않는다.
 
 ---
 
@@ -19,8 +23,8 @@
 
 ```txt
 shared/mutation-factory/
-├─ default-mutation-keys.ts      # 도메인별 기본 mutation 키
-├─ product-mutations.ts          # 도메인별 mutation 팩토리
+├─ default-mutation-keys.ts      # 리소스별 기본 mutation 키
+├─ product-mutations.ts          # 리소스별 mutation 팩토리
 └─ order-mutations.ts
 ```
 
@@ -30,7 +34,7 @@ barrel(`index.ts`)은 사용하지 않는다. 외부에서 필요한 파일을 �
 
 ## 3. default-mutation-keys.ts
 
-도메인별 기본 mutation 키를 하나의 상수 객체로 정의한다.
+리소스별 기본 mutation 키를 하나의 상수 객체로 정의한다.
 
 ```ts
 export const DEFAULT_MUTATION_KEYS = {
@@ -39,12 +43,12 @@ export const DEFAULT_MUTATION_KEYS = {
 } as const;
 ```
 
-- 새 도메인 추가 시 이 객체에 키를 추가한다.
-- 값은 도메인 이름과 동일한 문자열을 사용한다.
+- 새 리소스 추가 시 이 객체에 키를 추가한다.
+- 값은 리소스 이름과 동일한 문자열을 사용한다.
 
 ---
 
-## 4. [domain]-mutations.ts
+## 4. [resource]-mutations.ts
 
 ### 4.1 기본 구조
 
@@ -82,7 +86,7 @@ export const productMutations = {
 ### 4.2 키 계층 구조
 
 ```txt
-allKeys() → [DEFAULT_MUTATION_KEYS.domain]           # 도메인 전체
+allKeys() → [DEFAULT_MUTATION_KEYS.resource]           # 리소스 전체
 create()  → [...allKeys(), 'create']                  # 개별 mutation
 update()  → [...allKeys(), 'update']
 delete()  → [...allKeys(), 'delete']
@@ -133,8 +137,8 @@ export function useCreateAndPayOrder() {
 
 ### 4.4 네이밍
 
-- 파일명: `[domain]-mutations.ts` (kebab-case)
-- 팩토리 객체명: `[domain]Mutations` (camelCase)
+- 파일명: `[resource]-mutations.ts` (kebab-case)
+- 팩토리 객체명: `[resource]Mutations` (camelCase)
 - mutation 함수명: 동사 형태 (`create`, `update`, `delete`)
 
 ---
@@ -159,10 +163,13 @@ TanStack Query 핸들러는 scope에 따라 정의 위치와 동작이 다르다
 | Scope             | 정의 위치                              | 적용 범위                  | 덮어쓰기 |
 | ----------------- | -------------------------------------- | -------------------------- | -------- |
 | **mutation 기본** | 팩토리 `mutationOptions.onSuccess`     | 해당 mutation 사용 모든 곳 | ✓        |
-| **도메인 공통**   | 팩토리 helper 재사용                   | 도메인 내 일부/전체 자유   | ✓        |
-|                   | `MutationCache` + mutationKey 필터링   | 도메인 전체                | ✗        |
+| **리소스 공통**   | 팩토리 helper 재사용                   | 리소스 내 일부/전체 자유   | ✓        |
+|                   | `MutationCache` + mutationKey 필터링   | 리소스 전체                | ✗        |
 | **전역**          | `MutationCache` (필터 없음)            | 모든 mutation              | ✗        |
 |                   | `QueryClient.defaultOptions.mutations` | 모든 mutation              | ✓        |
+| **캐시 무효화**   | 호출부(`useQueryClient`), 또는 `MutationCache`(`app`) | — | — |
+
+캐시 무효화는 **mutation 팩토리 안에 두지 않는다** — 무효화할 queryKey 는 `query-factory`에 있는데, `mutation-factory`는 `query-factory`를 import하지 않는다(§7). 위치는 §6.4.
 
 ### 6.1 mutation 기본 핸들러 — 단일 mutation
 
@@ -184,6 +191,7 @@ create: () =>
 **기본 + 호출 단위 추가** — `mutate()`에 핸들러 전달. 기본(먼저) + 호출 단위(나중) **둘 다 실행**.
 
 ```ts
+const queryClient = useQueryClient();
 const { mutate } = useMutation(productMutations.create());
 mutate(data, {
   onSuccess: () => {
@@ -203,17 +211,18 @@ const { mutate } = useMutation({
 });
 ```
 
-### 6.2 도메인 공통 핸들러 — 한 도메인의 여러 mutation
+### 6.2 리소스 공통 핸들러 — 한 리소스의 여러 mutation
 
 두 가지 방법. **적용 범위**와 **덮어쓰기 허용 여부**로 선택한다.
 
 #### 팩토리 helper 함수 재사용 — 덮어쓰기 가능
 
-도메인 내 일부 또는 전체 mutation에 자유롭게 적용.
+리소스 내 일부 또는 전체 mutation에 자유롭게 적용.
 
 ```ts
+// 팩토리는 api · config 만 import 한다(§7) — helper 도 그 안에서 끝나는 처리만(캐시 무효화는 §6.4)
 const onProductSuccess = () => {
-  queryClient.invalidateQueries({ queryKey: productQueries.allKeys() });
+  // product 공통 처리
 };
 
 export const productMutations = {
@@ -237,38 +246,39 @@ export const productMutations = {
 };
 ```
 
-mutation 고유 처리가 필요하면 inline 콜백에서 helper를 호출하고, 도메인 공통 처리만으로 충분하면 helper를 그대로 참조한다. 기본이지만 호출에 따라 생략 가능해야 할 때(자동 토스트, 선택적 redirect)에 적합.
+mutation 고유 처리가 필요하면 inline 콜백에서 helper를 호출하고, 리소스 공통 처리만으로 충분하면 helper를 그대로 참조한다. 기본이지만 호출에 따라 생략 가능해야 할 때(자동 토스트, 선택적 redirect)에 적합.
 
 #### MutationCache + mutationKey 필터링 — 덮어쓰기 불가
 
-도메인 **전체** 매칭. 항상 실행.
+리소스 **전체** 매칭. 항상 실행.
 
 ```ts
 // src/app/providers.tsx
 new QueryClient({
   mutationCache: new MutationCache({
-    onSuccess: (data, variables, context, mutation) => {
-      const [domain] = (mutation.options.mutationKey as string[]) ?? [];
-      if (domain === DEFAULT_MUTATION_KEYS.product) {
-        // product 도메인 전체 공통 처리 (항상 실행)
+    // 인자 순서: (data, variables, onMutateResult, mutation, context) — 세 번째는 onMutate 의 반환값이다
+    onSuccess: (data, variables, onMutateResult, mutation, context) => {
+      const [resource] = (mutation.options.mutationKey as string[]) ?? [];
+      if (resource === DEFAULT_MUTATION_KEYS.product) {
+        // product 리소스 전체 공통 처리 (항상 실행) — 예: 캐시 무효화(§6.4)
       }
     },
   }),
 });
 ```
 
-도메인 전체에 반드시 실행돼야 하는 처리(캐시 invalidation, 로깅, 분석)에 적합. **특정 mutation만 매칭하는 세부 필터링은 쓰지 않는다** — 그 경우엔 helper 재사용 또는 6.1 기본 핸들러 사용.
+리소스 전체에 반드시 실행돼야 하는 처리(캐시 invalidation, 로깅, 분석)에 적합. **특정 mutation만 매칭하는 세부 필터링은 쓰지 않는다** — 그 경우엔 helper 재사용 또는 6.1 기본 핸들러 사용.
 
 ### 6.3 전역 핸들러 — 모든 mutation
 
-도메인/mutation 구분 없이 모든 mutation에 적용. **`MutationCache` 사용을 권장**한다. `QueryClient.defaultOptions.mutations`는 설정값(`retry`, `gcTime` 등) 용도로만 사용하고, 콜백(`onSuccess`/`onError`/`onSettled`)은 "덮어쓰기 가능한 전역 기본값"이 꼭 필요한 드문 경우에만 사용한다.
+리소스/mutation 구분 없이 모든 mutation에 적용. **`MutationCache` 사용을 권장**한다. `QueryClient.defaultOptions.mutations`는 설정값(`retry`, `gcTime` 등) 용도로만 사용하고, 콜백(`onSuccess`/`onError`/`onSettled`)은 "덮어쓰기 가능한 전역 기본값"이 꼭 필요한 드문 경우에만 사용한다.
 
 #### MutationCache (필터 없음) — 덮어쓰기 불가 (권장)
 
 ```ts
 new QueryClient({
   mutationCache: new MutationCache({
-    onError: (error, variables, context, mutation) => {
+    onError: (error, variables, onMutateResult, mutation, context) => {
       // 모든 mutation 에러에서 항상 실행
     },
   }),
@@ -295,6 +305,29 @@ new QueryClient({
 
 각 mutation의 options가 default를 덮어쓸 수 있다. 설정값 용도로는 계속 사용. 콜백은 "덮어쓰기 가능한 전역 기본값"이 꼭 필요한 드문 경우에만.
 
+### 6.4 캐시 무효화 — 어디서 하나
+
+무효화할 queryKey 는 `query-factory`에 있고, `mutation-factory`는 그것을 import하지 않는다(§7). 그래서 무효화는 두 곳 중 하나에서 한다.
+
+| 위치 | 언제 |
+| --- | --- |
+| 호출부 — `useQueryClient()` | 호출 단위로 무효화 대상이 다를 때 — §6.1 의 "기본 + 호출 단위 추가" |
+| `app/providers` 의 `MutationCache` | 리소스 전체에 항상 같은 무효화 — `app`은 `query-factory`를 import할 수 있다 |
+
+```ts
+// src/app/providers.tsx — context.client 는 v5.89.0+ (그 전이면 만든 QueryClient 를 변수로 잡아 쓴다)
+new QueryClient({
+  mutationCache: new MutationCache({
+    onSuccess: (_data, _variables, _onMutateResult, mutation, context) => {
+      const [resource] = (mutation.options.mutationKey as string[]) ?? [];
+      if (resource === DEFAULT_MUTATION_KEYS.product) {
+        void context.client.invalidateQueries({ queryKey: productQueries.allKeys() });
+      }
+    },
+  }),
+});
+```
+
 ---
 
 ## 7. import 규칙
@@ -320,10 +353,10 @@ new QueryClient({
 
 ---
 
-## 8. 새 도메인 추가 체크리스트
+## 8. 새 리소스 추가 체크리스트
 
-1. `default-mutation-keys.ts`에 도메인 키를 추가한다.
-2. `[domain]-mutations.ts`를 생성한다. `allKeys()` 필수.
+1. `default-mutation-keys.ts`에 리소스 키를 추가한다.
+2. `[resource]-mutations.ts`를 생성한다. `allKeys()` 필수.
 
 ---
 
@@ -334,9 +367,10 @@ new QueryClient({
 - 모든 키 배열에 `as const`를 붙인다.
 - `[DOMAIN]_API`를 통해 API를 호출한다.
 - `mutationOptions()`를 반환한다.
-- 도메인별로 팩토리 파일을 분리한다.
+- 리소스별로 팩토리 파일을 분리한다.
 - 복합 트랜잭션 로직은 커스텀 훅에서 조합한다.
 - 핸들러는 scope별로 적절한 위치에 둔다 — §6 참조.
+- 캐시 무효화는 호출부 또는 `MutationCache`(`app`)에서 한다 — §6.4.
 
 ### Don't
 

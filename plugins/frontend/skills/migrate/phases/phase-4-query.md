@@ -23,9 +23,9 @@ Phase 3에서 생성한 `shared/api/` 구조를 먼저 확인한다. 각 도메�
 query-factory와 mutation-factory는 서로 import하지 않는 독립 segment이므로 **Agent 2개를 동시에** 생성하여 병렬 처리한다.
 
 각 Agent prompt에 다음을 **명시 전달**한다:
-- **반드시 Read tool로 해당 .md를 직접 읽고**, §3 `default-*-keys.ts` 형식과 §4 도메인 파일 구조·컨벤션(`as const`, `*Keys` 접미사, TanStack Query v5 `queryOptions`/`mutationOptions` API)을 따라 작성한다 (자체 추측 금지).
-- 도메인 목록과 Phase 3에서 생성된 `[DOMAIN]_API` 매핑.
-- 작성할 파일: `default-*-keys.ts`(공통) + `[domain]-queries.ts` 또는 `[domain]-mutations.ts`(도메인별).
+- **반드시 Read tool로 해당 .md를 직접 읽고**, §3 `default-*-keys.ts` 형식과 §4 리소스 파일 구조·컨벤션(`as const`, `*Keys` 접미사, TanStack Query v5 `queryOptions`/`mutationOptions` API)을 따라 작성한다 (자체 추측 금지).
+- 리소스 목록과 각 리소스가 쓰는 `[DOMAIN]_API`(Phase 3 에서 생성) 매핑.
+- 작성할 파일: `default-*-keys.ts`(공통) + `[resource]-queries.ts` 또는 `[resource]-mutations.ts`(리소스별).
 
 | Agent | 참조 문서 | 생성 대상 |
 |-------|----------|----------|
