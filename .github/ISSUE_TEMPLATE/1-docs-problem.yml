@@ -1,0 +1,63 @@
+name: 스킬 · 문서 문제
+description: 스킬(SKILL.md · layers · rules 등)이나 사람용 문서(docs/ko · docs/en)가 틀렸거나 헷갈린다
+title: "<플러그인> 스킬: "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        문제와 근거만 적는다. 고치는 방법은 PR 에서(`Closes #이 이슈`).
+  - type: dropdown
+    id: plugin
+    attributes:
+      label: 플러그인
+      options:
+        - frontend
+        - statusline
+        - 여러 개 · 기타
+    validations:
+      required: true
+  - type: input
+    id: files
+    attributes:
+      label: 대상 파일 · 절
+      description: 레포 기준 경로와 절 번호
+      placeholder: plugins/frontend/skills/architecture/layers/shared-mutation-factory.md §6.2
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: 종류
+      options:
+        - 틀림 — 문서대로 하면 안 된다(규칙끼리 모순, 실제 동작 · 버전과 다름 등)
+        - 헷갈림 — 틀리진 않았지만 잘못 읽힌다(용어 두 뜻, 정의 없음 등)
+    validations:
+      required: true
+  - type: textarea
+    id: quote
+    attributes:
+      label: 원문
+      description: 문제가 되는 문장 · 예시를 그대로 옮긴다
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: 왜 문제인가 · 근거
+      description: 모순되는 다른 문장, 실제 동작 · 버전 확인 결과, 잘못 읽힌 사례 등
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: 발견한 상황
+      description: 어떤 프로젝트 · 작업에서 부딪혔나
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 확인
+      options:
+        - label: 같은 문제를 다룬 이슈 · PR 이 없는지 찾아봤다
+          required: true

@@ -1,0 +1,55 @@
+name: 버그 — 스킬이 잘못 동작한다
+description: 스킬 · 명령 · 스크립트를 썼는데 기대와 다르게 동작한다
+title: "<플러그인>: "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: plugin
+    attributes:
+      label: 플러그인
+      options:
+        - frontend
+        - statusline
+        - 여러 개 · 기타
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: 플러그인 버전
+      description: "~/.claude/plugins/installed_plugins.json 또는 /plugin 화면"
+      placeholder: "2.1.0"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 무엇을 시켰나
+      description: 쓴 스킬 · 명령, 프롬프트, 프로젝트 상황
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 기대한 결과
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 실제 결과
+      description: 출력 · 로그 · 만들어진 파일
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: 환경
+      placeholder: Claude Code 버전 · 모델 · OS
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 확인
+      options:
+        - label: 같은 문제를 다룬 이슈 · PR 이 없는지 찾아봤다
+          required: true
