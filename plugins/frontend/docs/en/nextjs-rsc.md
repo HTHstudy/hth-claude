@@ -130,7 +130,7 @@ The `generateMetadata` exception (direct `@shared/api` import) does not apply he
 
 For a domain that calls the same backend from both browser and server (→ [shared-api](shared-api.md)), the pattern above doesn't carry over as-is. Because transport splits into a browser version and a server version, a single `queryOptions()`'s `queryFn` now has to decide which runtime it calls.
 
-That creates one constraint. **A module that holds a `queryFn` can only belong to one runtime.** The `server-only` marker is contagious — it propagates to every module that imports the marked one — and `[domain]-queries.ts` is exactly the file a Client Component imports via `useQuery`. Put `server-only` there and the client hits a build error immediately.
+That creates one constraint. **A module that holds a `queryFn` can only belong to one runtime.** The `server-only` marker is contagious — it propagates to every module that imports the marked one — and `[resource]-queries.ts` is exactly the file a Client Component imports via `useQuery`. Put `server-only` there and the client hits a build error immediately.
 
 So the only thing that changes is the transport, the `queryFn`. The key still comes from the factory.
 

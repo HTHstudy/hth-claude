@@ -99,8 +99,8 @@ business-agnostic 코드라도 처음에는 사용하는 Slice에 둔다. 다른
 | `routes/`           | 라우트 경로 상수/패턴 **정의**. 이 상수를 사용한 라우터 설정과 route-page 연결은 `app`이 담당한다. 모듈 형태는 [project-config.md#pathsts](../rules/project-config.md#pathsts) 참조      |
 | `i18n/`             | 번역 설정, 전역 문자열                                                                                                                                                                 |
 | `assets/`           | 정적 리소스 (이미지, 폰트 등)                                                                                                                                                          |
-| `query-factory/`    | TanStack Query 기반 query factory. queryKey와 queryOptions를 도메인별로 중앙 관리한다. [상세 규칙](shared-query-factory.md)                                                             |
-| `mutation-factory/` | TanStack Query 기반 mutation factory. mutationKey와 mutationOptions를 도메인별로 중앙 관리한다. [상세 규칙](shared-mutation-factory.md)                                                  |
+| `query-factory/`    | TanStack Query 기반 query factory. queryKey와 queryOptions를 리소스별로 중앙 관리한다. [상세 규칙](shared-query-factory.md)                                                             |
+| `mutation-factory/` | TanStack Query 기반 mutation factory. mutationKey와 mutationOptions를 리소스별로 중앙 관리한다. [상세 규칙](shared-mutation-factory.md)                                                  |
 
 ### 5.4 구조 예시
 

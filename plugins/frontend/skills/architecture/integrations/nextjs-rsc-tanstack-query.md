@@ -106,7 +106,7 @@ export { ProductsPage as default } from "@pages/products";
 
 같은 백엔드를 브라우저와 서버에서 각각 부르는 도메인(→ [shared-api-runtime-split.md](../layers/shared-api-runtime-split.md))은 전송이 둘이다. `queryOptions` 하나의 `queryFn`이 어느 런타임을 부를지 정해야 한다.
 
-**`queryFn`을 가진 모듈은 런타임을 하나만 가질 수 있다.** `server-only`는 그 모듈을 import하는 모든 모듈로 전염되는데, `[domain]-queries.ts`는 클라이언트 컴포넌트가 `useQuery`로 import하는 파일이기 때문이다.
+**`queryFn`을 가진 모듈은 런타임을 하나만 가질 수 있다.** `server-only`는 그 모듈을 import하는 모든 모듈로 전염되는데, `[resource]-queries.ts`는 클라이언트 컴포넌트가 `useQuery`로 import하는 파일이기 때문이다.
 
 ### 5.1 판별 — 서버가 받은 값을 클라이언트 캐시에 심어도 되는가
 
@@ -138,7 +138,7 @@ export async function ProductsPage({ region }: { region: RequestContext }) {
 
 **키를 여기서 다시 조립하지 않는다.** 팩토리 하나가 양쪽 키의 출처다 — 다시 조립하면 클라이언트와 갈릴 여지가 생긴다. 바꾸는 것은 `queryFn` 하나뿐이다.
 
-`[domain]-queries.ts`는 그대로 브라우저 entrypoint를 import한다. query-factory의 구조 규칙(→ [shared-query-factory.md](../layers/shared-query-factory.md))은 바뀌지 않는다.
+`[resource]-queries.ts`는 그대로 브라우저 entrypoint를 import한다. query-factory의 구조 규칙(→ [shared-query-factory.md](../layers/shared-query-factory.md))은 바뀌지 않는다.
 
 ### 5.3 교체를 빠뜨리면
 

@@ -10,8 +10,12 @@
 `shared/query-factory`는 TanStack Query의 queryKey와 queryOptions를 factory 패턴으로 중앙 관리한다.
 
 - 쿼리 호출과 무효화 시 queryKey 일관성을 보장한다.
-- 도메인별로 쿼리 옵션을 한 곳에서 관리한다.
+- 리소스별로 쿼리 옵션을 한 곳에서 관리한다.
 - `shared/api`의 `[DOMAIN]_API` 객체를 queryFn으로 연결한다.
+
+> **리소스** — 서버가 다루는 데이터 단위(`product` · `order` 등)로, 키 루트(`allKeys()`) · 팩토리 파일 · 무효화를 나누는 단위다. 대개 API 리소스(`shared/api` 의 `endpoints/get-[resource].ts`)와 같다. `shared/api`의 **도메인**(baseURL · 공통 처리로 나누는 전송 단위, [shared-api.md §4.1](shared-api.md#41-분리-기준))과는 다른 층위다 — API 도메인 하나(`main`) 아래 리소스가 여럿이고, 팩토리는 리소스마다 둔다. 여러 리소스를 모은 화면용 데이터(대시보드 요약 등)도 하나의 리소스로 이름을 붙여 둔다.
+>
+> **호출부** — 팩토리가 돌려준 옵션을 받아 `useQuery` · `useSuspenseQuery` · `prefetchQuery` · `invalidateQueries` 등을 부르는 곳. 레이어 import 규칙상 팩토리를 쓸 수 있는 곳이면 어디든이다(page · widget · feature · entity 의 컴포넌트, 그 안의 훅, `app`). 컴포넌트 · 훅 같은 특정 형태를 가리키지 않는다.
 
 ---
 
@@ -19,8 +23,8 @@
 
 ```txt
 shared/query-factory/
-├─ default-query-keys.ts       # 도메인별 기본 쿼리 키
-├─ product-queries.ts          # 도메인별 쿼리 팩토리
+├─ default-query-keys.ts       # 리소스별 기본 쿼리 키
+├─ product-queries.ts          # 리소스별 쿼리 팩토리
 └─ order-queries.ts
 ```
 
@@ -30,7 +34,7 @@ barrel(`index.ts`)은 사용하지 않는다. 외부에서 필요한 파일을 �
 
 ## 3. default-query-keys.ts
 
-도메인별 기본 쿼리 키를 하나의 상수 객체로 정의한다.
+리소스별 기본 쿼리 키를 하나의 상수 객체로 정의한다.
 
 ```ts
 export const DEFAULT_QUERY_KEYS = {
@@ -39,12 +43,12 @@ export const DEFAULT_QUERY_KEYS = {
 } as const;
 ```
 
-- 새 도메인 추가 시 이 객체에 키를 추가한다.
-- 값은 도메인 이름과 동일한 문자열을 사용한다.
+- 새 리소스 추가 시 이 객체에 키를 추가한다.
+- 값은 리소스 이름과 동일한 문자열을 사용한다.
 
 ---
 
-## 4. [domain]-queries.ts
+## 4. [resource]-queries.ts
 
 ### 4.1 기본 구조
 
@@ -79,14 +83,14 @@ export const productQueries = {
 ### 4.2 키 계층 구조
 
 ```txt
-allKeys()    → [DEFAULT_QUERY_KEYS.domain]           # 도메인 전체 무효화
+allKeys()    → [DEFAULT_QUERY_KEYS.resource]           # 리소스 전체 무효화
 listKeys()   → [...allKeys(), 'list']                 # 목록 그룹 무효화
 detailKeys() → [...allKeys(), 'detail']               # 상세 그룹 무효화
 list(params) → [...listKeys(), params]                # 개별 쿼리
 detail(id)   → [...detailKeys(), id]                  # 개별 쿼리
 ```
 
-- `allKeys()`는 필수다. 도메인 전체 쿼리 무효화에 사용한다.
+- `allKeys()`는 필수다. 리소스 전체 쿼리 무효화에 사용한다.
 - `listKeys()`, `detailKeys()` 등 중간 키는 선택이다. 그룹 무효화가 필요할 때 추가한다.
 - 모든 키 배열에 `as const`를 붙인다. 타입 안전성과 정확한 타입 추론을 위해 필수다.
 
@@ -100,8 +104,8 @@ detail(id)   → [...detailKeys(), id]                  # 개별 쿼리
 
 ### 4.4 네이밍
 
-- 파일명: `[domain]-queries.ts` (kebab-case)
-- 팩토리 객체명: `[domain]Queries` (camelCase)
+- 파일명: `[resource]-queries.ts` (kebab-case)
+- 팩토리 객체명: `[resource]Queries` (camelCase)
 - 키 함수: `allKeys`, `listKeys`, `detailKeys` 등 `*Keys` 접미사
 
 ---
@@ -115,7 +119,7 @@ import { productQueries } from "@shared/query-factory/product-queries";
 const { data: list } = useQuery(productQueries.list({ page: 1, size: 20 }));
 const { data: detail } = useQuery(productQueries.detail("product-id"));
 
-// 도메인 전체 무효화
+// 리소스 전체 무효화
 queryClient.invalidateQueries({ queryKey: productQueries.allKeys() });
 
 // 그룹 무효화
@@ -147,10 +151,10 @@ queryClient.invalidateQueries({ queryKey: productQueries.listKeys() });
 
 ---
 
-## 7. 새 도메인 추가 체크리스트
+## 7. 새 리소스 추가 체크리스트
 
-1. `default-query-keys.ts`에 도메인 키를 추가한다.
-2. `[domain]-queries.ts`를 생성한다. `allKeys()` 필수, 나머지 키 함수는 필요 시 추가.
+1. `default-query-keys.ts`에 리소스 키를 추가한다.
+2. `[resource]-queries.ts`를 생성한다. `allKeys()` 필수, 나머지 키 함수는 필요 시 추가.
 
 ---
 
@@ -161,7 +165,7 @@ queryClient.invalidateQueries({ queryKey: productQueries.listKeys() });
 - 모든 키 배열에 `as const`를 붙인다.
 - `[DOMAIN]_API`를 통해 API를 호출한다.
 - `queryOptions()`를 반환한다.
-- 도메인별로 팩토리 파일을 분리한다.
+- 리소스별로 팩토리 파일을 분리한다.
 - queryKey를 팩토리를 통해서만 생성한다.
 
 ### Don't

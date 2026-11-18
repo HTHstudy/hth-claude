@@ -8,7 +8,7 @@ This document covers the `shared/query-factory` and `shared/mutation-factory` Se
 
 TanStack Query identifies cache entries by queryKey and mutationKey. For the same data, the caller and the invalidator **must use exactly the same key** for things to work as intended. When keys are written as string arrays across many places, subtly different keys emerge for the same data, and schema changes fail to refresh some call sites.
 
-The factory pattern **creates keys and options in a single place**. Both the call and the invalidation go through the same factory function, so keys align naturally, and per-domain options (staleTime, retry, etc.) live in one spot. It connects naturally with [shared-api](shared-api.md)'s `[DOMAIN]_API` objects, keeping the domain boundary consistent from API definition to query key.
+The factory pattern **creates keys and options in a single place**. Both the call and the invalidation go through the same factory function, so keys align naturally, and per-resource options (staleTime, retry, etc.) live in one spot. It connects naturally with [shared-api](shared-api.md)'s `[DOMAIN]_API` objects, keeping the boundary consistent from API definition (resources under a resource) to query key (resource).
 
 ---
 
@@ -18,16 +18,20 @@ query-factory and mutation-factory share the same file layout.
 
 ```txt
 shared/[query-factory | mutation-factory]/
-├─ default-[query|mutation]-keys.ts    # default keys per domain
-├─ product-[queries|mutations].ts      # factory per domain
+├─ default-[query|mutation]-keys.ts    # default keys per resource
+├─ product-[queries|mutations].ts      # factory per resource
 └─ order-[queries|mutations].ts
 ```
 
 Each file's role:
 
-**`default-*-keys.ts`** manages the root value of each domain's keys in one place. This prevents key collisions between domains and gives a bird's-eye view of which domains exist.
+**`default-*-keys.ts`** manages the root value of each resource's keys in one place. This prevents key collisions between resources and gives a bird's-eye view of which resources exist.
 
-**`[domain]-*.ts`** separates per-domain factory files, so all keys and options for a domain live in one file. Changing the product factory does not touch the order factory.
+A **resource** is a unit of server data (`product` · `order`, …) — the unit that splits key roots, factory files, and invalidation. It usually matches an API resource (`endpoints/get-[resource].ts` in `shared/api`), one level below a [shared-api](shared-api.md) **domain** (a transport unit split by baseURL · shared handling): one API domain (`main`) holds several resources, and there is one factory per resource. Screen-level data that combines several resources (a dashboard summary, etc.) also gets its own resource name.
+
+The **call site** is wherever the factory's options are passed to `useQuery` · `useMutation` · `prefetchQuery` · `invalidateQueries`, etc. — anywhere the layer import rules allow using the factory (components in pages · widgets · features · entities, hooks inside them, `app`). It does not mean a particular form such as a component or a hook.
+
+**`[resource]-*.ts`** separates per-resource factory files, so all keys and options for a resource live in one file. Changing the product factory does not touch the order factory.
 
 **No barrel (`index.ts`).** External code imports files directly (`@shared/query-factory/product-queries`). A barrel inflates the dependency graph and blocks tree-shaking without adding value in this Segment.
 
@@ -37,7 +41,7 @@ Each file's role:
 
 ### Default keys and factory
 
-Default keys per domain are defined as a single constant object.
+Default keys per resource are defined as a single constant object.
 
 ```ts
 // default-query-keys.ts
@@ -47,7 +51,7 @@ export const DEFAULT_QUERY_KEYS = {
 } as const;
 ```
 
-Per-domain factories consist of key functions and query-option functions.
+Per-resource factories consist of key functions and query-option functions.
 
 ```ts
 // product-queries.ts
@@ -75,14 +79,14 @@ export const productQueries = {
 Keys are assembled hierarchically.
 
 ```txt
-allKeys()    → ['product']                    # invalidate entire domain
+allKeys()    → ['product']                    # invalidate entire resource
 listKeys()   → ['product', 'list']             # invalidate list group
 detailKeys() → ['product', 'detail']           # invalidate detail group
 list(params) → ['product', 'list', params]     # individual query
 detail(id)   → ['product', 'detail', id]       # individual query
 ```
 
-`allKeys()` is required — used for domain-wide invalidation. Intermediate keys (`listKeys()`, etc.) are added only when group invalidation is needed. Every key array uses `as const` for precise type inference.
+`allKeys()` is required — used for resource-wide invalidation. Intermediate keys (`listKeys()`, etc.) are added only when group invalidation is needed. Every key array uses `as const` for precise type inference.
 
 ### Invalidation
 
@@ -91,7 +95,7 @@ The same factory is used for both calling and invalidating.
 ```ts
 const { data } = useQuery(productQueries.list({ page: 1, size: 20 }));
 
-queryClient.invalidateQueries({ queryKey: productQueries.allKeys() });   // entire domain
+queryClient.invalidateQueries({ queryKey: productQueries.allKeys() });   // entire resource
 queryClient.invalidateQueries({ queryKey: productQueries.listKeys() });  // list group
 ```
 
@@ -147,9 +151,9 @@ Three scopes:
 
 **Mutation default handler** — per-mutation default behavior. Applied everywhere that mutation is used, with call-site override or addition.
 
-**Domain-common handler** — handler shared across multiple mutations of one domain. Two techniques, chosen by whether overriding is allowed.
+**Resource-common handler** — handler shared across multiple mutations of one resource. Two techniques, chosen by whether overriding is allowed.
 
-**Global handler** — handler applied to all mutations regardless of domain.
+**Global handler** — handler applied to all mutations regardless of resource.
 
 ### Mutation default handler
 
@@ -171,6 +175,7 @@ Call sites extend in one of two ways.
 **Default + per-call addition** — pass handlers to `mutate()`. The factory default (first) and per-call (later) **both run**.
 
 ```ts
+const queryClient = useQueryClient();
 const { mutate } = useMutation(productMutations.create());
 mutate(data, {
   onSuccess: () => {
@@ -190,15 +195,16 @@ const { mutate } = useMutation({
 });
 ```
 
-### Domain-common handler
+### Resource-common handler
 
-Choose one of two techniques for handlers shared across multiple mutations of a domain.
+Choose one of two techniques for handlers shared across multiple mutations of a resource.
 
-**Reuse a factory helper — overridable.** Apply selectively or across all mutations in the domain. Good fit for "default but skippable" behaviors like automatic toasts or optional redirects.
+**Reuse a factory helper — overridable.** Apply selectively or across all mutations in the resource. Good fit for "default but skippable" behaviors like automatic toasts or optional redirects.
 
 ```ts
+// factories import only api · config — keep helpers self-contained (cache invalidation: see "Cache invalidation" below)
 const onProductSuccess = () => {
-  queryClient.invalidateQueries({ queryKey: productQueries.allKeys() });
+  // product-wide handling
 };
 
 export const productMutations = {
@@ -220,14 +226,15 @@ export const productMutations = {
 };
 ```
 
-**`MutationCache` + mutationKey filtering — not overridable.** Good fit for processing that must run across an entire domain (cache invalidation, logging, analytics). Filter by the mutationKey's root (the domain).
+**`MutationCache` + mutationKey filtering — not overridable.** Good fit for processing that must run across an entire resource (cache invalidation, logging, analytics). Filter by the mutationKey's root (the resource).
 
 ```ts
 new QueryClient({
   mutationCache: new MutationCache({
-    onSuccess: (data, variables, context, mutation) => {
-      const [domain] = (mutation.options.mutationKey as string[]) ?? [];
-      if (domain === DEFAULT_MUTATION_KEYS.product) {
+    // argument order: (data, variables, onMutateResult, mutation, context) — the third is onMutate's return value
+    onSuccess: (data, variables, onMutateResult, mutation, context) => {
+      const [resource] = (mutation.options.mutationKey as string[]) ?? [];
+      if (resource === DEFAULT_MUTATION_KEYS.product) {
         // product-wide common handling (always runs)
       }
     },
@@ -239,12 +246,12 @@ Do not use this technique for fine-grained filtering that matches only specific 
 
 ### Global handler
 
-For handlers applied to all mutations regardless of domain, **prefer `MutationCache`**.
+For handlers applied to all mutations regardless of resource, **prefer `MutationCache`**.
 
 ```ts
 new QueryClient({
   mutationCache: new MutationCache({
-    onError: (error, variables, context, mutation) => {
+    onError: (error, variables, onMutateResult, mutation, context) => {
       // always runs for any mutation error
     },
   }),
@@ -258,10 +265,31 @@ Use `QueryClient.defaultOptions.mutations` for configuration values (`retry`, `g
 | Scope | Definition site | Applies to | Overridable |
 |-------|----------------|-----------|-------------|
 | Mutation default | factory `mutationOptions.onSuccess` | everywhere that mutation is used | yes |
-| Domain common | factory helper reuse | selectively within the domain | yes |
-| Domain common | `MutationCache` + mutationKey filter | entire domain | no |
+| Resource common | factory helper reuse | selectively within the resource | yes |
+| Resource common | `MutationCache` + mutationKey filter | entire resource | no |
 | Global | `MutationCache` (no filter) | all mutations | no |
 | Global | `QueryClient.defaultOptions.mutations` | all mutations | yes |
+| Cache invalidation | call site (`useQueryClient`), or `MutationCache` (`app`) | — | — |
+
+### Cache invalidation
+
+The queryKeys to invalidate live in query-factory, and mutation-factory does not import query-factory. So **cache invalidation does not go inside the mutation factory** — do it in one of two places.
+
+- **Call site** — `useQueryClient()`. When the invalidation target differs per call (see "Default + per-call addition" above).
+- **`MutationCache` in `app/providers`** — the same invalidation always, across a resource. `app` may import query-factory, and on v5.89.0+ handlers receive the QueryClient as `context.client` (before that, capture the created QueryClient in a variable).
+
+```ts
+new QueryClient({
+  mutationCache: new MutationCache({
+    onSuccess: (_data, _variables, _onMutateResult, mutation, context) => {
+      const [resource] = (mutation.options.mutationKey as string[]) ?? [];
+      if (resource === DEFAULT_MUTATION_KEYS.product) {
+        void context.client.invalidateQueries({ queryKey: productQueries.allKeys() });
+      }
+    },
+  }),
+});
+```
 
 ---
 
@@ -322,8 +350,8 @@ query-factory and mutation-factory **do not import each other**. The two are ind
 
 ## Naming
 
-- File: `[domain]-queries.ts`, `[domain]-mutations.ts` (kebab-case)
-- Factory object: `[domain]Queries`, `[domain]Mutations` (camelCase)
+- File: `[resource]-queries.ts`, `[resource]-mutations.ts` (kebab-case)
+- Factory object: `[resource]Queries`, `[resource]Mutations` (camelCase)
 - Key functions: `allKeys`, `listKeys`, `detailKeys`, etc. with the `*Keys` suffix
 - Mutation function name: verb form (`create`, `update`, `delete`)
 
@@ -340,9 +368,11 @@ Not enforced, though. For prototyping or one-off calls, direct `useQuery`/`useMu
 ## Summary
 
 - A factory secures queryKey/mutationKey consistency. Calls and invalidation go through the same factory.
-- Per-domain files for both query-factory and mutation-factory. No barrel.
+- Per-resource files for both query-factory and mutation-factory. No barrel.
 - Key hierarchy: `allKeys` → `listKeys`/`detailKeys` → individual queries. All keys with `as const`.
 - Factories return options objects only. Hook calls and business logic live outside.
-- Mutation handlers vary by scope — mutation default / domain common / global.
+- Mutation handlers vary by scope — mutation default / resource common / global.
+- Cache invalidation lives outside the mutation factory — call site, or `MutationCache` (`app`).
+- One factory per resource (a unit of server data) — one level below a shared-api domain (transport unit).
 - Compose complex transactions in a custom hook.
 - query-factory and mutation-factory do not import each other.

@@ -130,7 +130,7 @@ prefetch 로직은 `src/pages/` 안에 둔다. 루트 `app/products/page.tsx`는
 
 같은 백엔드를 브라우저와 서버 양쪽에서 부르는 도메인(→ [shared-api](shared-api.md))은 위 패턴이 그대로 통하지 않는다. 전송이 브라우저용·서버용으로 갈리기 때문에, `queryOptions()` 하나의 `queryFn`이 이번엔 어느 런타임을 부를지를 정해줘야 한다.
 
-여기서 제약이 하나 생긴다. **`queryFn`을 가진 모듈은 런타임을 하나만 가질 수 있다.** `server-only` 표시는 그 모듈을 import하는 모든 모듈로 전염되는데, `[domain]-queries.ts`는 다름 아닌 Client Component가 `useQuery`로 import하는 파일이다. 여기에 `server-only`를 붙이면 클라이언트가 그 즉시 빌드 에러를 맞는다.
+여기서 제약이 하나 생긴다. **`queryFn`을 가진 모듈은 런타임을 하나만 가질 수 있다.** `server-only` 표시는 그 모듈을 import하는 모든 모듈로 전염되는데, `[resource]-queries.ts`는 다름 아닌 Client Component가 `useQuery`로 import하는 파일이다. 여기에 `server-only`를 붙이면 클라이언트가 그 즉시 빌드 에러를 맞는다.
 
 그래서 바꾸는 건 전송 하나, `queryFn`뿐이다. 키는 여전히 팩토리가 만든다.
 
